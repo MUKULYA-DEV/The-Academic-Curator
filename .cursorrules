@@ -1,0 +1,1 @@
+For any database related queries, SQL writing, or Supabase logic, always read and strictly follow the schema defined in @database.types.ts

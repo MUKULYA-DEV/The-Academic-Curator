@@ -1,0 +1,115 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary-fixed: #d6e3ff;
+  --color-secondary: #545f72;
+  --color-inverse-primary: #adc7f7;
+  --color-on-error-container: #93000a;
+  --color-on-primary-fixed: #001b3c;
+  --color-on-secondary-fixed: #111c2c;
+  --color-surface-variant: #e0e3e5;
+  --color-tertiary-container: #cba72f;
+  --color-secondary-container: #d5e0f7;
+  --color-on-secondary: #ffffff;
+  --color-on-primary-fixed-variant: #2d476f;
+  --color-on-tertiary-fixed-variant: #574500;
+  --color-surface: #f7fafc;
+  --color-on-primary-container: #86a0cd;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-bright: #f7fafc;
+  --color-tertiary: #735c00;
+  --color-outline: #74777f;
+  --color-error-container: #ffdad6;
+  --color-inverse-on-surface: #eef1f3;
+  --color-on-error: #ffffff;
+  --color-background: #f7fafc;
+  --color-secondary-fixed: #d8e3fa;
+  --color-on-surface: #181c1e;
+  --color-error: #ba1a1a;
+  --color-primary-container: #1a365d;
+  --color-secondary-fixed-dim: #bcc7dd;
+  --color-outline-variant: #c4c6cf;
+  --color-surface-dim: #d7dadc;
+  --color-on-secondary-fixed-variant: #3c475a;
+  --color-surface-container-highest: #e0e3e5;
+  --color-on-background: #181c1e;
+  --color-surface-container: #ebeef0;
+  --color-on-tertiary-container: #4e3d00;
+  --color-primary: #002045;
+  --color-on-primary: #ffffff;
+  --color-on-surface-variant: #43474e;
+  --color-surface-tint: #455f88;
+  --color-on-secondary-container: #586377;
+  --color-surface-container-high: #e5e9eb;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-fixed-dim: #e9c349;
+  --color-inverse-surface: #2d3133;
+  --color-tertiary-fixed: #ffe088;
+  --color-surface-container-low: #f1f4f6;
+  --color-primary-fixed-dim: #adc7f7;
+  --color-on-tertiary-fixed: #241a00;
+
+  --font-headline: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-label: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-manrope: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-inter: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer components {
+  .material-symbols-outlined {
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
+  }
+
+  .glass-nav {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .ghost-shadow {
+    box-shadow: 0px 12px 32px rgba(24, 28, 30, 0.06);
+  }
+
+  .premium-nav-shadow {
+    box-shadow:
+      0 4px 24px -1px rgba(0, 0, 0, 0.06),
+      0 2px 12px -1px rgba(0, 0, 0, 0.02);
+  }
+
+  .pill-badge {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .scholar-gradient {
+    background: linear-gradient(135deg, #002045 0%, #1a365d 100%);
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+  }
+}
+
+@keyframes bounce-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+  width: 100%;
+}

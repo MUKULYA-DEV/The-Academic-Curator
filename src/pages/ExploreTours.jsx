@@ -1,0 +1,707 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { NavAuthSection } from '../components/NavAuthSection.jsx'
+import { supabase } from '../supabaseClient.js'
+
+const INSTITUTIONS = [
+  'Harvard University',
+  'Stanford University',
+  'Princeton University',
+  'UC Berkeley',
+]
+
+const CITY_FILTERS = [
+  'All Cities',
+  'Cambridge',
+  'Stanford',
+  'New Haven',
+  'Princeton',
+  'Berkeley',
+  'Seattle',
+]
+
+const TOURS = [
+  {
+    id: '1',
+    school: 'Harvard University',
+    title: 'Historic Yard Walk & Library Access',
+    location: 'Cambridge, MA',
+    dateLine: 'Oct 24, 2024 • 10:00 AM',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBSZcVLZN6b_hAYTROpuBEgADA9Nq1OB9viFLOb2jsYp3c0qkfu3drxWDdrQKuB6a1Ww3r2E0QtKOkNd10NKZlBH5-22NOLKxTK8Nijq8nF2I1_u24fn7dqGAKxOd4dz7t-uS8hK-ZSwW2iOSPE21CosOhAxq3KNGmQbJ2RCkQd4taqlv6VrWMIxYWzICLjKyCP4hgx6YrwozeT6kCenAQlcI3QbmCxgEr_e7PZI4qMEfpBhKf2Qt3DIIOSQ0IYDoTwFA0SYhMEVj9v',
+    alt: 'Harvard University Campus',
+    badge: '8 SLOTS LEFT',
+    badgeVariant: 'slots',
+    cta: 'view',
+  },
+  {
+    id: '2',
+    school: 'Stanford University',
+    title: 'Tech Innovation Path: Engineering Hub',
+    location: 'Stanford, CA',
+    dateLine: 'Oct 26, 2024 • 2:30 PM',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDdkxzuYbabAdYMtbx8uYqlw02ArEWTLSO-QsLO_zbzVwvHZqTtSIIiz-g8onZypX7H2qZjIL4RmqbnycVgFWsUKqDAboTbF1uv7x6nhOiQzhypNRnJ8iT4uTMp60yD3iEXF_ekiCtreyGmFDK4fFBrVM79_FYE9z5kjaPOuNSBPR0_ipfL_95_9NJ3P3sLwCmvisEoPpHCeZ8vH9UCQi8UIkRO5vg2dHivVtZFkeQKGNtYgA041F-ou_YncTysrv-WnI0mo9sI-EyU',
+    alt: 'Stanford University Campus',
+    badge: 'LAST SLOT',
+    badgeVariant: 'last',
+    cta: 'book',
+  },
+  {
+    id: '3',
+    school: 'Princeton University',
+    title: 'Ivy Gothic: Architecture & Arts Tour',
+    location: 'Princeton, NJ',
+    dateLine: 'Nov 02, 2024 • 11:00 AM',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBK6x8sbhDVSD7He5hXlI73tLQbKm0vnx0s94_Z5X2a0gczJbs4MkulOuryw6cNhaPnYXU1SWupjClh9POzK-ZAKZrVHiIrMN28UudVWY-7mkyxIUuccgL_gozubMca0maTTbNl1qvN79R7wq8RaDsdlaoMRUX1ITdfDYkSo47DxrttCi5rWeY7a38e5998yY9I5YZseFSiPte1HExr6GJv96JZvi_u_-h4X8UDvCCwvCT7Wfmk1N9s8Ng_xb4vAhLnDFxZ5Mmmg36U',
+    alt: 'Princeton University',
+    badge: '12 SLOTS LEFT',
+    badgeVariant: 'slots',
+    cta: 'view',
+  },
+  {
+    id: '4',
+    school: 'UC Berkeley',
+    title: 'The Activist Spirit: Campus Roots',
+    location: 'Berkeley, CA',
+    dateLine: 'Nov 05, 2024 • 1:00 PM',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCtfg0JuLEbIaYFTRTwFask08s9w3sNZQol0FWYFzuUXCjWJWpOAKr8CE8FOAGTzsX_FdOJbpDztRvuyM67PBdPAME8XLaIyjTfmHzLg6_wXSUKkZtucAsPAlSaYu4TpboheKLvnv1pfuT6hx3Z6xGNlgOzetjPlUwxMoUofyk29rr2Xi1G-a0U3dXp9o2Vtd6m9Tp-fTdh6qKSRuBjTHpA5FYbLnoz3PwxmhnV2ZOEYw7k5QPiVwL2aazfiIS7iBE5m8biOPnHu1kw',
+    alt: 'UC Berkeley',
+    badge: '5 SLOTS LEFT',
+    badgeVariant: 'slots',
+    cta: 'view',
+  },
+  {
+    id: '5',
+    school: 'Columbia University',
+    title: 'Morningside Heights: Urban Excellence',
+    location: 'New York, NY',
+    dateLine: 'Nov 10, 2024 • 10:30 AM',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCHNcmuHPQEnHR2K9kjxsxfRc5f1Ct1a8wtQM_bPU8PyiZDbZ-gbARSYunwV_MxWchI3Ttwvt1foLq9r-OGw1MENgJZPbcQPLyAiDbA8E8xFeibi17pU5p4NYK5EN1gDDitJQSf1ATx2FVmaXeZLOvht1qPyjez7xwCr8Yj4P81VXfPS87XXPdAgLz3LDZdcOviinKMlPEAEiAkB69oHqv_u5w6TlqcJNQ7PH5Dqt1Gfgmk5rTDUKBmgQpFswMdqgbi6V_Cwb5-uH4l',
+    alt: 'Columbia University',
+    badge: '15 SLOTS LEFT',
+    badgeVariant: 'slots',
+    cta: 'view',
+  },
+  {
+    id: '6',
+    school: 'Univ. of Washington',
+    title: 'Pacific Northwest: Research & Nature',
+    location: 'Seattle, WA',
+    dateLine: 'Nov 12, 2024 • 9:00 AM',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuC5MSBeXVczwSZzaMEU7V0BIeqcoRQoqHLpz6qDlZci3KgLpMdbx_PlcjwBdFcFnfhYLUdSxNLOeuKQRmD-Glz6Lt_vFegbPksK1uBgJRSI-kigijr9nAHQr2H7oPor5XgS_2L7neqLEEDkFrReuW1Vg1sQtcegybuHQn-myh_GJzfHT6ZWe5ZVmr5ztmtpQFkRQKXx3G4d_5fQ_LoVjPRvmq9Di4dHDhoUfAaMJ5jCs2gYlJf1Rx6DhanZaPxyezBE_9LVPgK3qrm4',
+    alt: 'University of Washington',
+    badge: '2 SLOTS LEFT',
+    badgeVariant: 'slots',
+    cta: 'view',
+  },
+]
+
+function badgeClass(variant) {
+  if (variant === 'last') return 'bg-error-container text-on-error-container'
+  return 'bg-tertiary-fixed text-on-tertiary-fixed'
+}
+
+function TourCardLink({ tour }) {
+  const navigate = useNavigate()
+  const tourIdParam = encodeURIComponent(tour.id)
+
+  function handleCardClick() {
+    navigate(`/college?tourId=${tourIdParam}`)
+  }
+
+  function handleBookClick(e) {
+    e.stopPropagation()
+    navigate(`/book-tour?tourId=${tourIdParam}`)
+  }
+
+  return (
+    <div
+      onClick={handleCardClick}
+      className="group cursor-pointer overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0px_12px_32px_rgba(24,28,30,0.06)] transition-all duration-300 hover:-translate-y-2"
+    >
+      <div className="relative h-64 overflow-hidden">
+        <img
+          alt={tour.alt}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          src={tour.image}
+        />
+        <div className="absolute top-4 left-4">
+          <span
+            className={`font-label rounded-full px-3 py-1 text-[10px] font-bold tracking-widest uppercase ${badgeClass(tour.badgeVariant)}`}
+          >
+            {tour.badge}
+          </span>
+        </div>
+      </div>
+      <div className="p-6">
+        <p className="font-label mb-1 text-[10px] font-bold tracking-widest text-tertiary uppercase">
+          {tour.school}
+        </p>
+        <h3 className="font-headline mb-4 text-xl leading-tight font-extrabold text-primary">{tour.title}</h3>
+        <div className="mb-6 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-secondary">
+            <span className="material-symbols-outlined text-sm">location_on</span>
+            <span>{tour.location}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-secondary">
+            <span className="material-symbols-outlined text-sm">calendar_month</span>
+            <span>{tour.dateLine}</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleBookClick}
+          className="font-headline w-full rounded-full bg-primary py-3 text-center text-sm font-bold text-on-primary transition-all hover:bg-primary-container"
+        >
+          Book Tour
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const DEFAULT_TOUR_IMAGE = TOURS[0]?.image ?? ''
+
+function escapeIlikePattern(raw) {
+  return raw
+    .replace(/\\/g, '\\\\')
+    .replace(/%/g, '\\%')
+    .replace(/_/g, '\\_')
+    .replace(/,/g, ' ')
+}
+
+function mapTourRow(row) {
+  const city = row.city?.trim()
+  const loc = row.location?.trim()
+  return {
+    id: String(row.id),
+    school: row.university_name ?? 'University',
+    title: row.title ?? 'Campus Tour',
+    location: loc && loc.length > 0 ? loc : city && city.length > 0 ? city : '—',
+    dateLine: row.date_line ?? 'Schedule TBD',
+    image: row.image_url && row.image_url.trim() !== '' ? row.image_url : DEFAULT_TOUR_IMAGE,
+    alt: row.university_name ?? 'Campus tour',
+    badge: row.badge && row.badge.trim() !== '' ? row.badge : 'OPEN',
+    badgeVariant: row.badge_variant === 'last' ? 'last' : 'slots',
+    cta: row.cta === 'book' ? 'book' : 'view',
+  }
+}
+
+function filterStaticTours(searchTerm) {
+  const t = searchTerm.trim().toLowerCase()
+  if (!t) return [...TOURS]
+  return TOURS.filter(
+    (tour) =>
+      tour.school.toLowerCase().includes(t) ||
+      tour.title.toLowerCase().includes(t) ||
+      tour.location.toLowerCase().includes(t),
+  )
+}
+
+const PAGE_SIZE = 6
+
+function applySearchFilterToQuery(query, term) {
+  if (!term) return query
+  const escaped = escapeIlikePattern(term)
+  const pattern = `%${escaped}%`
+  return query.or(
+    `university_name.ilike.${pattern},city.ilike.${pattern},major.ilike.${pattern},course.ilike.${pattern},title.ilike.${pattern}`,
+  )
+}
+
+export default function ExploreTours() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const searchFromUrl = searchParams.get('search') ?? ''
+  const [searchInput, setSearchInput] = useState(searchFromUrl)
+  const [tourCards, setTourCards] = useState([])
+  const [toursLoading, setToursLoading] = useState(true)
+  const [loadMoreLoading, setLoadMoreLoading] = useState(false)
+  const [pageIndex, setPageIndex] = useState(0)
+  const [totalMatchingCount, setTotalMatchingCount] = useState(0)
+  const [fetchMode, setFetchMode] = useState('supabase')
+  const [supabaseListExhausted, setSupabaseListExhausted] = useState(false)
+  const [emptyDbSearch, setEmptyDbSearch] = useState(false)
+  const [recommendedTours, setRecommendedTours] = useState([])
+
+  const [institutionOpen, setInstitutionOpen] = useState(false)
+  const [selectedInstitution, setSelectedInstitution] = useState(null)
+  const [selectedCity, setSelectedCity] = useState('All Cities')
+  const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    setSearchInput(searchFromUrl)
+  }, [searchFromUrl])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadTours() {
+      setToursLoading(true)
+      setLoadMoreLoading(false)
+      setPageIndex(0)
+      setSupabaseListExhausted(false)
+
+      const term = searchFromUrl.trim()
+
+      let baseQuery = supabase
+        .from('tours')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+
+      baseQuery = applySearchFilterToQuery(baseQuery, term)
+
+      const from = 0
+      const to = PAGE_SIZE - 1
+      const { data, error, count } = await baseQuery.range(from, to)
+
+      if (cancelled) return
+
+      if (error) {
+        setEmptyDbSearch(false)
+        setRecommendedTours([])
+        setFetchMode('static')
+        const full = filterStaticTours(term)
+        setTotalMatchingCount(full.length)
+        setTourCards(full.slice(0, PAGE_SIZE))
+        setToursLoading(false)
+        return
+      }
+
+      if (Array.isArray(data) && data.length > 0) {
+        setEmptyDbSearch(false)
+        setRecommendedTours([])
+        setFetchMode('supabase')
+        const mapped = data.map(mapTourRow)
+        setTourCards(mapped)
+        const total =
+          typeof count === 'number'
+            ? count
+            : mapped.length < PAGE_SIZE
+              ? mapped.length
+              : Number.POSITIVE_INFINITY
+        setTotalMatchingCount(total)
+        setToursLoading(false)
+        return
+      }
+
+      if (term) {
+        const { data: recData, error: recError } = await supabase
+          .from('tours')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3)
+
+        if (cancelled) return
+
+        let recCards
+        if (!recError && Array.isArray(recData) && recData.length > 0) {
+          recCards = recData.map(mapTourRow)
+        } else {
+          recCards = filterStaticTours('').slice(0, 3)
+        }
+
+        setTourCards([])
+        setRecommendedTours(recCards)
+        setEmptyDbSearch(true)
+        setTotalMatchingCount(0)
+        setSupabaseListExhausted(true)
+        setFetchMode('supabase')
+        setToursLoading(false)
+        return
+      }
+
+      setEmptyDbSearch(false)
+      setRecommendedTours([])
+      setFetchMode('static')
+      const full = filterStaticTours('')
+      setTotalMatchingCount(full.length)
+      setTourCards(full.slice(0, PAGE_SIZE))
+      setToursLoading(false)
+    }
+
+    loadTours()
+    return () => {
+      cancelled = true
+    }
+  }, [searchFromUrl])
+
+  const loadMoreTours = useCallback(async () => {
+    if (emptyDbSearch || loadMoreLoading || toursLoading) return
+    const term = searchFromUrl.trim()
+
+    if (fetchMode === 'static') {
+      const full = filterStaticTours(term)
+      const nextPage = pageIndex + 1
+      const start = nextPage * PAGE_SIZE
+      if (start >= full.length) return
+
+      setLoadMoreLoading(true)
+      const chunk = full.slice(start, start + PAGE_SIZE)
+      setTourCards((prev) => [...prev, ...chunk])
+      setPageIndex(nextPage)
+      setLoadMoreLoading(false)
+      return
+    }
+
+    setLoadMoreLoading(true)
+    const nextPage = pageIndex + 1
+    const rangeFrom = nextPage * PAGE_SIZE
+    const rangeTo = rangeFrom + PAGE_SIZE - 1
+
+    let query = supabase.from('tours').select('*').order('created_at', { ascending: false })
+    query = applySearchFilterToQuery(query, term)
+
+    const { data, error } = await query.range(rangeFrom, rangeTo)
+
+    if (error) {
+      setLoadMoreLoading(false)
+      return
+    }
+
+    const rows = Array.isArray(data) ? data : []
+    if (rows.length === 0) {
+      setSupabaseListExhausted(true)
+      setLoadMoreLoading(false)
+      return
+    }
+
+    const mapped = rows.map(mapTourRow)
+    setTourCards((prev) => [...prev, ...mapped])
+    setPageIndex(nextPage)
+    setLoadMoreLoading(false)
+  }, [
+    emptyDbSearch,
+    loadMoreLoading,
+    toursLoading,
+    fetchMode,
+    pageIndex,
+    searchFromUrl,
+  ])
+
+  function submitExploreSearch() {
+    const q = searchInput.trim()
+    if (q === '') {
+      setSearchParams({})
+    } else {
+      setSearchParams({ search: q })
+    }
+  }
+
+  function handleExploreSearchKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      submitExploreSearch()
+    }
+  }
+
+  function clearSearch() {
+    setSearchInput('')
+    setSearchParams({})
+  }
+
+  const filteredTours = useMemo(() => {
+    let list = tourCards
+    if (selectedInstitution) {
+      list = list.filter((t) => t.school === selectedInstitution)
+    }
+    if (selectedCity !== 'All Cities') {
+      list = list.filter((t) => t.location.includes(selectedCity))
+    }
+    return list
+  }, [tourCards, selectedInstitution, selectedCity])
+
+  const hasMoreTours = useMemo(
+    () =>
+      !emptyDbSearch &&
+      !toursLoading &&
+      !supabaseListExhausted &&
+      tourCards.length < totalMatchingCount,
+    [emptyDbSearch, toursLoading, supabaseListExhausted, tourCards.length, totalMatchingCount],
+  )
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setInstitutionOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const displayInstitution = selectedInstitution ?? 'Select College'
+
+  return (
+    <div className="bg-surface font-body text-on-surface">
+      <div className="sticky top-0 z-50 w-full bg-surface/85 backdrop-blur-md">
+        <div className="flex justify-center px-6 pt-4">
+          <nav className="glass-nav mb-4 flex w-full max-w-4xl items-center justify-between rounded-full border border-white/20 bg-white/80 px-6 py-3 shadow-[0px_12px_32px_rgba(24,28,30,0.06)] backdrop-blur-md dark:border-slate-800/20 dark:bg-slate-900/80">
+            <Link
+              to="/"
+              className="font-headline text-xl font-extrabold tracking-tighter text-blue-950 dark:text-blue-50"
+            >
+              The Academic Curator
+            </Link>
+            <div className="hidden items-center gap-6 md:flex">
+              <Link
+                to="/"
+                className="font-manrope text-sm font-bold tracking-tight text-slate-500 transition-all duration-300 hover:text-blue-800 dark:text-slate-400 dark:hover:text-blue-200"
+              >
+                Home
+              </Link>
+              <span className="font-manrope border-b-2 border-yellow-600 pb-1 text-sm font-bold tracking-tight text-blue-900 dark:text-blue-100">
+                Explore Tours
+              </span>
+              <a
+                className="font-manrope text-sm font-bold tracking-tight text-slate-500 transition-all duration-300 hover:text-blue-800 dark:text-slate-400 dark:hover:text-blue-200"
+                href="#"
+              >
+                Ambassadors
+              </a>
+              <Link
+                to="/about"
+                className="font-manrope text-sm font-bold tracking-tight text-slate-500 transition-all duration-300 hover:text-blue-800 dark:text-slate-400 dark:hover:text-blue-200"
+              >
+                About Us
+              </Link>
+            </div>
+            <NavAuthSection variant="cta" />
+          </nav>
+        </div>
+      </div>
+
+      <main className="mx-auto max-w-7xl px-6 pb-20">
+        <header className="mb-16 pt-24 text-center">
+          <h1 className="font-headline mb-4 text-5xl font-extrabold tracking-tight text-primary md:text-6xl">
+            Explore Our Campus Tours
+          </h1>
+          <p className="font-body mx-auto max-w-2xl text-lg text-secondary">
+            Curated academic journeys led by student ambassadors. Discover your
+            future home through the lens of those who live it every day.
+          </p>
+        </header>
+
+        <section className="mb-12">
+          <div className="mx-auto mb-12 flex max-w-3xl items-center rounded-full bg-surface-container-lowest p-2 shadow-[0px_12px_32px_rgba(24,28,30,0.06)]">
+            <div className="flex grow items-center gap-3 pl-6 text-outline">
+              <span className="material-symbols-outlined">search</span>
+              <input
+                className="font-body w-full border-none bg-transparent text-on-surface placeholder:text-outline/60 focus:ring-0"
+                placeholder="Search universities, locations, or majors..."
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleExploreSearchKeyDown}
+                aria-label="Search tours"
+              />
+            </div>
+            <button
+              className="font-headline flex items-center gap-2 rounded-full bg-primary px-8 py-3 font-bold text-on-primary transition-colors hover:bg-primary-container"
+              type="button"
+              onClick={submitExploreSearch}
+            >
+              Discover
+            </button>
+          </div>
+
+          <div className="mx-auto max-w-5xl rounded-3xl border border-outline-variant/30 bg-white/50 p-8 backdrop-blur-sm">
+            <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+              <div className="grow space-y-6">
+                <div className="space-y-3">
+                  <label className="font-headline block px-1 text-sm font-extrabold text-primary">
+                    By Institution
+                  </label>
+                  <div className="relative max-w-xs" ref={dropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setInstitutionOpen((o) => !o)}
+                      className="flex w-full cursor-pointer items-center justify-between rounded-full border-2 border-primary bg-surface-container-lowest px-6 py-2.5 font-headline text-sm font-bold text-primary shadow-sm transition-all"
+                    >
+                      <span>{displayInstitution}</span>
+                      <span
+                        className={`material-symbols-outlined transition-transform ${institutionOpen ? 'rotate-180' : ''}`}
+                      >
+                        expand_more
+                      </span>
+                    </button>
+                    {institutionOpen && (
+                      <div className="absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-xl">
+                        <div className="py-1">
+                          {INSTITUTIONS.map((name) => (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => {
+                                setSelectedInstitution(name)
+                                setInstitutionOpen(false)
+                              }}
+                              className="font-headline block w-full px-6 py-3 text-left text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                            >
+                              {name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="font-headline block px-1 text-sm font-extrabold text-primary">
+                    Select City
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {CITY_FILTERS.map((city) => {
+                      const active = selectedCity === city
+                      return (
+                        <button
+                          key={city}
+                          type="button"
+                          onClick={() => setSelectedCity(city)}
+                          className={`font-label rounded-full px-5 py-2 text-xs font-semibold tracking-wider uppercase transition-colors ${
+                            active
+                              ? 'bg-primary text-on-primary'
+                              : 'bg-surface-container-high text-secondary hover:bg-surface-container-highest'
+                          }`}
+                        >
+                          {city}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pb-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedInstitution(null)
+                    setSelectedCity('All Cities')
+                  }}
+                  className="font-headline flex items-center gap-2 rounded-full border-2 border-outline px-6 py-2.5 text-sm font-bold text-outline transition-all hover:border-primary hover:bg-surface-variant hover:text-primary"
+                >
+                  <span className="material-symbols-outlined text-sm">refresh</span>
+                  Clear All
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="mb-16">
+          {toursLoading ? (
+            <p className="text-center text-secondary">Loading tours…</p>
+          ) : null}
+
+          {!toursLoading && emptyDbSearch ? (
+            <div className="mb-12 flex flex-col items-center rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-6 py-12 text-center md:px-10">
+              <span
+                className="material-symbols-outlined mb-4 text-7xl text-primary/40"
+                aria-hidden
+              >
+                travel_explore
+              </span>
+              <p className="font-headline mb-6 max-w-lg text-lg font-semibold text-primary md:text-xl">
+                No exact matches found for &apos;{searchFromUrl}&apos;.
+              </p>
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="font-headline rounded-full border-2 border-primary bg-primary px-8 py-3 text-sm font-bold text-on-primary shadow-sm transition-all hover:opacity-95 active:scale-[0.99]"
+              >
+                Clear Search
+              </button>
+            </div>
+          ) : null}
+
+          {!toursLoading && emptyDbSearch && recommendedTours.length > 0 ? (
+            <section className="mb-8">
+              <h2 className="font-headline mb-8 text-2xl font-extrabold text-primary md:text-3xl">
+                Recommended Tours
+              </h2>
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {recommendedTours.map((tour) => (
+                  <TourCardLink key={tour.id} tour={tour} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {!toursLoading && !emptyDbSearch ? (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {filteredTours.length === 0 ? (
+                <p className="col-span-full text-center font-medium text-secondary">
+                  No tours match your filters. Try a different institution or city, or clear filters.
+                </p>
+              ) : (
+                filteredTours.map((tour) => <TourCardLink key={tour.id} tour={tour} />)
+              )}
+            </div>
+          ) : null}
+        </div>
+
+        {hasMoreTours ? (
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={loadMoreTours}
+              disabled={loadMoreLoading}
+              className="font-headline group mb-24 flex items-center gap-3 rounded-full bg-surface-container-high px-10 py-4 text-sm font-bold text-primary transition-all hover:bg-surface-container-highest disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loadMoreLoading ? 'Loading…' : 'Load More Tours'}
+              <span className="material-symbols-outlined transition-transform group-hover:translate-y-1">
+                expand_more
+              </span>
+            </button>
+          </div>
+        ) : null}
+      </main>
+
+      <footer className="w-full border-t border-slate-200/90 bg-[#F8FAFF] pt-16 pb-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-8">
+          <Link
+            to="/"
+            className="font-manrope text-2xl font-bold tracking-tighter text-[#002045]"
+          >
+            The Academic Curator
+          </Link>
+          <div className="flex flex-wrap justify-center gap-10">
+            <a
+              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
+              href="#"
+            >
+              Privacy Policy
+            </a>
+            <a
+              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
+              href="#"
+            >
+              Terms of Service
+            </a>
+            <a
+              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
+              href="#"
+            >
+              Campus Safety
+            </a>
+            <Link
+              to="/contact"
+              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
+            >
+              Contact Support
+            </Link>
+          </div>
+          <div className="font-inter mt-4 text-xs tracking-wide text-slate-500 uppercase">
+            © 2024 The Academic Curator. All rights reserved.
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
