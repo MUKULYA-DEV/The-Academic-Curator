@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
+import { supabase } from '../supabaseClient.js'
 
 const UPCOMING_TOURS = [
   {
@@ -47,6 +48,63 @@ const UPCOMING_TOURS = [
   },
 ]
 
+const DEFAULT_TOUR_IMAGE =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuCuDm1Xs8-yfNQIWtphJyldlMKUbOtXZUQwyJZsnN2t0fUxQNwBkyTUCXQ5cyL2-2NqS32rRk0wx0i_FPJ7oaYzlqs8FEH-6s_8MFkAH_nIa4DS06HBv4h1tkH4C3fzPLiAhSUY6X_5owFH4C85n2we51d_-nXExnCyrrar9MsWUJ9Z6z6bIpcsM0jEJzmXjZiioVAxEL0WBD4YPdvN9RppZYgKcLKi0Pul4Svc8mrHszcGWxG2fPQQR5LyXac-O8ldRpMNEO7Vi44D'
+
+function mapSupabaseTourToHomeTour(row) {
+  const city = row.city?.trim()
+  const loc = row.location?.trim()
+  const locationText = loc && loc.length > 0 ? loc : city && city.length > 0 ? city : '—'
+
+  const badgeText = row.badge && row.badge.trim() !== '' ? row.badge : 'OPEN'
+  const isLast = row.badge_variant === 'last'
+
+  let badgeClass = ''
+  let badgeDotClass = ''
+
+  if (isLast) {
+    badgeClass =
+      'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-error-container/50 bg-error/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-white uppercase shadow-sm'
+    badgeDotClass = 'h-2 w-2 animate-ping rounded-full bg-white'
+  } else if (badgeText.toLowerCase().includes('slots left')) {
+    const slots = parseInt(badgeText)
+    if (!isNaN(slots) && slots <= 3) {
+      badgeClass =
+        'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-tertiary uppercase shadow-sm'
+      badgeDotClass = 'h-2 w-2 animate-pulse rounded-full bg-tertiary'
+    } else {
+      badgeClass =
+        'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-orange-700 uppercase shadow-sm'
+      badgeDotClass = 'h-2 w-2 rounded-full bg-orange-400'
+    }
+  } else {
+    badgeClass =
+      'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-blue-700 uppercase shadow-sm'
+    badgeDotClass = 'h-2 w-2 rounded-full bg-blue-400'
+  }
+
+  let dateLine = row.date_line ?? 'Schedule TBD'
+  let timeLine = ''
+  if (dateLine.includes('•')) {
+    const parts = dateLine.split('•')
+    dateLine = parts[0].trim()
+    timeLine = parts[1].trim()
+  }
+
+  return {
+    id: String(row.id),
+    image: row.image_url && row.image_url.trim() !== '' ? row.image_url : DEFAULT_TOUR_IMAGE,
+    imageAlt: row.title ?? row.university_name ?? 'Campus tour',
+    badgeClass,
+    badgeDotClass,
+    badgeText,
+    location: locationText,
+    title: row.title ?? `${row.university_name} Campus Tour`,
+    dateLine,
+    timeLine,
+  }
+}
+
 function HomeFeaturedTourCard({ tour }) {
   const navigate = useNavigate()
   const idParam = encodeURIComponent(tour.id)
@@ -91,10 +149,12 @@ function HomeFeaturedTourCard({ tour }) {
               <span className="material-symbols-outlined text-xl opacity-60">calendar_today</span>
               <span>{tour.dateLine}</span>
             </div>
-            <div className="flex items-center gap-4 text-sm font-medium text-secondary/80">
-              <span className="material-symbols-outlined text-xl opacity-60">schedule</span>
-              <span>{tour.timeLine}</span>
-            </div>
+            {tour.timeLine && (
+              <div className="flex items-center gap-4 text-sm font-medium text-secondary/80">
+                <span className="material-symbols-outlined text-xl opacity-60">schedule</span>
+                <span>{tour.timeLine}</span>
+              </div>
+            )}
           </div>
           <button
             type="button"
@@ -112,6 +172,35 @@ function HomeFeaturedTourCard({ tour }) {
 export default function Home() {
   const navigate = useNavigate()
   const [heroSearch, setHeroSearch] = useState('')
+  const [tours, setTours] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchFeaturedTours() {
+      try {
+        const { data, error } = await supabase
+          .from('tours')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          setTours(data.map(mapSupabaseTourToHomeTour))
+        } else {
+          setTours(UPCOMING_TOURS)
+        }
+      } catch (err) {
+        console.error('Error fetching tours:', err)
+        setTours(UPCOMING_TOURS)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFeaturedTours()
+  }, [])
 
   function runHeroSearch() {
     const q = heroSearch.trim()
@@ -226,9 +315,31 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 items-stretch gap-10 md:grid-cols-2 lg:grid-cols-3">
-            {UPCOMING_TOURS.map((tour) => (
-              <HomeFeaturedTourCard key={tour.id} tour={tour} />
-            ))}
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="ghost-shadow flex h-[500px] animate-pulse flex-col overflow-hidden rounded-[2rem] bg-surface-container-low"
+                >
+                  <div className="h-64 bg-surface-container-high shrink-0" />
+                  <div className="flex-1 p-8 space-y-6 flex flex-col">
+                    <div className="space-y-3">
+                      <div className="h-4 w-1/3 rounded bg-surface-container-high" />
+                      <div className="h-8 w-3/4 rounded bg-surface-container-high" />
+                    </div>
+                    <div className="mt-auto space-y-4 pt-6">
+                      <div className="h-4 w-1/2 rounded bg-surface-container-high" />
+                      <div className="h-4 w-1/3 rounded bg-surface-container-high" />
+                      <div className="h-10 w-full rounded-full bg-surface-container-high" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              tours.map((tour) => (
+                <HomeFeaturedTourCard key={tour.id} tour={tour} />
+              ))
+            )}
           </div>
         </section>
 
