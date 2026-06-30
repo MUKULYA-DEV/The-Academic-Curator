@@ -586,7 +586,7 @@ export default function ExploreTours() {
                     setSelectedInstitution(null)
                     setSelectedCity('All Cities')
                   }}
-                  className="font-headline flex items-center gap-2 rounded-full border-2 border-outline px-6 py-2.5 text-sm font-bold text-outline transition-all hover:border-primary hover:bg-surface-variant hover:text-primary"
+                  className="font-headline flex items-center gap-2 rounded-full border-2 border-outline px-6 py-2.5 text-sm font-bold text-outline transition-all hover:border-primary hover:bg-surface-variant hover:text-primary whitespace-nowrap"
                 >
                   <span className="material-symbols-outlined text-sm">refresh</span>
                   Clear All
