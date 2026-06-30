@@ -12,12 +12,14 @@ const INSTITUTIONS = [
 
 const CITY_FILTERS = [
   'All Cities',
-  'Cambridge',
-  'Stanford',
-  'New Haven',
-  'Princeton',
-  'Berkeley',
-  'Seattle',
+  'Meerut',
+  'Dehradun',
+  'Greater Noida',
+  'Jaipur',
+  'Indore',
+  'Bhopal',
+  'Delhi',
+  'Ghaziabad',
 ]
 
 const TOURS = [
