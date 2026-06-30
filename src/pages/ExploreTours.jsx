@@ -439,11 +439,11 @@ export default function ExploreTours() {
   return (
     <div className="bg-surface font-body text-on-surface">
       <div className="sticky top-0 z-50 w-full bg-surface/85 backdrop-blur-md">
-        <div className="flex justify-center px-6 pt-4">
-          <nav className="glass-nav mb-4 flex w-full max-w-4xl items-center justify-between rounded-full border border-white/20 bg-white/80 px-6 py-3 shadow-[0px_12px_32px_rgba(24,28,30,0.06)] backdrop-blur-md dark:border-slate-800/20 dark:bg-slate-900/80">
+        <div className="flex justify-center px-4 pt-4 sm:px-6">
+          <nav className="glass-nav mb-4 flex w-full max-w-4xl items-center justify-between rounded-full border border-white/20 bg-white/80 px-4 py-2.5 shadow-[0px_12px_32px_rgba(24,28,30,0.06)] backdrop-blur-md dark:border-slate-800/20 dark:bg-slate-900/80 sm:px-6 sm:py-3">
             <Link
               to="/"
-              className="font-headline text-xl font-extrabold tracking-tighter text-blue-950 dark:text-blue-50"
+              className="font-headline text-sm font-extrabold tracking-tighter text-blue-950 dark:text-blue-50 sm:text-xl whitespace-nowrap"
             >
               The Academic Curator
             </Link>

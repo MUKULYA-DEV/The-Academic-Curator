@@ -84,7 +84,7 @@ export function NavAuthSection({ variant = 'dual' }) {
     return (
       <Link
         to="/login"
-        className="font-headline rounded-full bg-primary px-5 py-2 text-sm font-bold text-on-primary transition-all duration-200 active:scale-95"
+        className="font-headline whitespace-nowrap rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-on-primary transition-all duration-200 active:scale-95 sm:px-5 sm:py-2 sm:text-sm"
       >
         Book a Tour
       </Link>
@@ -92,19 +92,20 @@ export function NavAuthSection({ variant = 'dual' }) {
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-1.5 sm:gap-3">
       <Link
         to="/login"
-        className="rounded-full px-5 py-2 text-sm font-semibold text-[#545F72] transition-all hover:bg-white/50 active:scale-95"
+        className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-[#545F72] transition-all hover:bg-white/50 active:scale-95 sm:px-5 sm:py-2 sm:text-sm"
       >
         Login
       </Link>
       <Link
         to="/login?tab=signup"
-        className="rounded-full bg-[#002045] px-6 py-2 text-sm font-semibold text-white shadow-md transition-all hover:opacity-95 hover:shadow-lg active:scale-95"
+        className="whitespace-nowrap rounded-full bg-[#002045] px-4 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 hover:shadow-lg active:scale-95 sm:px-6 sm:py-2 sm:text-sm"
       >
         Sign Up
       </Link>
     </div>
   )
 }
+

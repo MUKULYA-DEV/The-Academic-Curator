@@ -8,12 +8,12 @@ import { NavAuthSection } from './NavAuthSection.jsx'
 export default function Navbar({ active }) {
   return (
     <div className="fixed top-6 right-0 left-0 z-50 flex justify-center px-4">
-      <nav className="glass-nav premium-nav-shadow w-full max-w-6xl rounded-full border border-white/40 bg-white/70 px-8 py-3">
-        <div className="flex items-center justify-between gap-4">
+      <nav className="glass-nav premium-nav-shadow w-full max-w-6xl rounded-full border border-white/40 bg-white/70 px-4 py-2.5 sm:px-8 sm:py-3">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center">
             <Link
               to="/"
-              className="text-lg font-extrabold tracking-tighter whitespace-nowrap text-[#002045]"
+              className="text-sm font-extrabold tracking-tighter whitespace-nowrap text-[#002045] sm:text-lg"
             >
               The Academic Curator
             </Link>
