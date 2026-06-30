@@ -226,21 +226,21 @@ export default function Home() {
         <section className="relative overflow-hidden bg-surface-container-low px-8 py-20 lg:py-32">
           <div className="mx-auto grid max-w-screen-2xl items-center gap-12 lg:grid-cols-2">
             <div className="z-10">
-              <h1 className="mb-6 text-5xl font-extrabold leading-[1.1] tracking-tight text-primary lg:text-7xl">
+              <h1 className="mb-6 text-3xl sm:text-5xl font-extrabold leading-[1.1] tracking-tight text-primary lg:text-7xl">
                 Find Your Future <br />
                 <span className="text-tertiary">University</span>
               </h1>
-              <p className="mb-10 max-w-xl text-lg leading-relaxed text-secondary lg:text-xl">
+              <p className="mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-secondary lg:text-xl">
                 Curated campus experiences led by top-tier student ambassadors.
                 Don&apos;t just visit—immerse yourself in the academic legacy.
               </p>
               <div className="relative max-w-2xl">
-                <div className="ghost-shadow group flex items-center rounded-full p-1.5 ring-primary/20 transition-all focus-within:ring-1">
-                  <span className="material-symbols-outlined pl-6 text-secondary">
+                <div className="ghost-shadow group flex items-center rounded-full p-1 sm:p-1.5 ring-primary/20 transition-all focus-within:ring-1">
+                  <span className="material-symbols-outlined pl-3 sm:pl-6 text-secondary">
                     search
                   </span>
                   <input
-                    className="font-body w-full border-none bg-transparent py-4 text-on-surface placeholder:text-outline-variant focus:border-transparent focus:outline-none focus:ring-0"
+                    className="font-body w-full border-none bg-transparent py-2.5 sm:py-4 text-sm sm:text-base text-on-surface placeholder:text-outline-variant focus:border-transparent focus:outline-none focus:ring-0"
                     placeholder="Search by University, City, or Major..."
                     type="text"
                     value={heroSearch}
@@ -249,7 +249,7 @@ export default function Home() {
                     aria-label="Search universities, cities, or majors"
                   />
                   <button
-                    className="rounded-full bg-primary px-10 py-4 font-semibold text-on-primary transition-colors hover:bg-primary-container"
+                    className="rounded-full bg-primary px-5 py-2.5 sm:px-10 sm:py-4 text-sm sm:text-base font-semibold text-on-primary transition-colors hover:bg-primary-container whitespace-nowrap"
                     type="button"
                     onClick={runHeroSearch}
                   >
@@ -287,17 +287,17 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-screen-2xl px-8 py-24">
-          <div className="mb-12 flex items-center justify-between">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-8 py-16 md:py-24">
+          <div className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between items-start gap-6">
             <div>
-              <div className="flex flex-col items-start gap-4">
-                <div className="inline-block rounded-full bg-primary px-8 py-3 text-on-primary shadow-md">
-                  <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+              <div className="flex flex-col items-start gap-3 sm:gap-4">
+                <div className="inline-block rounded-2xl md:rounded-full bg-primary px-6 py-3 md:px-8 text-on-primary shadow-md">
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight md:text-3xl">
                     Upcoming Campus Tours
                   </h2>
                 </div>
-                <div className="inline-block rounded-full border border-secondary-container bg-secondary-container/50 px-6 py-2 text-on-secondary-container">
-                  <p className="text-sm font-medium md:text-base">
+                <div className="inline-block rounded-2xl md:rounded-full border border-secondary-container bg-secondary-container/50 px-4 py-2 sm:px-6 text-on-secondary-container">
+                  <p className="text-xs sm:text-sm font-medium md:text-base">
                     Limited availability for private and curated group sessions
                   </p>
                 </div>
@@ -305,7 +305,7 @@ export default function Home() {
             </div>
             <Link
               to="/explore-tours"
-              className="group flex items-center gap-2 rounded-full border border-outline-variant bg-white px-6 py-3 font-bold text-primary shadow-sm transition-all duration-300 hover:bg-primary hover:text-white hover:shadow-md"
+              className="group flex items-center gap-2 rounded-full border border-outline-variant bg-white px-6 py-3 font-bold text-primary shadow-sm transition-all duration-300 hover:bg-primary hover:text-white hover:shadow-md whitespace-nowrap self-stretch md:self-auto justify-center"
             >
               View All
               <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">

@@ -477,7 +477,7 @@ export default function ExploreTours() {
 
       <main className="mx-auto max-w-7xl px-6 pb-20">
         <header className="mb-16 pt-24 text-center">
-          <h1 className="font-headline mb-4 text-5xl font-extrabold tracking-tight text-primary md:text-6xl">
+          <h1 className="font-headline mb-4 text-3xl sm:text-5xl font-extrabold tracking-tight text-primary md:text-6xl">
             Explore Our Campus Tours
           </h1>
           <p className="font-body mx-auto max-w-2xl text-lg text-secondary">
@@ -487,11 +487,11 @@ export default function ExploreTours() {
         </header>
 
         <section className="mb-12">
-          <div className="mx-auto mb-12 flex max-w-3xl items-center rounded-full bg-surface-container-lowest p-2 shadow-[0px_12px_32px_rgba(24,28,30,0.06)]">
-            <div className="flex grow items-center gap-3 pl-6 text-outline">
-              <span className="material-symbols-outlined">search</span>
+          <div className="mx-auto mb-12 flex max-w-3xl items-center rounded-full bg-surface-container-lowest p-1 sm:p-2 shadow-[0px_12px_32px_rgba(24,28,30,0.06)]">
+            <div className="flex grow items-center gap-2 sm:gap-3 pl-3 sm:pl-6 text-outline">
+              <span className="material-symbols-outlined text-sm sm:text-base">search</span>
               <input
-                className="font-body w-full border-none bg-transparent text-on-surface placeholder:text-outline/60 focus:ring-0"
+                className="font-body w-full border-none bg-transparent text-xs sm:text-sm md:text-base text-on-surface placeholder:text-outline/60 focus:ring-0"
                 placeholder="Search universities, locations, or majors..."
                 type="text"
                 value={searchInput}
@@ -501,7 +501,7 @@ export default function ExploreTours() {
               />
             </div>
             <button
-              className="font-headline flex items-center gap-2 rounded-full bg-primary px-8 py-3 font-bold text-on-primary transition-colors hover:bg-primary-container"
+              className="font-headline flex items-center gap-1 sm:gap-2 rounded-full bg-primary px-4 py-2.5 sm:px-8 sm:py-3 text-xs sm:text-sm font-bold text-on-primary transition-colors hover:bg-primary-container whitespace-nowrap"
               type="button"
               onClick={submitExploreSearch}
             >
