@@ -271,34 +271,7 @@ export default function ExploreTours() {
     }
   }, [])
 
-  useEffect(() => {
-    if (searchFromUrl && allToursForFilters.length > 0) {
-      const normalized = searchFromUrl.trim().toLowerCase()
-      const words = normalized.split(/\s+/).filter((w) => w.length > 2)
 
-      const uniqueInstitutions = Array.from(new Set(allToursForFilters.map((c) => c.school).filter(Boolean)))
-      const uniqueCourses = Array.from(new Set(allToursForFilters.map((c) => c.course).filter(Boolean)))
-      const uniqueMajors = Array.from(new Set(allToursForFilters.map((c) => c.major).filter(Boolean)))
-      const uniqueCities = Array.from(new Set(allToursForFilters.map((c) => c.city).filter(Boolean)))
-
-      const matchesTermOrWords = (val) => {
-        if (!val) return false
-        const lowerVal = val.toLowerCase()
-        if (lowerVal.includes(normalized) || normalized.includes(lowerVal)) return true
-        return words.some((word) => lowerVal.includes(word))
-      }
-
-      const matchedInst = uniqueInstitutions.find(matchesTermOrWords)
-      const matchedCourse = uniqueCourses.find(matchesTermOrWords)
-      const matchedMajor = uniqueMajors.find(matchesTermOrWords)
-      const matchedCity = uniqueCities.find(matchesTermOrWords)
-
-      if (matchedInst) setSelectedInstitution(matchedInst)
-      if (matchedCourse) setSelectedCourse(matchedCourse)
-      if (matchedMajor) setSelectedMajor(matchedMajor)
-      if (matchedCity) setSelectedCity(matchedCity)
-    }
-  }, [allToursForFilters, searchFromUrl])
 
   useEffect(() => {
     let cancelled = false
@@ -531,48 +504,18 @@ export default function ExploreTours() {
   const availableCourses = useMemo(() => {
     const set = new Set()
     allToursForFilters.forEach((t) => {
-      if (selectedInstitution && t.school !== selectedInstitution) return
       if (t.course) set.add(t.course)
     })
     return Array.from(set).sort()
-  }, [allToursForFilters, selectedInstitution])
+  }, [allToursForFilters])
 
   const availableMajors = useMemo(() => {
     const set = new Set()
     allToursForFilters.forEach((t) => {
-      if (selectedInstitution && t.school !== selectedInstitution) return
-      if (selectedCourse && t.course !== selectedCourse) return
       if (t.major) set.add(t.major)
     })
     return Array.from(set).sort()
-  }, [allToursForFilters, selectedInstitution, selectedCourse])
-
-  // Automatically reset invalid filter selections when parent filters change
-  useEffect(() => {
-    if (selectedInstitution) {
-      const courseValid = allToursForFilters.some(
-        (t) => t.school === selectedInstitution && (!selectedCourse || t.course === selectedCourse)
-      )
-      if (!courseValid) {
-        setSelectedCourse(null)
-        setSelectedMajor(null)
-      }
-    }
-  }, [selectedInstitution, allToursForFilters])
-
-  useEffect(() => {
-    if (selectedCourse) {
-      const majorValid = allToursForFilters.some(
-        (t) =>
-          (!selectedInstitution || t.school === selectedInstitution) &&
-          t.course === selectedCourse &&
-          (!selectedMajor || t.major === selectedMajor)
-      )
-      if (!majorValid) {
-        setSelectedMajor(null)
-      }
-    }
-  }, [selectedCourse, selectedInstitution, allToursForFilters])
+  }, [allToursForFilters])
 
   const filteredTours = useMemo(() => {
     let list = tourCards
