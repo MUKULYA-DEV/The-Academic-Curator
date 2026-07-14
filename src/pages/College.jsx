@@ -223,6 +223,7 @@ function GallerySection({ gallery, theme }) {
   if (!gallery || gallery.length === 0) return null
 
   const scrollRef = useRef(null)
+  const [activeImage, setActiveImage] = useState(null)
   const primaryText = theme?.primaryColor ? { color: theme.primaryColor } : {}
 
   const scroll = (direction) => {
@@ -275,7 +276,8 @@ function GallerySection({ gallery, theme }) {
         {gallery.map((item, index) => (
           <div
             key={index}
-            className="group relative min-w-[280px] sm:min-w-[400px] md:min-w-[480px] aspect-[16/10] overflow-hidden rounded-2xl bg-surface-container-low snap-start shadow-md hover:shadow-lg transition-shadow duration-300"
+            onClick={() => setActiveImage(item)}
+            className="group relative min-w-[280px] sm:min-w-[400px] md:min-w-[480px] aspect-[16/10] overflow-hidden rounded-2xl bg-surface-container-low snap-start shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
           >
             <img
               alt={item.caption || 'Campus view'}
@@ -297,6 +299,39 @@ function GallerySection({ gallery, theme }) {
           </div>
         ))}
       </div>
+
+      {/* Lightbox / Fullscreen Overlay */}
+      {activeImage && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 p-4 backdrop-blur-sm cursor-zoom-out animate-fade-in"
+          onClick={() => setActiveImage(null)}
+        >
+          <button
+            onClick={() => setActiveImage(null)}
+            className="absolute top-6 right-6 text-white hover:text-slate-300 transition-colors flex items-center justify-center p-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95"
+            aria-label="Close fullscreen view"
+          >
+            <span className="material-symbols-outlined text-3xl">close</span>
+          </button>
+
+          <img
+            alt={activeImage.caption || 'Campus view fullscreen'}
+            className="max-h-[85vh] max-w-full rounded-lg object-contain shadow-2xl transition-transform duration-300 scale-100"
+            src={activeImage.url}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800&auto=format&fit=crop';
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
+          />
+
+          {activeImage.caption && (
+            <p className="mt-6 max-w-2xl px-4 text-center text-base md:text-lg font-medium text-white tracking-wide">
+              {activeImage.caption}
+            </p>
+          )}
+        </div>
+      )}
     </section>
   )
 }
