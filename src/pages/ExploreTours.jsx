@@ -721,7 +721,7 @@ export default function ExploreTours() {
             </button>
           </div>
 
-          <div className="mx-auto max-w-7xl rounded-3xl border border-outline-variant/30 bg-white/50 p-8 backdrop-blur-sm relative z-30">
+          <div className="mx-auto max-w-5xl rounded-3xl border border-outline-variant/30 bg-white/50 p-8 backdrop-blur-sm relative z-30">
             <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end" ref={dropdownRef}>
               <div className="grow space-y-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
