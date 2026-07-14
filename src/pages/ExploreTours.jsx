@@ -26,6 +26,22 @@ const TOURS = [
     cta: 'view',
     course: 'B.Tech',
     major: 'Computer Science',
+    courses: [
+      {
+        name: 'B.Tech',
+        branches: [
+          { name: 'Computer Science', seats: 60 },
+          { name: 'Electronics Engineering', seats: 30 }
+        ]
+      },
+      {
+        name: 'MBA',
+        branches: [
+          { name: 'Finance', seats: 20 },
+          { name: 'Marketing', seats: 25 }
+        ]
+      }
+    ]
   },
   {
     id: '2',
@@ -42,6 +58,15 @@ const TOURS = [
     cta: 'book',
     course: 'B.Tech',
     major: 'Electronics Engineering',
+    courses: [
+      {
+        name: 'B.Tech',
+        branches: [
+          { name: 'Electronics Engineering', seats: 45 },
+          { name: 'Computer Science', seats: 60 }
+        ]
+      }
+    ]
   },
   {
     id: '3',
@@ -58,6 +83,15 @@ const TOURS = [
     cta: 'view',
     course: 'MBA',
     major: 'Finance',
+    courses: [
+      {
+        name: 'MBA',
+        branches: [
+          { name: 'Finance', seats: 30 },
+          { name: 'Marketing', seats: 20 }
+        ]
+      }
+    ]
   },
   {
     id: '4',
@@ -74,6 +108,15 @@ const TOURS = [
     cta: 'view',
     course: 'B.Tech',
     major: 'Computer Science',
+    courses: [
+      {
+        name: 'B.Tech',
+        branches: [
+          { name: 'Computer Science', seats: 60 },
+          { name: 'Data Science', seats: 30 }
+        ]
+      }
+    ]
   },
   {
     id: '5',
@@ -90,6 +133,15 @@ const TOURS = [
     cta: 'view',
     course: 'MBA',
     major: 'Marketing',
+    courses: [
+      {
+        name: 'MBA',
+        branches: [
+          { name: 'Marketing', seats: 45 },
+          { name: 'Finance', seats: 30 }
+        ]
+      }
+    ]
   },
   {
     id: '6',
@@ -106,6 +158,14 @@ const TOURS = [
     cta: 'view',
     course: 'B.Sc',
     major: 'Data Science',
+    courses: [
+      {
+        name: 'B.Sc',
+        branches: [
+          { name: 'Data Science', seats: 30 }
+        ]
+      }
+    ]
   },
 ]
 
@@ -200,6 +260,7 @@ function mapTourRow(row) {
     cta: row.cta === 'book' ? 'book' : 'view',
     course: row.course ?? null,
     major: row.major ?? null,
+    courses: row.details?.courses ?? null,
   }
 }
 
@@ -504,6 +565,11 @@ export default function ExploreTours() {
   const availableCourses = useMemo(() => {
     const set = new Set()
     allToursForFilters.forEach((t) => {
+      if (t.courses && Array.isArray(t.courses)) {
+        t.courses.forEach((c) => {
+          if (c.name) set.add(c.name)
+        })
+      }
       if (t.course) set.add(t.course)
     })
     return Array.from(set).sort()
@@ -512,6 +578,15 @@ export default function ExploreTours() {
   const availableMajors = useMemo(() => {
     const set = new Set()
     allToursForFilters.forEach((t) => {
+      if (t.courses && Array.isArray(t.courses)) {
+        t.courses.forEach((c) => {
+          if (c.branches && Array.isArray(c.branches)) {
+            c.branches.forEach((b) => {
+              if (b.name) set.add(b.name)
+            })
+          }
+        })
+      }
       if (t.major) set.add(t.major)
     })
     return Array.from(set).sort()
@@ -526,10 +601,24 @@ export default function ExploreTours() {
       list = list.filter((t) => t.city === selectedCity || t.location.includes(selectedCity))
     }
     if (selectedCourse) {
-      list = list.filter((t) => t.course === selectedCourse)
+      list = list.filter((t) => {
+        if (t.course === selectedCourse) return true
+        if (t.courses && Array.isArray(t.courses)) {
+          return t.courses.some((c) => c.name === selectedCourse)
+        }
+        return false
+      })
     }
     if (selectedMajor) {
-      list = list.filter((t) => t.major === selectedMajor)
+      list = list.filter((t) => {
+        if (t.major === selectedMajor) return true
+        if (t.courses && Array.isArray(t.courses)) {
+          return t.courses.some(
+            (c) => c.branches && Array.isArray(c.branches) && c.branches.some((b) => b.name === selectedMajor)
+          )
+        }
+        return false
+      })
     }
     return list
   }, [tourCards, selectedInstitution, selectedCity, selectedCourse, selectedMajor])
