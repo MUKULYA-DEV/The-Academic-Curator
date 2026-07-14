@@ -570,7 +570,6 @@ export default function ExploreTours() {
           if (c.name) set.add(c.name)
         })
       }
-      if (t.course) set.add(t.course)
     })
     return Array.from(set).sort()
   }, [allToursForFilters])
@@ -587,7 +586,6 @@ export default function ExploreTours() {
           }
         })
       }
-      if (t.major) set.add(t.major)
     })
     return Array.from(set).sort()
   }, [allToursForFilters])
@@ -602,7 +600,6 @@ export default function ExploreTours() {
     }
     if (selectedCourse) {
       list = list.filter((t) => {
-        if (t.course === selectedCourse) return true
         if (t.courses && Array.isArray(t.courses)) {
           return t.courses.some((c) => c.name === selectedCourse)
         }
@@ -611,7 +608,6 @@ export default function ExploreTours() {
     }
     if (selectedMajor) {
       list = list.filter((t) => {
-        if (t.major === selectedMajor) return true
         if (t.courses && Array.isArray(t.courses)) {
           return t.courses.some(
             (c) => c.branches && Array.isArray(c.branches) && c.branches.some((b) => b.name === selectedMajor)
