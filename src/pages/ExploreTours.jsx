@@ -35,6 +35,8 @@ const TOURS = [
     badge: '8 SLOTS LEFT',
     badgeVariant: 'slots',
     cta: 'view',
+    course: 'B.Tech',
+    major: 'Computer Science',
   },
   {
     id: '2',
@@ -48,6 +50,8 @@ const TOURS = [
     badge: 'LAST SLOT',
     badgeVariant: 'last',
     cta: 'book',
+    course: 'B.Tech',
+    major: 'Electronics Engineering',
   },
   {
     id: '3',
@@ -61,6 +65,8 @@ const TOURS = [
     badge: '12 SLOTS LEFT',
     badgeVariant: 'slots',
     cta: 'view',
+    course: 'MBA',
+    major: 'Finance',
   },
   {
     id: '4',
@@ -74,6 +80,8 @@ const TOURS = [
     badge: '5 SLOTS LEFT',
     badgeVariant: 'slots',
     cta: 'view',
+    course: 'B.Tech',
+    major: 'Computer Science',
   },
   {
     id: '5',
@@ -87,6 +95,8 @@ const TOURS = [
     badge: '15 SLOTS LEFT',
     badgeVariant: 'slots',
     cta: 'view',
+    course: 'MBA',
+    major: 'Marketing',
   },
   {
     id: '6',
@@ -100,6 +110,8 @@ const TOURS = [
     badge: '2 SLOTS LEFT',
     badgeVariant: 'slots',
     cta: 'view',
+    course: 'B.Sc',
+    major: 'Data Science',
   },
 ]
 
@@ -191,6 +203,8 @@ function mapTourRow(row) {
     badge: row.badge && row.badge.trim() !== '' ? row.badge : 'OPEN',
     badgeVariant: row.badge_variant === 'last' ? 'last' : 'slots',
     cta: row.cta === 'book' ? 'book' : 'view',
+    course: row.course ?? null,
+    major: row.major ?? null,
   }
 }
 
@@ -229,10 +243,13 @@ export default function ExploreTours() {
   const [supabaseListExhausted, setSupabaseListExhausted] = useState(false)
   const [emptyDbSearch, setEmptyDbSearch] = useState(false)
   const [recommendedTours, setRecommendedTours] = useState([])
-
   const [institutionOpen, setInstitutionOpen] = useState(false)
   const [selectedInstitution, setSelectedInstitution] = useState(null)
   const [selectedCity, setSelectedCity] = useState('All Cities')
+  const [selectedCourse, setSelectedCourse] = useState(null)
+  const [selectedMajor, setSelectedMajor] = useState(null)
+  const [courseOpen, setCourseOpen] = useState(false)
+  const [majorOpen, setMajorOpen] = useState(false)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
@@ -406,6 +423,61 @@ export default function ExploreTours() {
     setSearchParams({})
   }
 
+  // Dynamic available options calculated from loaded tours to prevent empty combinations
+  const availableInstitutions = useMemo(() => {
+    const set = new Set()
+    tourCards.forEach((t) => {
+      if (t.school) set.add(t.school)
+    })
+    return Array.from(set).sort()
+  }, [tourCards])
+
+  const availableCourses = useMemo(() => {
+    const set = new Set()
+    tourCards.forEach((t) => {
+      if (selectedInstitution && t.school !== selectedInstitution) return
+      if (t.course) set.add(t.course)
+    })
+    return Array.from(set).sort()
+  }, [tourCards, selectedInstitution])
+
+  const availableMajors = useMemo(() => {
+    const set = new Set()
+    tourCards.forEach((t) => {
+      if (selectedInstitution && t.school !== selectedInstitution) return
+      if (selectedCourse && t.course !== selectedCourse) return
+      if (t.major) set.add(t.major)
+    })
+    return Array.from(set).sort()
+  }, [tourCards, selectedInstitution, selectedCourse])
+
+  // Automatically reset invalid filter selections when parent filters change
+  useEffect(() => {
+    if (selectedInstitution) {
+      const courseValid = tourCards.some(
+        (t) => t.school === selectedInstitution && (!selectedCourse || t.course === selectedCourse)
+      )
+      if (!courseValid) {
+        setSelectedCourse(null)
+        setSelectedMajor(null)
+      }
+    }
+  }, [selectedInstitution, tourCards])
+
+  useEffect(() => {
+    if (selectedCourse) {
+      const majorValid = tourCards.some(
+        (t) =>
+          (!selectedInstitution || t.school === selectedInstitution) &&
+          t.course === selectedCourse &&
+          (!selectedMajor || t.major === selectedMajor)
+      )
+      if (!majorValid) {
+        setSelectedMajor(null)
+      }
+    }
+  }, [selectedCourse, selectedInstitution, tourCards])
+
   const filteredTours = useMemo(() => {
     let list = tourCards
     if (selectedInstitution) {
@@ -414,8 +486,14 @@ export default function ExploreTours() {
     if (selectedCity !== 'All Cities') {
       list = list.filter((t) => t.location.includes(selectedCity))
     }
+    if (selectedCourse) {
+      list = list.filter((t) => t.course === selectedCourse)
+    }
+    if (selectedMajor) {
+      list = list.filter((t) => t.major === selectedMajor)
+    }
     return list
-  }, [tourCards, selectedInstitution, selectedCity])
+  }, [tourCards, selectedInstitution, selectedCity, selectedCourse, selectedMajor])
 
   const hasMoreTours = useMemo(
     () =>
@@ -430,6 +508,8 @@ export default function ExploreTours() {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setInstitutionOpen(false)
+        setCourseOpen(false)
+        setMajorOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -437,6 +517,8 @@ export default function ExploreTours() {
   }, [])
 
   const displayInstitution = selectedInstitution ?? 'Select College'
+  const displayCourse = selectedCourse ?? 'Select Course'
+  const displayMajor = selectedMajor ?? 'Select Branch'
 
   return (
     <div className="bg-surface font-body text-on-surface">
@@ -512,44 +594,175 @@ export default function ExploreTours() {
           </div>
 
           <div className="mx-auto max-w-5xl rounded-3xl border border-outline-variant/30 bg-white/50 p-8 backdrop-blur-sm">
-            <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end" ref={dropdownRef}>
               <div className="grow space-y-6">
-                <div className="space-y-3">
-                  <label className="font-headline block px-1 text-sm font-extrabold text-primary">
-                    By Institution
-                  </label>
-                  <div className="relative max-w-xs" ref={dropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setInstitutionOpen((o) => !o)}
-                      className="flex w-full cursor-pointer items-center justify-between rounded-full border-2 border-primary bg-surface-container-lowest px-6 py-2.5 font-headline text-sm font-bold text-primary shadow-sm transition-all"
-                    >
-                      <span>{displayInstitution}</span>
-                      <span
-                        className={`material-symbols-outlined transition-transform ${institutionOpen ? 'rotate-180' : ''}`}
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                  {/* By Institution */}
+                  <div className="space-y-3">
+                    <label className="font-headline block px-1 text-sm font-extrabold text-primary">
+                      By Institution
+                    </label>
+                    <div className="relative w-full">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInstitutionOpen((o) => !o)
+                          setCourseOpen(false)
+                          setMajorOpen(false)
+                        }}
+                        className="flex w-full cursor-pointer items-center justify-between rounded-full border-2 border-primary bg-surface-container-lowest px-6 py-2.5 font-headline text-sm font-bold text-primary shadow-sm transition-all"
                       >
-                        expand_more
-                      </span>
-                    </button>
-                    {institutionOpen && (
-                      <div className="absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-xl">
-                        <div className="py-1">
-                          {INSTITUTIONS.map((name) => (
+                        <span className="truncate">{displayInstitution}</span>
+                        <span
+                          className={`material-symbols-outlined transition-transform ${
+                            institutionOpen ? 'rotate-180' : ''
+                          }`}
+                        >
+                          expand_more
+                        </span>
+                      </button>
+                      {institutionOpen && (
+                        <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-xl">
+                          <div className="py-1">
                             <button
-                              key={name}
                               type="button"
                               onClick={() => {
-                                setSelectedInstitution(name)
+                                setSelectedInstitution(null)
                                 setInstitutionOpen(false)
                               }}
                               className="font-headline block w-full px-6 py-3 text-left text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
                             >
-                              {name}
+                              All Colleges
                             </button>
-                          ))}
+                            {availableInstitutions.map((name) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedInstitution(name)
+                                  setInstitutionOpen(false)
+                                }}
+                                className="font-headline block w-full px-6 py-3 text-left text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                              >
+                                {name}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
+                  </div>
+
+                  {/* By Course */}
+                  <div className="space-y-3">
+                    <label className="font-headline block px-1 text-sm font-extrabold text-primary">
+                      By Course
+                    </label>
+                    <div className="relative w-full">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCourseOpen((o) => !o)
+                          setInstitutionOpen(false)
+                          setMajorOpen(false)
+                        }}
+                        className="flex w-full cursor-pointer items-center justify-between rounded-full border-2 border-primary bg-surface-container-lowest px-6 py-2.5 font-headline text-sm font-bold text-primary shadow-sm transition-all"
+                      >
+                        <span className="truncate">{displayCourse}</span>
+                        <span
+                          className={`material-symbols-outlined transition-transform ${
+                            courseOpen ? 'rotate-180' : ''
+                          }`}
+                        >
+                          expand_more
+                        </span>
+                      </button>
+                      {courseOpen && (
+                        <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-xl">
+                          <div className="py-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedCourse(null)
+                                setCourseOpen(false)
+                              }}
+                              className="font-headline block w-full px-6 py-3 text-left text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                            >
+                              All Courses
+                            </button>
+                            {availableCourses.map((course) => (
+                              <button
+                                key={course}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCourse(course)
+                                  setCourseOpen(false)
+                                }}
+                                className="font-headline block w-full px-6 py-3 text-left text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                              >
+                                {course}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* By Branch/Major */}
+                  <div className="space-y-3">
+                    <label className="font-headline block px-1 text-sm font-extrabold text-primary">
+                      By Branch
+                    </label>
+                    <div className="relative w-full">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMajorOpen((o) => !o)
+                          setInstitutionOpen(false)
+                          setCourseOpen(false)
+                        }}
+                        className="flex w-full cursor-pointer items-center justify-between rounded-full border-2 border-primary bg-surface-container-lowest px-6 py-2.5 font-headline text-sm font-bold text-primary shadow-sm transition-all"
+                      >
+                        <span className="truncate">{displayMajor}</span>
+                        <span
+                          className={`material-symbols-outlined transition-transform ${
+                            majorOpen ? 'rotate-180' : ''
+                          }`}
+                        >
+                          expand_more
+                        </span>
+                      </button>
+                      {majorOpen && (
+                        <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-xl">
+                          <div className="py-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedMajor(null)
+                                setMajorOpen(false)
+                              }}
+                              className="font-headline block w-full px-6 py-3 text-left text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                            >
+                              All Branches
+                            </button>
+                            {availableMajors.map((major) => (
+                              <button
+                                key={major}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedMajor(major)
+                                  setMajorOpen(false)
+                                }}
+                                className="font-headline block w-full px-6 py-3 text-left text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                              >
+                                {major}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -585,6 +798,8 @@ export default function ExploreTours() {
                   onClick={() => {
                     setSelectedInstitution(null)
                     setSelectedCity('All Cities')
+                    setSelectedCourse(null)
+                    setSelectedMajor(null)
                   }}
                   className="font-headline flex items-center gap-2 rounded-full border-2 border-outline px-6 py-2.5 text-sm font-bold text-outline transition-all hover:border-primary hover:bg-surface-variant hover:text-primary whitespace-nowrap"
                 >
