@@ -162,6 +162,96 @@ function StorySection({ story, theme }) {
   )
 }
 
+// 3.5. CoursesSection Component
+function CoursesSection({ courses, theme }) {
+  if (!courses || courses.length === 0) return null
+
+  const primaryTextColor = theme?.primaryColor ? { color: theme.primaryColor } : {}
+  const [openCourseIndex, setOpenCourseIndex] = useState(null)
+
+  function toggleCourse(index) {
+    setOpenCourseIndex(openCourseIndex === index ? null : index)
+  }
+
+  return (
+    <section className="space-y-6">
+      <h2
+        className="font-headline mb-4 text-2xl font-extrabold tracking-tight text-primary"
+        style={primaryTextColor}
+      >
+        Courses & Programs Offered
+      </h2>
+      <div className="space-y-4">
+        {courses.map((course, index) => {
+          const isOpen = openCourseIndex === index
+          return (
+            <div
+              key={course.name}
+              className="group rounded-2xl border border-outline-variant bg-surface-container-low transition-all duration-300 hover:border-primary/40 hover:shadow-sm"
+              style={isOpen ? { borderColor: theme?.primaryColor || 'inherit' } : {}}
+            >
+              <button
+                type="button"
+                onClick={() => toggleCourse(index)}
+                className="flex w-full items-center justify-between px-6 py-5 text-left font-headline text-lg font-bold text-primary"
+                style={primaryTextColor}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-secondary">school</span>
+                  <span>{course.name}</span>
+                </div>
+                <span
+                  className={`material-symbols-outlined transition-transform duration-300 ${
+                    isOpen ? 'rotate-180' : ''
+                  }`}
+                  style={primaryTextColor}
+                >
+                  expand_more
+                </span>
+              </button>
+
+              {isOpen && (
+                <div className="border-t border-outline-variant/60 px-6 py-5 bg-white/40 rounded-b-2xl animate-fade-in">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-outline-variant text-xs uppercase tracking-wider text-secondary">
+                          <th className="pb-3 font-bold">Branch / Specialization</th>
+                          <th className="pb-3 text-right font-bold">Available Seats</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-outline-variant/40">
+                        {course.branches && course.branches.length > 0 ? (
+                          course.branches.map((branch) => (
+                            <tr key={branch.name} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                              <td className="py-3 font-semibold text-primary">{branch.name}</td>
+                              <td className="py-3 text-right font-bold text-secondary">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 text-xs font-bold text-on-secondary-container">
+                                  {branch.seats} Seats
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="2" className="py-4 text-center text-secondary">
+                              No specializations listed.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 // 4. GuideSection Component
 function GuideSection({ guide, theme }) {
   if (!guide) return null
@@ -521,6 +611,25 @@ const defaultDetails = {
         'Yes, free cancellation is available up to 48 hours before the tour start time.',
     },
   ],
+  courses: [
+    {
+      name: 'B.Tech',
+      branches: [
+        { name: 'Computer Science & Engineering', seats: 60 },
+        { name: 'Information Technology', seats: 45 },
+        { name: 'Electronics & Communication Engineering', seats: 30 },
+        { name: 'Mechanical Engineering', seats: 30 },
+      ],
+    },
+    {
+      name: 'MBA',
+      branches: [
+        { name: 'Finance', seats: 20 },
+        { name: 'Marketing', seats: 25 },
+        { name: 'Human Resource Management', seats: 15 },
+      ],
+    },
+  ],
 }
 
 // Main Page Controller
@@ -602,6 +711,7 @@ export default function College() {
   const faq = details.faq || defaultDetails.faq
   const badges = details.badges || defaultDetails.badges
   const pricing = details.pricing || null
+  const courses = details.courses || defaultDetails.courses || []
 
   // Dynamic Theme Styling Object
   const primaryTextColor = theme.primaryColor ? { color: theme.primaryColor } : {}
@@ -672,6 +782,7 @@ export default function College() {
           <div className="space-y-16 lg:col-span-8">
             <HighlightsSection highlights={highlights} theme={theme} />
             <StorySection story={story} theme={theme} />
+            <CoursesSection courses={courses} theme={theme} />
             <GuideSection guide={guide} theme={theme} />
             <GallerySection gallery={gallery} theme={theme} />
             <FAQSection faq={faq} theme={theme} />
