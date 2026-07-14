@@ -380,81 +380,68 @@ export default function ExploreTours() {
         if (matchedCity) setSelectedCity(matchedCity)
       }
 
-      let baseQuery = supabase
-        .from('tours')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-
-      baseQuery = applySearchFilterToQuery(baseQuery, term)
-
-      const from = 0
-      const to = PAGE_SIZE - 1
-      const { data, error, count } = await baseQuery.range(from, to)
-
-      if (cancelled) return
-
-      if (error) {
-        setEmptyDbSearch(false)
-        setRecommendedTours([])
-        setFetchMode('static')
-        const full = filterStaticTours(term)
-        setTotalMatchingCount(full.length)
-        setTourCards(full.slice(0, PAGE_SIZE))
-        autoSelectFilters(term, full)
-        setToursLoading(false)
-        return
-      }
-
-      if (Array.isArray(data) && data.length > 0) {
-        setEmptyDbSearch(false)
-        setRecommendedTours([])
-        setFetchMode('supabase')
-        const mapped = data.map(mapTourRow)
-        setTourCards(mapped)
-        autoSelectFilters(term, mapped)
-        const total =
-          typeof count === 'number'
-            ? count
-            : mapped.length < PAGE_SIZE
-              ? mapped.length
-              : Number.POSITIVE_INFINITY
-        setTotalMatchingCount(total)
-        setToursLoading(false)
-        return
+      let sourceList = allToursForFilters
+      if (sourceList.length === 0) {
+        const { data: dbData, error: dbErr } = await supabase
+          .from('tours')
+          .select('*')
+        if (cancelled) return
+        if (dbData && !dbErr) {
+          sourceList = dbData.map(mapTourRow)
+        } else {
+          sourceList = [...TOURS]
+        }
       }
 
       if (term) {
-        const { data: recData, error: recError } = await supabase
-          .from('tours')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(3)
+        const normalized = term.toLowerCase()
+        const words = normalized.split(/\s+/).filter((w) => w.length > 2)
 
-        if (cancelled) return
+        const matched = sourceList.filter((t) => {
+          if (t.school && t.school.toLowerCase().includes(normalized)) return true
+          if (t.title && t.title.toLowerCase().includes(normalized)) return true
+          if (t.location && t.location.toLowerCase().includes(normalized)) return true
+          if (t.courses && Array.isArray(t.courses)) {
+            return t.courses.some((c) => {
+              if (c.name && c.name.toLowerCase().includes(normalized)) return true
+              if (c.branches && Array.isArray(c.branches)) {
+                return c.branches.some((b) => b.name && b.name.toLowerCase().includes(normalized))
+              }
+              return false
+            })
+          }
+          if (t.course && t.course.toLowerCase().includes(normalized)) return true
+          if (t.major && t.major.toLowerCase().includes(normalized)) return true
+          return false
+        })
 
-        let recCards
-        if (!recError && Array.isArray(recData) && recData.length > 0) {
-          recCards = recData.map(mapTourRow)
+        if (matched.length > 0) {
+          setEmptyDbSearch(false)
+          setRecommendedTours([])
+          setFetchMode('supabase')
+          setTourCards(matched)
+          autoSelectFilters(term, matched)
+          setTotalMatchingCount(matched.length)
+          setToursLoading(false)
+          return
         } else {
-          recCards = filterStaticTours('').slice(0, 3)
+          const recCards = sourceList.slice(0, 3)
+          setTourCards([])
+          setRecommendedTours(recCards)
+          setEmptyDbSearch(true)
+          setTotalMatchingCount(0)
+          setSupabaseListExhausted(true)
+          setFetchMode('supabase')
+          setToursLoading(false)
+          return
         }
-
-        setTourCards([])
-        setRecommendedTours(recCards)
-        setEmptyDbSearch(true)
-        setTotalMatchingCount(0)
-        setSupabaseListExhausted(true)
-        setFetchMode('supabase')
-        setToursLoading(false)
-        return
       }
 
       setEmptyDbSearch(false)
       setRecommendedTours([])
-      setFetchMode('static')
-      const full = filterStaticTours('')
-      setTotalMatchingCount(full.length)
-      setTourCards(full.slice(0, PAGE_SIZE))
+      setFetchMode('supabase')
+      setTourCards(sourceList)
+      setTotalMatchingCount(sourceList.length)
       setToursLoading(false)
     }
 
