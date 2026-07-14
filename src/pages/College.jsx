@@ -223,7 +223,7 @@ function GallerySection({ gallery, theme }) {
   if (!gallery || gallery.length === 0) return null
 
   const scrollRef = useRef(null)
-  const [activeImage, setActiveImage] = useState(null)
+  const [activeIndex, setActiveIndex] = useState(null)
   const primaryText = theme?.primaryColor ? { color: theme.primaryColor } : {}
 
   const scroll = (direction) => {
@@ -236,6 +236,26 @@ function GallerySection({ gallery, theme }) {
       scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' })
     }
   }
+
+  // Keyboard navigation for Lightbox
+  useEffect(() => {
+    if (activeIndex === null) return
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        setActiveIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1))
+      } else if (e.key === 'ArrowRight') {
+        setActiveIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1))
+      } else if (e.key === 'Escape') {
+        setActiveIndex(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeIndex, gallery])
+
+  const activeImage = activeIndex !== null ? gallery[activeIndex] : null
 
   return (
     <section className="relative">
@@ -276,7 +296,7 @@ function GallerySection({ gallery, theme }) {
         {gallery.map((item, index) => (
           <div
             key={index}
-            onClick={() => setActiveImage(item)}
+            onClick={() => setActiveIndex(index)}
             className="group relative min-w-[280px] sm:min-w-[400px] md:min-w-[480px] aspect-[16/10] overflow-hidden rounded-2xl bg-surface-container-low snap-start shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
           >
             <img
@@ -304,15 +324,40 @@ function GallerySection({ gallery, theme }) {
       {activeImage && (
         <div
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 p-4 backdrop-blur-sm cursor-zoom-out animate-fade-in"
-          onClick={() => setActiveImage(null)}
+          onClick={() => setActiveIndex(null)}
         >
           <button
-            onClick={() => setActiveImage(null)}
-            className="absolute top-6 right-6 text-white hover:text-slate-300 transition-colors flex items-center justify-center p-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95"
+            onClick={() => setActiveIndex(null)}
+            className="absolute top-6 right-6 text-white hover:text-slate-300 transition-colors flex items-center justify-center p-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 z-50"
             aria-label="Close fullscreen view"
           >
             <span className="material-symbols-outlined text-3xl">close</span>
           </button>
+
+          {gallery.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1))
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/25 p-3 rounded-full transition-colors active:scale-95 z-50 flex items-center justify-center"
+                aria-label="Previous image"
+              >
+                <span className="material-symbols-outlined text-3xl">chevron_left</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1))
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/25 p-3 rounded-full transition-colors active:scale-95 z-50 flex items-center justify-center"
+                aria-label="Next image"
+              >
+                <span className="material-symbols-outlined text-3xl">chevron_right</span>
+              </button>
+            </>
+          )}
 
           <img
             alt={activeImage.caption || 'Campus view fullscreen'}
