@@ -224,23 +224,23 @@ export default function Home() {
 
       <main className="pt-24">
         <section className="relative overflow-hidden bg-surface-container-low px-8 py-20 lg:py-32">
-          <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-12">
+          <div className="mx-auto grid max-w-screen-2xl items-center gap-16 lg:grid-cols-12">
             <div className="z-10 lg:col-span-7">
-              <h1 className="mb-6 text-3xl sm:text-5xl font-extrabold leading-[1.1] tracking-tight text-primary lg:text-7xl">
+              <h1 className="mb-6 text-4xl sm:text-6xl font-black leading-[1.05] tracking-tight text-primary lg:text-[4.5rem] xl:text-[5.5rem]">
                 Find Your Future <br />
                 <span className="text-tertiary">University</span>
               </h1>
-              <p className="mb-10 max-w-2xl text-base sm:text-lg leading-relaxed text-secondary lg:text-xl">
+              <p className="mb-12 max-w-3xl text-lg sm:text-xl leading-relaxed text-secondary lg:text-2xl">
                 Curated campus experiences led by top-tier student ambassadors.
                 Don&apos;t just visit—immerse yourself in the academic legacy.
               </p>
-              <div className="relative max-w-3xl">
-                <div className="ghost-shadow group flex items-center rounded-full p-1 sm:p-1.5 ring-primary/20 transition-all focus-within:ring-1">
-                  <span className="material-symbols-outlined pl-3 sm:pl-6 text-secondary">
+              <div className="relative max-w-4xl">
+                <div className="ghost-shadow group flex items-center rounded-full p-1.5 sm:p-2 ring-primary/20 transition-all focus-within:ring-1 bg-white">
+                  <span className="material-symbols-outlined pl-3 sm:pl-6 text-secondary text-xl sm:text-2xl">
                     search
                   </span>
                   <input
-                    className="font-body w-full border-none bg-transparent py-2.5 sm:py-4 text-sm sm:text-base text-on-surface placeholder:text-outline-variant focus:border-transparent focus:outline-none focus:ring-0"
+                    className="font-body w-full border-none bg-transparent py-3 sm:py-5 text-base sm:text-lg lg:text-xl text-on-surface placeholder:text-outline-variant focus:border-transparent focus:outline-none focus:ring-0"
                     placeholder="Search by University, City, or Major..."
                     type="text"
                     value={heroSearch}
@@ -249,7 +249,7 @@ export default function Home() {
                     aria-label="Search universities, cities, or majors"
                   />
                   <button
-                    className="rounded-full bg-primary px-5 py-2.5 sm:px-10 sm:py-4 text-sm sm:text-base font-semibold text-on-primary transition-colors hover:bg-primary-container whitespace-nowrap"
+                    className="rounded-full bg-primary px-6 py-3 sm:px-12 sm:py-5 text-base sm:text-lg font-semibold text-on-primary transition-colors hover:bg-primary-container whitespace-nowrap"
                     type="button"
                     onClick={runHeroSearch}
                   >
@@ -262,7 +262,7 @@ export default function Home() {
               <div className="ghost-shadow relative z-10 -rotate-2 transform overflow-hidden rounded-xl">
                 <img
                   alt="Stately red brick university campus building with clock tower"
-                  className="h-[500px] w-full object-cover"
+                  className="h-[620px] w-full object-cover"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV5-UmBceAZWTUMwBXAlffid7KmcIlnwYaFoOsIIccWW6YwwKv5mYBdqTudsNpqIGcSdvfNWw1e5dAJAEYbbiKFzKjhDn7Ptk2UdxuAGFeruarW3-9uyX18qpEO-4ifP-3kP_LlxdHg5vdhO0mDd04Nrz4da43nmPnyWL77faR1RdZLp4Xz41kl6XiAHFLFPcsKFXa4Znxm3FQEbh7-vhlf-iNDpYvvqM9bZuzS0Opd1KQJ90fVxHt6DKtwN0Autjfp_HfDhvGYCRd"
                 />
               </div>
@@ -287,7 +287,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 sm:px-8 py-16 md:py-24">
+        <section className="mx-auto max-w-screen-2xl px-4 sm:px-8 py-16 md:py-24">
           <div className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between items-start gap-6">
             <div>
               <div className="flex flex-col items-start gap-3 sm:gap-4">
@@ -344,7 +344,7 @@ export default function Home() {
         </section>
 
         <section className="bg-primary px-8 py-24 text-on-primary">
-          <div className="mx-auto flex max-w-7xl flex-col items-center gap-16 lg:flex-row">
+          <div className="mx-auto flex max-w-screen-2xl flex-col items-center gap-16 lg:flex-row">
             <div className="flex-1">
               <h2 className="mb-6 text-4xl font-extrabold lg:text-5xl">
                 Learn from those who live it.
@@ -402,7 +402,7 @@ export default function Home() {
       </main>
 
       <footer className="w-full border-t border-slate-200/90 bg-[#F8FAFF]">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-12 py-10 md:flex-row">
+        <div className="mx-auto flex max-w-screen-2xl flex-col items-center justify-between gap-6 px-12 py-10 md:flex-row">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <Link
               to="/"
