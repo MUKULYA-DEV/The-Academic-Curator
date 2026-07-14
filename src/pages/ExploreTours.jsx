@@ -10,24 +10,13 @@ const INSTITUTIONS = [
   'UC Berkeley',
 ]
 
-const CITY_FILTERS = [
-  'All Cities',
-  'Meerut',
-  'Dehradun',
-  'Greater Noida',
-  'Jaipur',
-  'Indore',
-  'Bhopal',
-  'Delhi',
-  'Ghaziabad',
-]
-
 const TOURS = [
   {
     id: '1',
     school: 'Harvard University',
     title: 'Historic Yard Walk & Library Access',
     location: 'Cambridge, MA',
+    city: 'Cambridge',
     dateLine: 'Oct 24, 2024 • 10:00 AM',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuBSZcVLZN6b_hAYTROpuBEgADA9Nq1OB9viFLOb2jsYp3c0qkfu3drxWDdrQKuB6a1Ww3r2E0QtKOkNd10NKZlBH5-22NOLKxTK8Nijq8nF2I1_u24fn7dqGAKxOd4dz7t-uS8hK-ZSwW2iOSPE21CosOhAxq3KNGmQbJ2RCkQd4taqlv6VrWMIxYWzICLjKyCP4hgx6YrwozeT6kCenAQlcI3QbmCxgEr_e7PZI4qMEfpBhKf2Qt3DIIOSQ0IYDoTwFA0SYhMEVj9v',
@@ -43,6 +32,7 @@ const TOURS = [
     school: 'Stanford University',
     title: 'Tech Innovation Path: Engineering Hub',
     location: 'Stanford, CA',
+    city: 'Stanford',
     dateLine: 'Oct 26, 2024 • 2:30 PM',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuDdkxzuYbabAdYMtbx8uYqlw02ArEWTLSO-QsLO_zbzVwvHZqTtSIIiz-g8onZypX7H2qZjIL4RmqbnycVgFWsUKqDAboTbF1uv7x6nhOiQzhypNRnJ8iT4uTMp60yD3iEXF_ekiCtreyGmFDK4fFBrVM79_FYE9z5kjaPOuNSBPR0_ipfL_95_9NJ3P3sLwCmvisEoPpHCeZ8vH9UCQi8UIkRO5vg2dHivVtZFkeQKGNtYgA041F-ou_YncTysrv-WnI0mo9sI-EyU',
@@ -58,6 +48,7 @@ const TOURS = [
     school: 'Princeton University',
     title: 'Ivy Gothic: Architecture & Arts Tour',
     location: 'Princeton, NJ',
+    city: 'Princeton',
     dateLine: 'Nov 02, 2024 • 11:00 AM',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuBK6x8sbhDVSD7He5hXlI73tLQbKm0vnx0s94_Z5X2a0gczJbs4MkulOuryw6cNhaPnYXU1SWupjClh9POzK-ZAKZrVHiIrMN28UudVWY-7mkyxIUuccgL_gozubMca0maTTbNl1qvN79R7wq8RaDsdlaoMRUX1ITdfDYkSo47DxrttCi5rWeY7a38e5998yY9I5YZseFSiPte1HExr6GJv96JZvi_u_-h4X8UDvCCwvCT7Wfmk1N9s8Ng_xb4vAhLnDFxZ5Mmmg36U',
@@ -73,6 +64,7 @@ const TOURS = [
     school: 'UC Berkeley',
     title: 'The Activist Spirit: Campus Roots',
     location: 'Berkeley, CA',
+    city: 'Berkeley',
     dateLine: 'Nov 05, 2024 • 1:00 PM',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuCtfg0JuLEbIaYFTRTwFask08s9w3sNZQol0FWYFzuUXCjWJWpOAKr8CE8FOAGTzsX_FdOJbpDztRvuyM67PBdPAME8XLaIyjTfmHzLg6_wXSUKkZtucAsPAlSaYu4TpboheKLvnv1pfuT6hx3Z6xGNlgOzetjPlUwxMoUofyk29rr2Xi1G-a0U3dXp9o2Vtd6m9Tp-fTdh6qKSRuBjTHpA5FYbLnoz3PwxmhnV2ZOEYw7k5QPiVwL2aazfiIS7iBE5m8biOPnHu1kw',
@@ -88,6 +80,7 @@ const TOURS = [
     school: 'Columbia University',
     title: 'Morningside Heights: Urban Excellence',
     location: 'New York, NY',
+    city: 'New York',
     dateLine: 'Nov 10, 2024 • 10:30 AM',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuCHNcmuHPQEnHR2K9kjxsxfRc5f1Ct1a8wtQM_bPU8PyiZDbZ-gbARSYunwV_MxWchI3Ttwvt1foLq9r-OGw1MENgJZPbcQPLyAiDbA8E8xFeibi17pU5p4NYK5EN1gDDitJQSf1ATx2FVmaXeZLOvht1qPyjez7xwCr8Yj4P81VXfPS87XXPdAgLz3LDZdcOviinKMlPEAEiAkB69oHqv_u5w6TlqcJNQ7PH5Dqt1Gfgmk5rTDUKBmgQpFswMdqgbi6V_Cwb5-uH4l',
@@ -103,6 +96,7 @@ const TOURS = [
     school: 'Univ. of Washington',
     title: 'Pacific Northwest: Research & Nature',
     location: 'Seattle, WA',
+    city: 'Seattle',
     dateLine: 'Nov 12, 2024 • 9:00 AM',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuC5MSBeXVczwSZzaMEU7V0BIeqcoRQoqHLpz6qDlZci3KgLpMdbx_PlcjwBdFcFnfhYLUdSxNLOeuKQRmD-Glz6Lt_vFegbPksK1uBgJRSI-kigijr9nAHQr2H7oPor5XgS_2L7neqLEEDkFrReuW1Vg1sQtcegybuHQn-myh_GJzfHT6ZWe5ZVmr5ztmtpQFkRQKXx3G4d_5fQ_LoVjPRvmq9Di4dHDhoUfAaMJ5jCs2gYlJf1Rx6DhanZaPxyezBE_9LVPgK3qrm4',
@@ -197,6 +191,7 @@ function mapTourRow(row) {
     school: row.university_name ?? 'University',
     title: row.title ?? 'Campus Tour',
     location: loc && loc.length > 0 ? loc : city && city.length > 0 ? city : '—',
+    city: city && city.length > 0 ? city : null,
     dateLine: row.date_line ?? 'Schedule TBD',
     image: row.image_url && row.image_url.trim() !== '' ? row.image_url : DEFAULT_TOUR_IMAGE,
     alt: row.university_name ?? 'Campus tour',
@@ -432,6 +427,21 @@ export default function ExploreTours() {
     return Array.from(set).sort()
   }, [tourCards])
 
+  const availableCities = useMemo(() => {
+    const set = new Set()
+    tourCards.forEach((t) => {
+      if (t.city) {
+        set.add(t.city)
+      } else if (t.location && t.location.includes(',')) {
+        const parts = t.location.split(',')
+        if (parts[0]) set.add(parts[0].trim())
+      } else if (t.location && t.location !== '—') {
+        set.add(t.location.trim())
+      }
+    })
+    return ['All Cities', ...Array.from(set).sort()]
+  }, [tourCards])
+
   const availableCourses = useMemo(() => {
     const set = new Set()
     tourCards.forEach((t) => {
@@ -484,7 +494,7 @@ export default function ExploreTours() {
       list = list.filter((t) => t.school === selectedInstitution)
     }
     if (selectedCity !== 'All Cities') {
-      list = list.filter((t) => t.location.includes(selectedCity))
+      list = list.filter((t) => t.city === selectedCity || t.location.includes(selectedCity))
     }
     if (selectedCourse) {
       list = list.filter((t) => t.course === selectedCourse)
@@ -771,7 +781,7 @@ export default function ExploreTours() {
                     Select City
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {CITY_FILTERS.map((city) => {
+                    {availableCities.map((city) => {
                       const active = selectedCity === city
                       return (
                         <button
