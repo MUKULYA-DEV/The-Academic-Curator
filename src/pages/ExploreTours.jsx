@@ -262,6 +262,41 @@ export default function ExploreTours() {
 
       const term = searchFromUrl.trim()
 
+      // Reset active filters first when performing a new search
+      setSelectedInstitution(null)
+      setSelectedCourse(null)
+      setSelectedMajor(null)
+      setSelectedCity('All Cities')
+
+      function autoSelectFilters(termText, cards) {
+        if (!termText) return
+
+        const normalized = termText.trim().toLowerCase()
+        const words = normalized.split(/\s+/).filter((w) => w.length > 2)
+
+        const uniqueInstitutions = Array.from(new Set(cards.map((c) => c.school).filter(Boolean)))
+        const uniqueCourses = Array.from(new Set(cards.map((c) => c.course).filter(Boolean)))
+        const uniqueMajors = Array.from(new Set(cards.map((c) => c.major).filter(Boolean)))
+        const uniqueCities = Array.from(new Set(cards.map((c) => c.city).filter(Boolean)))
+
+        const matchesTermOrWords = (val) => {
+          if (!val) return false
+          const lowerVal = val.toLowerCase()
+          if (lowerVal.includes(normalized) || normalized.includes(lowerVal)) return true
+          return words.some((word) => lowerVal.includes(word))
+        }
+
+        const matchedInst = uniqueInstitutions.find(matchesTermOrWords)
+        const matchedCourse = uniqueCourses.find(matchesTermOrWords)
+        const matchedMajor = uniqueMajors.find(matchesTermOrWords)
+        const matchedCity = uniqueCities.find(matchesTermOrWords)
+
+        if (matchedInst) setSelectedInstitution(matchedInst)
+        if (matchedCourse) setSelectedCourse(matchedCourse)
+        if (matchedMajor) setSelectedMajor(matchedMajor)
+        if (matchedCity) setSelectedCity(matchedCity)
+      }
+
       let baseQuery = supabase
         .from('tours')
         .select('*', { count: 'exact' })
@@ -282,6 +317,7 @@ export default function ExploreTours() {
         const full = filterStaticTours(term)
         setTotalMatchingCount(full.length)
         setTourCards(full.slice(0, PAGE_SIZE))
+        autoSelectFilters(term, full)
         setToursLoading(false)
         return
       }
@@ -292,6 +328,7 @@ export default function ExploreTours() {
         setFetchMode('supabase')
         const mapped = data.map(mapTourRow)
         setTourCards(mapped)
+        autoSelectFilters(term, mapped)
         const total =
           typeof count === 'number'
             ? count
