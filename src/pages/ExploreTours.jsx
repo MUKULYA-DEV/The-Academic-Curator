@@ -246,10 +246,59 @@ export default function ExploreTours() {
   const [courseOpen, setCourseOpen] = useState(false)
   const [majorOpen, setMajorOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const [allToursForFilters, setAllToursForFilters] = useState([])
 
   useEffect(() => {
     setSearchInput(searchFromUrl)
   }, [searchFromUrl])
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadAllToursForFilters() {
+      const { data, error } = await supabase
+        .from('tours')
+        .select('*')
+      if (cancelled) return
+      if (data && !error) {
+        setAllToursForFilters(data.map(mapTourRow))
+      } else {
+        setAllToursForFilters([...TOURS])
+      }
+    }
+    loadAllToursForFilters()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (searchFromUrl && allToursForFilters.length > 0) {
+      const normalized = searchFromUrl.trim().toLowerCase()
+      const words = normalized.split(/\s+/).filter((w) => w.length > 2)
+
+      const uniqueInstitutions = Array.from(new Set(allToursForFilters.map((c) => c.school).filter(Boolean)))
+      const uniqueCourses = Array.from(new Set(allToursForFilters.map((c) => c.course).filter(Boolean)))
+      const uniqueMajors = Array.from(new Set(allToursForFilters.map((c) => c.major).filter(Boolean)))
+      const uniqueCities = Array.from(new Set(allToursForFilters.map((c) => c.city).filter(Boolean)))
+
+      const matchesTermOrWords = (val) => {
+        if (!val) return false
+        const lowerVal = val.toLowerCase()
+        if (lowerVal.includes(normalized) || normalized.includes(lowerVal)) return true
+        return words.some((word) => lowerVal.includes(word))
+      }
+
+      const matchedInst = uniqueInstitutions.find(matchesTermOrWords)
+      const matchedCourse = uniqueCourses.find(matchesTermOrWords)
+      const matchedMajor = uniqueMajors.find(matchesTermOrWords)
+      const matchedCity = uniqueCities.find(matchesTermOrWords)
+
+      if (matchedInst) setSelectedInstitution(matchedInst)
+      if (matchedCourse) setSelectedCourse(matchedCourse)
+      if (matchedMajor) setSelectedMajor(matchedMajor)
+      if (matchedCity) setSelectedCity(matchedCity)
+    }
+  }, [allToursForFilters, searchFromUrl])
 
   useEffect(() => {
     let cancelled = false
@@ -455,18 +504,18 @@ export default function ExploreTours() {
     setSearchParams({})
   }
 
-  // Dynamic available options calculated from loaded tours to prevent empty combinations
+  // Dynamic available options calculated from ALL loaded tours to ensure full selectability
   const availableInstitutions = useMemo(() => {
     const set = new Set()
-    tourCards.forEach((t) => {
+    allToursForFilters.forEach((t) => {
       if (t.school) set.add(t.school)
     })
     return Array.from(set).sort()
-  }, [tourCards])
+  }, [allToursForFilters])
 
   const availableCities = useMemo(() => {
     const set = new Set()
-    tourCards.forEach((t) => {
+    allToursForFilters.forEach((t) => {
       if (t.city) {
         set.add(t.city)
       } else if (t.location && t.location.includes(',')) {
@@ -477,31 +526,31 @@ export default function ExploreTours() {
       }
     })
     return ['All Cities', ...Array.from(set).sort()]
-  }, [tourCards])
+  }, [allToursForFilters])
 
   const availableCourses = useMemo(() => {
     const set = new Set()
-    tourCards.forEach((t) => {
+    allToursForFilters.forEach((t) => {
       if (selectedInstitution && t.school !== selectedInstitution) return
       if (t.course) set.add(t.course)
     })
     return Array.from(set).sort()
-  }, [tourCards, selectedInstitution])
+  }, [allToursForFilters, selectedInstitution])
 
   const availableMajors = useMemo(() => {
     const set = new Set()
-    tourCards.forEach((t) => {
+    allToursForFilters.forEach((t) => {
       if (selectedInstitution && t.school !== selectedInstitution) return
       if (selectedCourse && t.course !== selectedCourse) return
       if (t.major) set.add(t.major)
     })
     return Array.from(set).sort()
-  }, [tourCards, selectedInstitution, selectedCourse])
+  }, [allToursForFilters, selectedInstitution, selectedCourse])
 
   // Automatically reset invalid filter selections when parent filters change
   useEffect(() => {
     if (selectedInstitution) {
-      const courseValid = tourCards.some(
+      const courseValid = allToursForFilters.some(
         (t) => t.school === selectedInstitution && (!selectedCourse || t.course === selectedCourse)
       )
       if (!courseValid) {
@@ -509,11 +558,11 @@ export default function ExploreTours() {
         setSelectedMajor(null)
       }
     }
-  }, [selectedInstitution, tourCards])
+  }, [selectedInstitution, allToursForFilters])
 
   useEffect(() => {
     if (selectedCourse) {
-      const majorValid = tourCards.some(
+      const majorValid = allToursForFilters.some(
         (t) =>
           (!selectedInstitution || t.school === selectedInstitution) &&
           t.course === selectedCourse &&
@@ -523,7 +572,7 @@ export default function ExploreTours() {
         setSelectedMajor(null)
       }
     }
-  }, [selectedCourse, selectedInstitution, tourCards])
+  }, [selectedCourse, selectedInstitution, allToursForFilters])
 
   const filteredTours = useMemo(() => {
     let list = tourCards
@@ -847,6 +896,8 @@ export default function ExploreTours() {
                     setSelectedCity('All Cities')
                     setSelectedCourse(null)
                     setSelectedMajor(null)
+                    setSearchInput('')
+                    setSearchParams({})
                   }}
                   className="font-headline flex items-center gap-2 rounded-full border-2 border-outline px-6 py-2.5 text-sm font-bold text-outline transition-all hover:border-primary hover:bg-surface-variant hover:text-primary whitespace-nowrap"
                 >
