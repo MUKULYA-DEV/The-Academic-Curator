@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../supabaseClient.js'
@@ -222,31 +222,76 @@ function GuideSection({ guide, theme }) {
 function GallerySection({ gallery, theme }) {
   if (!gallery || gallery.length === 0) return null
 
+  const scrollRef = useRef(null)
   const primaryText = theme?.primaryColor ? { color: theme.primaryColor } : {}
 
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current
+      const scrollTo =
+        direction === 'left'
+          ? scrollLeft - clientWidth * 0.75
+          : scrollLeft + clientWidth * 0.75
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' })
+    }
+  }
+
   return (
-    <section>
-      <h2
-        className="font-headline mb-8 text-2xl font-extrabold tracking-tight text-primary"
-        style={primaryText}
+    <section className="relative">
+      <div className="flex items-center justify-between mb-8">
+        <h2
+          className="font-headline text-2xl font-extrabold tracking-tight text-primary"
+          style={primaryText}
+        >
+          Campus Gallery
+        </h2>
+        {gallery.length > 1 && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => scroll('left')}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low hover:bg-surface-container-high transition-colors text-primary active:scale-95 shadow-sm"
+              aria-label="Previous image"
+              style={primaryText}
+            >
+              <span className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low hover:bg-surface-container-high transition-colors text-primary active:scale-95 shadow-sm"
+              aria-label="Next image"
+              style={primaryText}
+            >
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex gap-6 overflow-x-auto scroll-smooth scrollbar-none snap-x snap-mandatory pb-4"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        Campus Gallery
-      </h2>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {gallery.map((item, index) => (
           <div
             key={index}
-            className="group relative overflow-hidden rounded-xl bg-surface-container-low"
+            className="group relative min-w-[280px] sm:min-w-[400px] md:min-w-[480px] aspect-[16/10] overflow-hidden rounded-2xl bg-surface-container-low snap-start shadow-md hover:shadow-lg transition-shadow duration-300"
           >
             <img
               alt={item.caption || 'Campus view'}
-              className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               src={item.url}
               loading="lazy"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800&auto=format&fit=crop';
+              }}
             />
             {item.caption && (
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <p className="text-sm font-medium">{item.caption}</p>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-6 text-white pt-12">
+                <p className="text-sm md:text-base font-semibold tracking-wide leading-snug drop-shadow-sm">
+                  {item.caption}
+                </p>
               </div>
             )}
           </div>
