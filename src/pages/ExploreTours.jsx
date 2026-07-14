@@ -737,7 +737,7 @@ export default function ExploreTours() {
             <div className="flex grow items-center gap-2 sm:gap-3 pl-3 sm:pl-6 text-outline">
               <span className="material-symbols-outlined text-sm sm:text-base">search</span>
               <input
-                className="font-body w-full border-none bg-transparent text-xs sm:text-sm md:text-base text-on-surface placeholder:text-outline/60 focus:ring-0"
+                className="font-body w-full border-none bg-transparent text-xs sm:text-sm md:text-base text-on-surface placeholder:text-outline/60 focus:ring-0 focus:outline-none outline-none"
                 placeholder="Search universities, locations, or majors..."
                 type="text"
                 value={searchInput}
