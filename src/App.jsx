@@ -4,6 +4,7 @@ import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import ExploreTours from './pages/ExploreTours.jsx'
 import About from './pages/About.jsx'
+import Ambassadors from './pages/Ambassadors.jsx'
 import College from './pages/College.jsx'
 import BookTour from './pages/BookTour.jsx'
 import BookingSuccess from './pages/BookingSuccess.jsx'
@@ -54,6 +55,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <About />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ambassadors"
+        element={
+          <ProtectedRoute>
+            <Ambassadors />
           </ProtectedRoute>
         }
       />

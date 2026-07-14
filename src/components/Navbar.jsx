@@ -49,12 +49,21 @@ export default function Navbar({ active }) {
                 Explore Tours
               </Link>
             )}
-            <a
-              className="text-sm font-semibold text-[#545F72] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Ambassadors
-            </a>
+            {active === 'ambassadors' ? (
+              <Link
+                to="/ambassadors"
+                className="relative text-sm font-bold text-[#002045] after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-[#735C00] after:content-['']"
+              >
+                Ambassadors
+              </Link>
+            ) : (
+              <Link
+                to="/ambassadors"
+                className="text-sm font-semibold text-[#545F72] transition-colors hover:text-[#002045]"
+              >
+                Ambassadors
+              </Link>
+            )}
             {active === 'about' ? (
               <Link
                 to="/about"
