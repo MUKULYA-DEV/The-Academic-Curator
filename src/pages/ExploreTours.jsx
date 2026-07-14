@@ -598,23 +598,41 @@ export default function ExploreTours() {
     if (selectedCity !== 'All Cities') {
       list = list.filter((t) => t.city === selectedCity || t.location.includes(selectedCity))
     }
-    if (selectedCourse) {
+
+    // Compound course + major filtration
+    if (selectedCourse && selectedMajor) {
       list = list.filter((t) => {
+        // 1. If it has dynamic JSON courses
         if (t.courses && Array.isArray(t.courses)) {
-          return t.courses.some((c) => c.name === selectedCourse)
+          const matchedCourse = t.courses.find((c) => c.name === selectedCourse)
+          if (matchedCourse && matchedCourse.branches && Array.isArray(matchedCourse.branches)) {
+            return matchedCourse.branches.some((b) => b.name === selectedMajor)
+          }
+          return false
         }
-        return false
+        // 2. Fallback to main columns
+        return t.course === selectedCourse && t.major === selectedMajor
       })
-    }
-    if (selectedMajor) {
-      list = list.filter((t) => {
-        if (t.courses && Array.isArray(t.courses)) {
-          return t.courses.some(
-            (c) => c.branches && Array.isArray(c.branches) && c.branches.some((b) => b.name === selectedMajor)
-          )
-        }
-        return false
-      })
+    } else {
+      // Independent filtration
+      if (selectedCourse) {
+        list = list.filter((t) => {
+          if (t.courses && Array.isArray(t.courses)) {
+            return t.courses.some((c) => c.name === selectedCourse)
+          }
+          return t.course === selectedCourse
+        })
+      }
+      if (selectedMajor) {
+        list = list.filter((t) => {
+          if (t.courses && Array.isArray(t.courses)) {
+            return t.courses.some(
+              (c) => c.branches && Array.isArray(c.branches) && c.branches.some((b) => b.name === selectedMajor)
+            )
+          }
+          return t.major === selectedMajor
+        })
+      }
     }
     return list
   }, [tourCards, selectedInstitution, selectedCity, selectedCourse, selectedMajor])
