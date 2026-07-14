@@ -246,6 +246,20 @@ function escapeIlikePattern(raw) {
 function mapTourRow(row) {
   const city = row.city?.trim()
   const loc = row.location?.trim()
+  
+  let detailsObj = null
+  if (row.details) {
+    if (typeof row.details === 'string') {
+      try {
+        detailsObj = JSON.parse(row.details)
+      } catch (e) {
+        detailsObj = null
+      }
+    } else if (typeof row.details === 'object') {
+      detailsObj = row.details
+    }
+  }
+
   return {
     id: String(row.id),
     school: row.university_name ?? 'University',
@@ -260,7 +274,7 @@ function mapTourRow(row) {
     cta: row.cta === 'book' ? 'book' : 'view',
     course: row.course ?? null,
     major: row.major ?? null,
-    courses: row.details?.courses ?? null,
+    courses: detailsObj?.courses ?? null,
   }
 }
 
@@ -358,9 +372,28 @@ export default function ExploreTours() {
         const words = normalized.split(/\s+/).filter((w) => w.length > 2)
 
         const uniqueInstitutions = Array.from(new Set(cards.map((c) => c.school).filter(Boolean)))
-        const uniqueCourses = Array.from(new Set(cards.map((c) => c.course).filter(Boolean)))
-        const uniqueMajors = Array.from(new Set(cards.map((c) => c.major).filter(Boolean)))
         const uniqueCities = Array.from(new Set(cards.map((c) => c.city).filter(Boolean)))
+
+        const uniqueCourses = new Set()
+        const uniqueMajors = new Set()
+
+        cards.forEach((c) => {
+          if (c.courses && Array.isArray(c.courses)) {
+            c.courses.forEach((course) => {
+              if (course.name) uniqueCourses.add(course.name)
+              if (course.branches && Array.isArray(course.branches)) {
+                course.branches.forEach((b) => {
+                  if (b.name) uniqueMajors.add(b.name)
+                })
+              }
+            })
+          }
+          if (c.course) uniqueCourses.add(c.course)
+          if (c.major) uniqueMajors.add(c.major)
+        })
+
+        const coursesList = Array.from(uniqueCourses)
+        const majorsList = Array.from(uniqueMajors)
 
         const matchesTermOrWords = (val) => {
           if (!val) return false
@@ -370,8 +403,8 @@ export default function ExploreTours() {
         }
 
         const matchedInst = uniqueInstitutions.find(matchesTermOrWords)
-        const matchedCourse = uniqueCourses.find(matchesTermOrWords)
-        const matchedMajor = uniqueMajors.find(matchesTermOrWords)
+        const matchedCourse = coursesList.find(matchesTermOrWords)
+        const matchedMajor = majorsList.find(matchesTermOrWords)
         const matchedCity = uniqueCities.find(matchesTermOrWords)
 
         if (matchedInst) setSelectedInstitution(matchedInst)
