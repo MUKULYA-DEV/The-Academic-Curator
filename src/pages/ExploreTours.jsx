@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { NavAuthSection } from '../components/NavAuthSection.jsx'
+import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../supabaseClient.js'
 
 const INSTITUTIONS = [
@@ -684,44 +685,9 @@ export default function ExploreTours() {
 
   return (
     <div className="bg-surface font-body text-on-surface">
-      <div className="sticky top-0 z-50 w-full bg-surface/85 backdrop-blur-md">
-        <div className="flex justify-center px-4 pt-4 sm:px-6">
-          <nav className="glass-nav mb-4 flex w-full max-w-4xl items-center justify-between rounded-full border border-white/20 bg-white/80 px-4 py-2.5 shadow-[0px_12px_32px_rgba(24,28,30,0.06)] backdrop-blur-md dark:border-slate-800/20 dark:bg-slate-900/80 sm:px-6 sm:py-3">
-            <Link
-              to="/"
-              className="font-headline text-sm font-extrabold tracking-tighter text-blue-950 dark:text-blue-50 sm:text-xl whitespace-nowrap"
-            >
-              The Academic Curator
-            </Link>
-            <div className="hidden items-center gap-6 md:flex">
-              <Link
-                to="/"
-                className="font-manrope text-sm font-bold tracking-tight text-slate-500 transition-all duration-300 hover:text-blue-800 dark:text-slate-400 dark:hover:text-blue-200"
-              >
-                Home
-              </Link>
-              <span className="font-manrope border-b-2 border-yellow-600 pb-1 text-sm font-bold tracking-tight text-blue-900 dark:text-blue-100">
-                Explore Tours
-              </span>
-              <a
-                className="font-manrope text-sm font-bold tracking-tight text-slate-500 transition-all duration-300 hover:text-blue-800 dark:text-slate-400 dark:hover:text-blue-200"
-                href="#"
-              >
-                Ambassadors
-              </a>
-              <Link
-                to="/about"
-                className="font-manrope text-sm font-bold tracking-tight text-slate-500 transition-all duration-300 hover:text-blue-800 dark:text-slate-400 dark:hover:text-blue-200"
-              >
-                About Us
-              </Link>
-            </div>
-            <NavAuthSection variant="cta" />
-          </nav>
-        </div>
-      </div>
+      <Navbar active="explore" />
 
-      <main className="mx-auto max-w-7xl px-6 pb-20">
+      <main className="mx-auto max-w-7xl px-6 pb-20 pt-12">
         <header className="mb-16 pt-24 text-center">
           <h1 className="font-headline mb-4 text-3xl sm:text-5xl font-extrabold tracking-tight text-primary md:text-6xl">
             Explore Our Campus Tours
@@ -755,7 +721,7 @@ export default function ExploreTours() {
             </button>
           </div>
 
-          <div className="mx-auto max-w-5xl rounded-3xl border border-outline-variant/30 bg-white/50 p-8 backdrop-blur-sm relative z-30">
+          <div className="mx-auto max-w-7xl rounded-3xl border border-outline-variant/30 bg-white/50 p-8 backdrop-blur-sm relative z-30">
             <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end" ref={dropdownRef}>
               <div className="grow space-y-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
