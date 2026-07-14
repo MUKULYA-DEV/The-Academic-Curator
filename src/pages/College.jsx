@@ -640,6 +640,53 @@ export default function College() {
   const [loading, setLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState(null)
 
+  // Floating Query modal states
+  const [isQueryOpen, setIsQueryOpen] = useState(false)
+  const [queryFirstName, setQueryFirstName] = useState('')
+  const [queryLastName, setQueryLastName] = useState('')
+  const [queryEmail, setQueryEmail] = useState('')
+  const [queryPhone, setQueryPhone] = useState('')
+  const [queryMessage, setQueryMessage] = useState('')
+  const [submittingQuery, setSubmittingQuery] = useState(false)
+  const [querySuccess, setQuerySuccess] = useState(false)
+
+  // Load user details for query pre-fill
+  useEffect(() => {
+    async function loadUserDetails() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setQueryEmail(user.email ?? '')
+        setQueryPhone(user.user_metadata?.phone ?? '')
+        
+        const metadata = user.user_metadata || {}
+        const googleName = metadata.name || metadata.full_name || ''
+        const fName = metadata.first_name || (googleName ? googleName.split(' ')[0] : '')
+        const lName = metadata.last_name || (googleName ? googleName.split(' ').slice(1).join(' ') : '')
+        
+        setQueryFirstName(String(fName ?? '').trim())
+        setQueryLastName(String(lName ?? '').trim())
+      }
+    }
+    loadUserDetails()
+  }, [])
+
+  const handleQuerySubmit = async (e) => {
+    e.preventDefault()
+    setSubmittingQuery(true)
+    
+    // Simulate submission latency
+    setTimeout(() => {
+      setSubmittingQuery(false)
+      setQuerySuccess(true)
+      setQueryMessage('')
+      
+      setTimeout(() => {
+        setQuerySuccess(false)
+        setIsQueryOpen(false)
+      }, 2000)
+    }, 800)
+  }
+
   useEffect(() => {
     if (!tourId) {
       setErrorMsg('No Tour ID provided in the URL.')
@@ -886,6 +933,14 @@ export default function College() {
               >
                 Book Tour
               </Link>
+              <button
+                type="button"
+                onClick={() => setIsQueryOpen(true)}
+                className="font-headline block w-full rounded-full border border-primary/25 bg-transparent py-3.5 text-center text-base font-bold text-primary transition-all duration-200 hover:bg-primary/5 active:scale-95"
+                style={{ borderColor: theme.primaryColor, color: theme.primaryColor }}
+              >
+                Ask a Query
+              </button>
               <p className="text-center text-xs font-medium text-secondary">
                 Free cancellation up to 48 hours before.
               </p>
@@ -1022,6 +1077,131 @@ export default function College() {
           </div>
         </div>
       </footer>
+
+      {isQueryOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-[fade-in_0.2s_ease-out]">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-outline-variant/30 bg-white p-8 shadow-[0px_24px_64px_rgba(24,28,30,0.15)] text-slate-800">
+            <button
+              type="button"
+              onClick={() => setIsQueryOpen(false)}
+              className="absolute top-6 right-6 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+              aria-label="Close modal"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+
+            {querySuccess ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
+                  <span className="material-symbols-outlined text-3xl font-bold">check</span>
+                </div>
+                <h3 className="font-headline text-2xl font-bold text-primary mb-2">Query Submitted!</h3>
+                <p className="text-secondary text-sm">
+                  Thank you for reaching out. Our ambassadors will contact you shortly.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleQuerySubmit} className="space-y-6">
+                <div>
+                  <h3 className="font-headline text-2xl font-bold text-primary">Ask a Query</h3>
+                  <p className="text-secondary text-xs mt-1">
+                    Have questions about {tourData.university_name}? Ask our student guides!
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-left">
+                  <div className="space-y-2">
+                    <label className="font-label text-[10px] font-bold tracking-widest text-secondary uppercase" htmlFor="query-first-name">
+                      First Name
+                    </label>
+                    <input
+                      id="query-first-name"
+                      type="text"
+                      required
+                      value={queryFirstName}
+                      onChange={(e) => setQueryFirstName(e.target.value)}
+                      className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label text-[10px] font-bold tracking-widest text-secondary uppercase" htmlFor="query-last-name">
+                      Last Name
+                    </label>
+                    <input
+                      id="query-last-name"
+                      type="text"
+                      required
+                      value={queryLastName}
+                      onChange={(e) => setQueryLastName(e.target.value)}
+                      className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <label className="font-label text-[10px] font-bold tracking-widest text-secondary uppercase" htmlFor="query-email">
+                    Email Address
+                  </label>
+                  <input
+                    id="query-email"
+                    type="email"
+                    required
+                    value={queryEmail}
+                    onChange={(e) => setQueryEmail(e.target.value)}
+                    className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <label className="font-label text-[10px] font-bold tracking-widest text-secondary uppercase" htmlFor="query-phone">
+                    Phone Number
+                  </label>
+                  <input
+                    id="query-phone"
+                    type="tel"
+                    value={queryPhone}
+                    onChange={(e) => setQueryPhone(e.target.value)}
+                    className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <label className="font-label text-[10px] font-bold tracking-widest text-secondary uppercase" htmlFor="query-message">
+                    Your Specific Query
+                  </label>
+                  <textarea
+                    id="query-message"
+                    required
+                    rows={4}
+                    value={queryMessage}
+                    onChange={(e) => setQueryMessage(e.target.value)}
+                    placeholder="Ask about courses, branches, campus life, admissions..."
+                    className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsQueryOpen(false)}
+                    className="flex-1 rounded-full border border-outline-variant bg-transparent py-3 text-center text-sm font-bold text-secondary transition-colors hover:bg-slate-50 active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingQuery}
+                    className="flex-1 rounded-full bg-primary py-3 text-center text-sm font-bold text-on-primary transition-opacity hover:opacity-90 active:scale-95 disabled:opacity-60"
+                    style={{ backgroundColor: theme.primaryColor }}
+                  >
+                    {submittingQuery ? 'Submitting…' : 'Submit Query'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
