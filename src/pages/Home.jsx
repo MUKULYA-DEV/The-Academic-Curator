@@ -278,7 +278,7 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="font-label text-xs uppercase tracking-widest text-secondary">
-                    IVY LEAGUE PARTNER
+                    The Academic Curator
                   </p>
                   <p className="font-bold text-primary">Official Curator</p>
                 </div>
