@@ -476,12 +476,55 @@ export default function College() {
   const gallery = details.gallery || []
   const faq = details.faq || defaultDetails.faq
   const badges = details.badges || defaultDetails.badges
+  const pricing = details.pricing || null
 
   // Dynamic Theme Styling Object
   const primaryTextColor = theme.primaryColor ? { color: theme.primaryColor } : {}
   const primaryBgColor = theme.primaryColor
     ? { backgroundColor: theme.primaryColor }
     : {}
+
+  // Determine dynamic price rendering elements (Default to INR ₹)
+  let originalPriceElement = null
+  let currentPriceElement = null
+
+  if (pricing) {
+    const orig = pricing.originalPrice
+    const disc = pricing.discountedPrice
+    const curSymbol = pricing.currencySymbol || '₹'
+
+    if (orig !== undefined && orig !== null && orig !== disc) {
+      originalPriceElement = (
+        <span className="text-secondary line-through mr-2 text-lg">
+          {curSymbol}{orig}
+        </span>
+      )
+    }
+
+    currentPriceElement = (
+      <span
+        className="font-headline text-3xl font-extrabold text-primary"
+        style={primaryTextColor}
+      >
+        {curSymbol}{disc !== undefined ? disc : '0.00'}
+      </span>
+    )
+  } else {
+    // Fallback to normal database column or hardcoded price
+    const curSymbol = '₹'
+    const basePrice =
+      tourData.price !== undefined && tourData.price !== null
+        ? tourData.price
+        : '149.00'
+    currentPriceElement = (
+      <span
+        className="font-headline text-3xl font-extrabold text-primary"
+        style={primaryTextColor}
+      >
+        {curSymbol}{basePrice}
+      </span>
+    )
+  }
 
   const bookLink = `/book-tour?tourId=${encodeURIComponent(tourData.id)}`
 
@@ -511,17 +554,20 @@ export default function College() {
 
           <aside className="space-y-8 lg:col-span-4">
             <div className="sticky top-28 space-y-6 rounded-xl bg-surface-container-high p-8">
-              <div className="flex items-end justify-between">
+              <div className="flex items-end justify-between flex-wrap gap-2">
                 <div>
                   <span className="font-label mb-1 block text-sm uppercase tracking-wider text-secondary">
                     Price per person
                   </span>
-                  <span
-                    className="font-headline text-3xl font-extrabold text-primary"
-                    style={primaryTextColor}
-                  >
-                    {tourData.price ? `$${tourData.price}` : '$149.00'}
-                  </span>
+                  <div className="flex items-baseline flex-wrap">
+                    {originalPriceElement}
+                    {currentPriceElement}
+                  </div>
+                  {pricing?.discountLabel && (
+                    <span className="block text-xs font-bold text-green-600 mt-1 uppercase tracking-wide">
+                      {pricing.discountLabel}
+                    </span>
+                  )}
                 </div>
                 {tourData.badge && (
                   <span className="font-label flex items-center gap-1 rounded-full bg-tertiary-container px-3 py-1 text-xs font-bold text-on-tertiary-container">
