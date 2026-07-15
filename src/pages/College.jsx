@@ -674,17 +674,64 @@ export default function College() {
     e.preventDefault()
     setSubmittingQuery(true)
     
-    // Simulate submission latency
-    setTimeout(() => {
-      setSubmittingQuery(false)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { error } = await supabase
+        .from('queries')
+        .insert({
+          first_name: queryFirstName.trim(),
+          last_name: queryLastName.trim(),
+          email: queryEmail.trim(),
+          phone: queryPhone.trim(),
+          message: queryMessage.trim(),
+          college_name: tourData?.university_name ?? 'Unknown College',
+          user_id: user?.id || null
+        })
+
+      if (error) {
+        // If the table queries is not created in the database yet
+        if (
+          error.message?.includes('schema cache') || 
+          error.message?.includes('relation "public.queries" does not exist') ||
+          error.code === 'PGRST116' ||
+          error.status === 404
+        ) {
+          console.warn('queries table not found in Supabase. Triggering mailto fallback...')
+          
+          const subject = encodeURIComponent(`Query about ${tourData?.university_name ?? 'Campus Tour'}`)
+          const body = encodeURIComponent(
+            `Name: ${queryFirstName} ${queryLastName}\n` +
+            `Email: ${queryEmail}\n` +
+            `Phone: ${queryPhone || '—'}\n\n` +
+            `Query:\n${queryMessage}`
+          )
+          
+          window.location.href = `mailto:concierge@academiccurator.com?subject=${subject}&body=${body}`
+          
+          setQuerySuccess(true)
+          setQueryMessage('')
+          setTimeout(() => {
+            setQuerySuccess(false)
+            setIsQueryOpen(false)
+          }, 2000)
+          return
+        }
+        
+        throw error
+      }
+
       setQuerySuccess(true)
       setQueryMessage('')
-      
       setTimeout(() => {
         setQuerySuccess(false)
         setIsQueryOpen(false)
       }, 2000)
-    }, 800)
+    } catch (err) {
+      console.error('Error submitting query:', err)
+      alert(`Submission error: ${err.message || err}`)
+    } finally {
+      setSubmittingQuery(false)
+    }
   }
 
   useEffect(() => {
