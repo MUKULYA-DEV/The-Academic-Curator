@@ -645,6 +645,7 @@ export default function College() {
   const [queryFirstName, setQueryFirstName] = useState('')
   const [queryLastName, setQueryLastName] = useState('')
   const [queryEmail, setQueryEmail] = useState('')
+  const [queryCountryCode, setQueryCountryCode] = useState('+91')
   const [queryPhone, setQueryPhone] = useState('')
   const [queryMessage, setQueryMessage] = useState('')
   const [submittingQuery, setSubmittingQuery] = useState(false)
@@ -656,7 +657,20 @@ export default function College() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setQueryEmail(user.email ?? '')
-        setQueryPhone(user.user_metadata?.phone ?? '')
+        
+        const rawPhone = user.user_metadata?.phone ?? ''
+        if (rawPhone.startsWith('+')) {
+          const codes = ['+971', '+33', '+49', '+61', '+44', '+65', '+91', '+1']
+          const matched = codes.find(c => rawPhone.startsWith(c))
+          if (matched) {
+            setQueryCountryCode(matched)
+            setQueryPhone(rawPhone.slice(matched.length).replace(/\D/g, ''))
+          } else {
+            setQueryPhone(rawPhone.replace(/\D/g, ''))
+          }
+        } else {
+          setQueryPhone(rawPhone.replace(/\D/g, ''))
+        }
         
         const metadata = user.user_metadata || {}
         const googleName = metadata.name || metadata.full_name || ''
@@ -673,8 +687,16 @@ export default function College() {
   const handleQuerySubmit = async (e) => {
     e.preventDefault()
     setSubmittingQuery(true)
+
+    // Validate phone number length (excluding country code)
+    if (!queryPhone || queryPhone.length < 8 || queryPhone.length > 15) {
+      alert('Please enter a valid phone number (8 to 15 digits).')
+      setSubmittingQuery(false)
+      return
+    }
     
     try {
+      const fullPhone = `${queryCountryCode} ${queryPhone.trim()}`
       const { data: { user } } = await supabase.auth.getUser()
       const { error } = await supabase
         .from('queries')
@@ -682,7 +704,7 @@ export default function College() {
           first_name: queryFirstName.trim(),
           last_name: queryLastName.trim(),
           email: queryEmail.trim(),
-          phone: queryPhone.trim(),
+          phone: fullPhone,
           message: queryMessage.trim(),
           college_name: tourData?.title ?? tourData?.university_name ?? 'Unknown College',
           user_id: user?.id || null
@@ -702,7 +724,7 @@ export default function College() {
           const body = encodeURIComponent(
             `Name: ${queryFirstName} ${queryLastName}\n` +
             `Email: ${queryEmail}\n` +
-            `Phone: ${queryPhone || '—'}\n\n` +
+            `Phone: ${fullPhone}\n\n` +
             `Query:\n${queryMessage}`
           )
           
@@ -1203,13 +1225,36 @@ export default function College() {
                   <label className="font-label text-[10px] font-bold tracking-widest text-secondary uppercase" htmlFor="query-phone">
                     Phone Number
                   </label>
-                  <input
-                    id="query-phone"
-                    type="tel"
-                    value={queryPhone}
-                    onChange={(e) => setQueryPhone(e.target.value)}
-                    className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
-                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={queryCountryCode}
+                      onChange={(e) => setQueryCountryCode(e.target.value)}
+                      className="bg-surface-container-low text-on-surface rounded-lg border-none px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none shrink-0"
+                    >
+                      <option value="+91">🇮🇳 +91</option>
+                      <option value="+1">🇺🇸/🇨🇦 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+61">🇦🇺 +61</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+33">🇫🇷 +33</option>
+                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+65">🇸🇬 +65</option>
+                    </select>
+                    <input
+                      id="query-phone"
+                      type="tel"
+                      required
+                      placeholder="9876543210"
+                      pattern="[0-9]{8,15}"
+                      title="Please enter a valid phone number (8 to 15 digits)"
+                      value={queryPhone}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '')
+                        setQueryPhone(val)
+                      }}
+                      className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2 text-left">
