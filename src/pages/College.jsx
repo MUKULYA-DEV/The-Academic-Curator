@@ -684,7 +684,7 @@ export default function College() {
           email: queryEmail.trim(),
           phone: queryPhone.trim(),
           message: queryMessage.trim(),
-          college_name: tourData?.university_name ?? 'Unknown College',
+          college_name: tourData?.title ?? tourData?.university_name ?? 'Unknown College',
           user_id: user?.id || null
         })
 
@@ -698,7 +698,7 @@ export default function College() {
         ) {
           console.warn('queries table not found in Supabase. Triggering mailto fallback...')
           
-          const subject = encodeURIComponent(`Query about ${tourData?.university_name ?? 'Campus Tour'}`)
+          const subject = encodeURIComponent(`Query about ${tourData?.title ?? tourData?.university_name ?? 'Campus Tour'}`)
           const body = encodeURIComponent(
             `Name: ${queryFirstName} ${queryLastName}\n` +
             `Email: ${queryEmail}\n` +
