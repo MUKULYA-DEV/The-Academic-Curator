@@ -2,8 +2,24 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 
-/** First letter of the local part of the email, for avatar initials. */
-function emailInitial(email) {
+/** Get initials from first name and last name, fallback to email local part first letter. */
+function getInitials(user) {
+  if (!user) return '?'
+  const metadata = user.user_metadata || {}
+  const googleName = metadata.name || metadata.full_name || ''
+  
+  const fName = (metadata.first_name || (googleName ? googleName.split(' ')[0] : '')).trim()
+  const lName = (metadata.last_name || (googleName ? googleName.split(' ').slice(1).join(' ') : '')).trim()
+
+  if (fName && lName) {
+    return (fName[0] + lName[0]).toUpperCase()
+  } else if (fName) {
+    return fName[0].toUpperCase()
+  } else if (lName) {
+    return lName[0].toUpperCase()
+  }
+
+  const email = user.email
   if (!email || typeof email !== 'string') return '?'
   const local = email.split('@')[0]?.trim() ?? ''
   const ch = local[0] ?? email.trim()[0]
@@ -25,8 +41,7 @@ export function UserAvatarMenu({ className = '' }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const email = session?.user?.email ?? ''
-  const initial = emailInitial(email)
+  const initial = getInitials(session?.user)
 
   return (
     <div className={`relative ${className}`} ref={ref}>
