@@ -31,3 +31,14 @@ SET
   currency = COALESCE(details->'pricing'->>'currency', 'INR'),
   currency_symbol = COALESCE(details->'pricing'->>'currencySymbol', '₹')
 WHERE details IS NOT NULL AND details != '{}'::jsonb;
+
+-- 5. Create Profiles Table for storing user details
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  first_name TEXT,
+  last_name TEXT,
+  email TEXT,
+  phone TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+

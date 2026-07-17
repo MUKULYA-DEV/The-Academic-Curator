@@ -188,9 +188,9 @@ export default function Login() {
       token: otp,
       type: 'email',
     })
-    setAuthLoading(false)
 
     if (error) {
+      setAuthLoading(false)
       if (context === 'signup') {
         setOtpError('Incorrect OTP. Please try again.')
       } else {
@@ -199,6 +199,46 @@ export default function Login() {
       return
     }
 
+    // If verification is for sign up, update Auth user metadata/password and insert into database profiles table
+    if (context === 'signup') {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError || !user) throw new Error(userError?.message || 'Could not retrieve signed in user.')
+
+        const phoneVal = signUpPhoneCountry + signUpPhone
+
+        // 1. Update auth details (password and user_metadata fields)
+        const { error: updateError } = await supabase.auth.updateUser({
+          password: signUpPassword,
+          phone: phoneVal,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            phone: phoneVal
+          }
+        })
+        if (updateError) console.error('Error updating user auth details:', updateError)
+
+        // 2. Insert/Upsert into profiles database table
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            first_name: firstName,
+            last_name: lastName,
+            email: emailAddress,
+            phone: phoneVal,
+            created_at: new Date().toISOString()
+          })
+        if (profileError) {
+          console.error('Error inserting user profile in database:', profileError)
+        }
+      } catch (err) {
+        console.error('Sign-up post-processing error:', err)
+      }
+    }
+
+    setAuthLoading(false)
     navigate('/explore')
   }
 
