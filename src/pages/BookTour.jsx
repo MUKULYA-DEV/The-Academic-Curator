@@ -268,6 +268,7 @@ export default function BookTour() {
       if (editId == null) return
 
       try {
+        setIsLoading(false)
         setIsLoadingEditBooking(true)
         setBookingNotFoundError(false)
         setTourNotFoundError(false)
