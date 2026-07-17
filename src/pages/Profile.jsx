@@ -80,17 +80,44 @@ export default function Profile() {
   async function handleSaveProfile() {
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        alert('You must be logged in to save your profile.')
+        return
+      }
+
+      // 1. Update Auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           phone: phone.trim(),
         },
       })
-      if (error) {
-        alert(error.message)
+      if (authError) {
+        alert(authError.message)
         return
       }
+
+      // 2. Update Database profiles table
+      try {
+        const { error: dbError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            email: user.email,
+            phone: phone.trim(),
+            created_at: new Date().toISOString()
+          })
+        if (dbError) {
+          console.error('Error saving profile in database:', dbError)
+        }
+      } catch (dbErr) {
+        console.error('Database profile saving failed:', dbErr)
+      }
+
       alert('Profile updated successfully!')
     } finally {
       setIsLoading(false)
@@ -165,13 +192,29 @@ export default function Profile() {
       if (cancelled || !user) return
 
       setEmail(user.email ?? '')
-      setPhone(typeof user.user_metadata?.phone === 'string' ? user.user_metadata.phone : '')
+
+      // Try fetching from the profiles database table first
+      let dbProfile = null
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle()
+        if (data) {
+          dbProfile = data
+        }
+      } catch (err) {
+        console.error('Error fetching database profile:', err)
+      }
 
       const metadata = user.user_metadata || {}
 
-      const googleName = metadata.name || metadata.full_name || ''
-      const fName = metadata.first_name || (googleName ? googleName.split(' ')[0] : '')
-      const lName = metadata.last_name || (googleName ? googleName.split(' ').slice(1).join(' ') : '')
+      const phoneVal = dbProfile?.phone || (typeof metadata.phone === 'string' ? metadata.phone : '')
+      setPhone(phoneVal)
+
+      const fName = dbProfile?.first_name || metadata.first_name || (metadata.name || metadata.full_name || '').split(' ')[0] || ''
+      const lName = dbProfile?.last_name || metadata.last_name || (metadata.name || metadata.full_name || '').split(' ').slice(1).join(' ') || ''
 
       setFirstName(String(fName ?? '').trim())
       setLastName(String(lName ?? '').trim())
