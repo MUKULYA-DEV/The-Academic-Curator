@@ -162,7 +162,7 @@ function CompletedBookingCard({ booking, imageSrc, showFeedbackInMenu, hideFoote
       ? String(booking.ambassador_name).trim()
       : '—'
   const displayName = booking.tours
-    ? formatBookingName(booking.tours.university_name || booking.tours.title, booking.course, booking.branch)
+    ? formatBookingName(booking.tours.title || booking.tours.university_name, booking.course, booking.branch)
     : (booking.college_name ?? 'Campus tour')
   const imageToUse = booking.tours?.image_url || imageSrc
 
@@ -250,7 +250,7 @@ function CancelledBookingCard({ booking, imageSrc, hideFooterActions }) {
       ? String(booking.ambassador_name).trim()
       : '—'
   const displayName = booking.tours
-    ? formatBookingName(booking.tours.university_name || booking.tours.title, booking.course, booking.branch)
+    ? formatBookingName(booking.tours.title || booking.tours.university_name, booking.course, booking.branch)
     : (booking.college_name ?? 'Campus tour')
   const imageToUse = booking.tours?.image_url || imageSrc
 
@@ -652,7 +652,7 @@ export default function AllBookings() {
                     const imageSrc = DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]
 
                     const displayName = booking.tours
-                      ? formatBookingName(booking.tours.university_name || booking.tours.title, booking.course, booking.branch)
+                      ? formatBookingName(booking.tours.title || booking.tours.university_name, booking.course, booking.branch)
                       : (booking.college_name ?? 'Campus tour')
                     const imageToUse = booking.tours?.image_url || imageSrc
 

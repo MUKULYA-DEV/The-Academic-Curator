@@ -443,7 +443,7 @@ export default function BookTour() {
       if (cancelled) return
       if (error) {
         // Legacy fallback duplicate check using college_name
-        const legacyName = formatBookingName(tourData.university_name || tourData.title, residencyCourse, selectedBranch)
+        const legacyName = formatBookingName(tourData.title || tourData.university_name, residencyCourse, selectedBranch)
         let legacyQ = supabase
           .from('bookings')
           .select('id')
@@ -529,7 +529,7 @@ export default function BookTour() {
       }
 
       const tour_date = toLocalDateKey(selectedDate)
-      const tourName = formatBookingName(tourData.university_name || tourData.title, residencyCourse, selectedBranch)
+      const tourName = formatBookingName(tourData.title || tourData.university_name, residencyCourse, selectedBranch)
 
       // Store historical pricing snapshots
       const unit_price = pricing.price
@@ -669,7 +669,7 @@ export default function BookTour() {
     )
   }
 
-  const universityTitle = tourData ? (tourData.university_name || tourData.title || 'Campus Tour') : 'Harvard University Residency Tour'
+  const universityTitle = tourData ? (tourData.title || tourData.university_name || 'Campus Tour') : 'Harvard University Residency Tour'
   const formattedSidebarName = formatBookingName(universityTitle, residencyCourse, selectedBranch)
   const locationLabel = tourData ? (tourData.location || tourData.city || 'Cambridge, MA') : 'Cambridge, MA'
   const heroImage = tourData?.image_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCBvAM85cVlgMt_JGereQMJojTE4GAL1vx3aGKQQCT-5O5SLyw51JKkpvdIDFynjvRuKNGbz2MjA3BBFbuQBPgLQFXxDftOaULNrnc7V5mMVMYxat-b6dK7QQkdKSV1aWeeu0vzTL9DsW5-GLueoQQrJ9IMSGFf4RCIczFKIgUXjwjguaE1nIfbsG16jeOMosLjcRqvZM-gdu6v-RGpdjAX1rdGeoHsq4Xet-LXLnac_KEMLio8DQLd7912w-aajHGtD8GkKqe0FHfS'
