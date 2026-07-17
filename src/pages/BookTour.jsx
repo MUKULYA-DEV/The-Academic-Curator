@@ -165,6 +165,13 @@ export default function BookTour() {
 
   const isEditMode = editId != null
 
+  useEffect(() => {
+    document.title = isEditMode
+      ? 'Edit Tour Booking | The Academic Curator'
+      : 'Book Campus Tour | The Academic Curator'
+  }, [isEditMode])
+
+
   // Pricing calculations
   const pricing = useMemo(() => getPricing(tourData), [tourData])
   const estimatedTotal = useMemo(() => {

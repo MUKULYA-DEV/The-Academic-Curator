@@ -176,6 +176,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    document.title = 'The Academic Curator | Book Your Campus Tour'
+  }, [])
+
+  useEffect(() => {
     async function fetchFeaturedTours() {
       try {
         const { data, error } = await supabase

@@ -366,6 +366,10 @@ export default function AllBookings() {
   const [toastMessage, setToastMessage] = useState(null)
 
   useEffect(() => {
+    document.title = 'My Bookings | The Academic Curator'
+  }, [])
+
+  useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab === 'upcoming' || tab === 'completed' || tab === 'cancelled') {
       setActiveTab(tab)

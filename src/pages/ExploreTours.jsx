@@ -313,6 +313,10 @@ export default function ExploreTours() {
   const [fetchMode, setFetchMode] = useState('supabase')
   const [supabaseListExhausted, setSupabaseListExhausted] = useState(false)
   const [emptyDbSearch, setEmptyDbSearch] = useState(false)
+
+  useEffect(() => {
+    document.title = 'Explore Residency Tours | The Academic Curator'
+  }, [])
   const [recommendedTours, setRecommendedTours] = useState([])
   const [institutionOpen, setInstitutionOpen] = useState(false)
   const [selectedInstitution, setSelectedInstitution] = useState(null)
