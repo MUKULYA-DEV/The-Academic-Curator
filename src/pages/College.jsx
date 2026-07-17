@@ -692,6 +692,7 @@ export default function College() {
           phone: fullPhone,
           message: queryMessage.trim(),
           college_name: tourData?.title ?? tourData?.university_name ?? 'Unknown College',
+          tour_id: tourData?.id || null,
           user_id: user?.id || null
         })
 
