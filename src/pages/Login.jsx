@@ -302,6 +302,42 @@ export default function Login() {
     }
 
     if (signUpAuthStep === 'email') {
+      setAuthLoading(true)
+      try {
+        // Query database to see if email is already registered
+        const { data: existingEmail, error: emailErr } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', signUpEmail.trim())
+          .limit(1)
+          .maybeSingle()
+
+        if (existingEmail) {
+          setAuthError('An account with this email address already exists. Please Sign In.')
+          setAuthLoading(false)
+          return
+        }
+
+        // Query database to see if phone is already registered
+        const phoneVal = signUpPhoneCountry + signUpPhone
+        const { data: existingPhone, error: phoneErr } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('phone', phoneVal)
+          .limit(1)
+          .maybeSingle()
+
+        if (existingPhone) {
+          setAuthError('An account with this phone number already exists.')
+          setAuthLoading(false)
+          return
+        }
+      } catch (err) {
+        console.error('Pre-signup lookup error:', err)
+        // Fallback: continue signup if profiles table query fails
+      }
+      setAuthLoading(false)
+
       await handleSendOTP('signup')
       return
     }
