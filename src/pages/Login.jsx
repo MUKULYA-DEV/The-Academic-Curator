@@ -332,22 +332,55 @@ export default function Login() {
           setAuthLoading(false)
           return
         }
+
+        // Perform Supabase email/password signup
+        const { data, error } = await supabase.auth.signUp({
+          email: signUpEmail.trim(),
+          password: signUpPassword,
+          options: {
+            data: {
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+              phone: phoneVal,
+            }
+          }
+        })
+
+        if (error) {
+          setAuthError(error.message)
+          setAuthLoading(false)
+          return
+        }
+
+        // Insert user profile into public profiles table
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+              email: signUpEmail.trim(),
+              phone: phoneVal,
+              created_at: new Date().toISOString()
+            })
+          if (profileError) {
+            console.error('Error inserting user profile:', profileError)
+          }
+        }
+
+        if (data.session) {
+          setAuthLoading(false)
+          navigate('/explore')
+        } else {
+          setAuthInfo('Registration successful! Please check your email inbox to confirm your account and log in.')
+          setAuthLoading(false)
+        }
       } catch (err) {
         console.error('Pre-signup lookup error:', err)
-        // Fallback: continue signup if profiles table query fails
+        setAuthError('An unexpected error occurred during signup. Please try again.')
+        setAuthLoading(false)
       }
-      setAuthLoading(false)
-
-      await handleSendOTP('signup')
-      return
-    }
-
-    if (signUpAuthStep === 'otp') {
-      if (!termsAccepted) {
-        setAuthError('Please agree to the Terms of Service and Privacy Policy.')
-        return
-      }
-      await handleVerifyOTP('signup')
       return
     }
   }
@@ -630,24 +663,13 @@ export default function Login() {
                         >
                           Email Address
                         </label>
-                        {signUpAuthStep === 'otp' && (
-                          <button
-                            type="button"
-                            className="flex items-center gap-1 font-label text-xs font-bold text-primary hover:underline"
-                            onClick={() => handleEditEmail('signup')}
-                            aria-label="Edit email address"
-                          >
-                            <span className="material-symbols-outlined text-base">edit</span>
-                            Edit email
-                          </button>
-                        )}
                       </div>
                       <div className="group relative">
                         <span className="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-xl text-outline transition-colors group-focus-within:text-primary">
                           mail
                         </span>
                         <input
-                          className="font-body w-full rounded-xl border-none bg-surface-container-low py-3.5 pr-4 pl-12 text-sm transition-all placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="font-body w-full rounded-xl border-none bg-surface-container-low py-3.5 pr-4 pl-12 text-sm transition-all placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10"
                           id="signup-email"
                           name="email"
                           placeholder="name@university.edu"
@@ -655,65 +677,10 @@ export default function Login() {
                           autoComplete="email"
                           value={signUpEmail}
                           onChange={(e) => setSignUpEmail(e.target.value)}
-                          disabled={signUpAuthStep === 'otp'}
-                          required={signUpAuthStep === 'email'}
+                          required
                         />
                       </div>
                     </div>
-                    {signUpAuthStep === 'otp' && (
-                      <div className="space-y-3">
-                        {signUpOtpToast && (
-                          <p
-                            className="rounded-lg bg-green-50 px-3 py-2 text-center text-sm font-medium text-green-800 dark:bg-green-950/40 dark:text-green-300"
-                            role="status"
-                          >
-                            {signUpOtpToast}
-                          </p>
-                        )}
-                        <div className="space-y-2">
-                          <label
-                            className="font-label ml-1 block text-xs font-bold tracking-wide text-primary/70 uppercase"
-                            htmlFor="signup-otp"
-                          >
-                            Enter 6-digit OTP
-                          </label>
-                          <input
-                            className="w-full rounded-xl border-none bg-surface-container-low py-3.5 text-center font-mono text-lg tracking-[0.4em] text-on-surface transition-all placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10"
-                            id="signup-otp"
-                            placeholder="••••••"
-                            type="text"
-                            inputMode="numeric"
-                            autoComplete="one-time-code"
-                            maxLength={6}
-                            value={signUpOtp}
-                            onChange={(e) => {
-                              setOtpError('')
-                              setSignUpOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
-                            }}
-                            required
-                          />
-                          {otpError ? (
-                            <p className="px-1 text-center text-sm text-red-500" role="alert">
-                              {otpError}
-                            </p>
-                          ) : null}
-                          <div className="flex justify-end pt-0.5">
-                            <button
-                              type="button"
-                              disabled={timeLeft > 0 || authLoading}
-                              className={`font-label text-xs font-bold transition-colors disabled:cursor-not-allowed ${
-                                timeLeft > 0
-                                  ? 'text-secondary/70'
-                                  : 'text-primary hover:underline'
-                              }`}
-                              onClick={() => handleResendOTP('signup')}
-                            >
-                              {timeLeft > 0 ? `Resend OTP in ${timeLeft}s` : 'Resend OTP'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label
@@ -725,10 +692,9 @@ export default function Login() {
                     <div className="flex gap-2">
                       <div className="relative min-w-[100px]">
                         <select
-                          className="font-body w-full cursor-pointer appearance-none rounded-xl border-none bg-surface-container-low py-3.5 pr-8 pl-3 text-sm transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="font-body w-full cursor-pointer appearance-none rounded-xl border-none bg-surface-container-low py-3.5 pr-8 pl-3 text-sm transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10"
                           value={signUpPhoneCountry}
                           onChange={(e) => setSignUpPhoneCountry(e.target.value)}
-                          disabled={signUpAuthStep === 'otp'}
                         >
                           <option value="+1">🇺🇸 +1</option>
                           <option value="+44">🇬🇧 +44</option>
@@ -744,7 +710,7 @@ export default function Login() {
                           call
                         </span>
                         <input
-                          className="font-body w-full rounded-xl border-none bg-surface-container-low py-3.5 pr-4 pl-12 text-sm transition-all placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="font-body w-full rounded-xl border-none bg-surface-container-low py-3.5 pr-4 pl-12 text-sm transition-all placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10"
                           id="phone"
                           name="phone"
                           placeholder="(555) 000-0000"
@@ -753,8 +719,7 @@ export default function Login() {
                           inputMode="tel"
                           value={signUpPhone}
                           onChange={(e) => setSignUpPhone(e.target.value)}
-                          disabled={signUpAuthStep === 'otp'}
-                          required={signUpAuthStep === 'email'}
+                          required
                         />
                       </div>
                     </div>
@@ -859,11 +824,7 @@ export default function Login() {
                     type="submit"
                     disabled={authLoading}
                   >
-                    {authLoading
-                      ? 'Please wait…'
-                      : signUpAuthStep === 'email'
-                        ? 'Send OTP to Email'
-                        : 'Verify & Sign Up'}
+                    {authLoading ? 'Please wait…' : 'Sign Up'}
                   </button>
                 </form>
                 <div className="relative mt-8">
