@@ -1,7 +1,12 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 
 export default function Ambassadors() {
+  useEffect(() => {
+    document.title = 'Ambassadors | The Academic Curator'
+  }, [])
+
   return (
     <div className="selection:bg-primary-fixed selection:text-on-primary-fixed bg-surface font-body text-on-surface">
       <Navbar active="ambassadors" />
