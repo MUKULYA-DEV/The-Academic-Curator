@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../supabaseClient.js'
+import { formatBookingName } from '../services/tourService.js'
 
 const DEFAULT_IMAGES = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuADGPVyubLAEce1GpEB-MMRIvZInCObU1KnFgpPxnWvHboWHAoMej6-W28W3o34kbbFrYv_q2SpeVer3XuIcaVlgNrBl8dDpK4PgA93zK8FhuniY_luhNmrJ-9appk1PyVCXxNXVM0cD42ntefaXfkyeffe3I7Tiec8CL6a6rwavUEwDXAjszN5FAd8HDlNZkMU1bvidRioOjB2DZIgFQKugyi03FMJxVwXex219sF2CEaPhOPb55IN2xL_9AbjK3VnELuMOw_dLOuR',
@@ -160,13 +161,18 @@ function CompletedBookingCard({ booking, imageSrc, showFeedbackInMenu, hideFoote
     booking.ambassador_name != null && String(booking.ambassador_name).trim() !== ''
       ? String(booking.ambassador_name).trim()
       : '—'
+  const displayName = booking.tours
+    ? formatBookingName(booking.tours.university_name || booking.tours.title, booking.course, booking.branch)
+    : (booking.college_name ?? 'Campus tour')
+  const imageToUse = booking.tours?.image_url || imageSrc
+
   return (
     <div className="border-outline-variant/10 group flex flex-col overflow-hidden rounded-2xl border bg-white opacity-90 shadow-[0px_8px_24px_rgba(26,54,93,0.04)] transition-opacity hover:opacity-100 md:flex-row">
       <div className="relative h-64 w-full shrink-0 md:h-auto md:w-[320px]">
         <img
-          alt={booking.college_name ?? 'Campus tour'}
+          alt={displayName}
           className="h-full w-full object-cover grayscale-[40%]"
-          src={imageSrc}
+          src={imageToUse}
         />
         <div className="absolute top-4 left-4">
           <span className="border-secondary/20 bg-secondary/20 text-secondary rounded-full border px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase shadow-sm backdrop-blur-sm">
@@ -195,7 +201,7 @@ function CompletedBookingCard({ booking, imageSrc, showFeedbackInMenu, hideFoote
               <span className="w-10 shrink-0" aria-hidden />
             )}
           </div>
-          <h3 className="headline mb-6 text-2xl font-bold text-primary/80">{booking.college_name ?? 'Campus tour'}</h3>
+          <h3 className="headline mb-6 text-2xl font-bold text-primary/80">{displayName}</h3>
           <div className="mb-8 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
             <div className="flex items-start gap-3">
               <div className="bg-surface-container-low flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
@@ -243,13 +249,18 @@ function CancelledBookingCard({ booking, imageSrc, hideFooterActions }) {
     booking.ambassador_name != null && String(booking.ambassador_name).trim() !== ''
       ? String(booking.ambassador_name).trim()
       : '—'
+  const displayName = booking.tours
+    ? formatBookingName(booking.tours.university_name || booking.tours.title, booking.course, booking.branch)
+    : (booking.college_name ?? 'Campus tour')
+  const imageToUse = booking.tours?.image_url || imageSrc
+
   return (
     <div className="border-outline-variant/10 group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-[0px_8px_24px_rgba(26,54,93,0.04)] transition-all hover:shadow-lg md:flex-row">
       <div className="relative h-64 w-full shrink-0 md:h-auto md:w-[320px]">
         <img
-          alt={booking.college_name ?? 'Campus tour'}
+          alt={displayName}
           className="h-full w-full object-cover grayscale-[80%] brightness-[0.9]"
-          src={imageSrc}
+          src={imageToUse}
         />
         <div className="absolute top-4 left-4">
           <span className="rounded-full border border-red-100 bg-red-50/90 px-4 py-1.5 text-[10px] font-bold tracking-widest text-red-700 uppercase shadow-sm backdrop-blur-sm">
@@ -278,7 +289,7 @@ function CancelledBookingCard({ booking, imageSrc, hideFooterActions }) {
               <span className="w-10 shrink-0" aria-hidden />
             )}
           </div>
-          <h3 className="headline mb-6 text-2xl font-bold text-primary/60">{booking.college_name ?? 'Campus tour'}</h3>
+          <h3 className="headline mb-6 text-2xl font-bold text-primary/60">{displayName}</h3>
           <div className="mb-8 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
             <div className="flex items-start gap-3">
               <div className="bg-surface-container-low flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
@@ -385,9 +396,9 @@ export default function AllBookings() {
         return
       }
 
-      const primary = await supabase
+      let primary = await supabase
         .from('bookings')
-        .select('*')
+        .select('*, tours(university_name, title, image_url)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
@@ -395,14 +406,34 @@ export default function AllBookings() {
 
       let rows = primary.data ?? []
       if (primary.error) {
-        const fallback = await supabase
+        primary = await supabase
           .from('bookings')
           .select('*')
           .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+        if (cancelled) return
+        rows = primary.data ?? []
+      }
+
+      if (!rows.length) {
+        const fallback = await supabase
+          .from('bookings')
+          .select('*, tours(university_name, title, image_url)')
+          .eq('user_id', user.id)
           .order('tour_date', { ascending: false })
         if (cancelled) return
-        rows = fallback.error ? [] : (fallback.data ?? [])
+        rows = fallback.data ?? []
+        if (fallback.error) {
+          const fallbackSimple = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('tour_date', { ascending: false })
+          if (cancelled) return
+          rows = fallbackSimple.data ?? []
+        }
       }
+
 
       const data = rows
       setBookings(data)
@@ -615,6 +646,12 @@ export default function AllBookings() {
                     const statusBadgeClass = getBookingCardStatusBadgeClass(statusKey)
                     const showUpcomingActions = isUpcomingStatusForActions(booking)
                     const imageSrc = DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]
+
+                    const displayName = booking.tours
+                      ? formatBookingName(booking.tours.university_name || booking.tours.title, booking.course, booking.branch)
+                      : (booking.college_name ?? 'Campus tour')
+                    const imageToUse = booking.tours?.image_url || imageSrc
+
                     return (
                       <div
                         key={booking.id}
@@ -622,9 +659,9 @@ export default function AllBookings() {
                       >
                         <div className="relative h-64 w-full shrink-0 md:h-auto md:w-[320px]">
                           <img
-                            alt={booking.college_name ?? 'Campus tour'}
+                            alt={displayName}
                             className="h-full w-full object-cover"
-                            src={imageSrc}
+                            src={imageToUse}
                           />
                           <div className="absolute top-4 left-4">
                             <span
@@ -654,7 +691,7 @@ export default function AllBookings() {
                               />
                             </div>
                             <h3 className="headline mb-6 text-2xl font-bold text-primary">
-                              {booking.college_name ?? 'Campus tour'}
+                              {displayName}
                             </h3>
                             <div className="mb-8 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                               <div className="flex items-start gap-3">

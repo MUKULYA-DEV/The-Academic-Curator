@@ -2,22 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../supabaseClient.js'
-
-// Pure, async fetching function compatible with TanStack Query's queryFn
-export async function fetchTourById(tourId) {
-  if (!tourId) throw new Error('Tour ID is required')
-
-  const { data, error } = await supabase
-    .from('tours')
-    .select('*')
-    .eq('id', tourId)
-    .single()
-
-  if (error) throw error
-  if (!data) throw new Error('Tour not found')
-
-  return data
-}
+import { fetchTourById, getPricing, getCourses } from '../services/tourService.js'
 
 // 1. HeroSection Component
 function HeroSection({
@@ -826,8 +811,9 @@ export default function College() {
   const gallery = details.gallery || []
   const faq = details.faq || defaultDetails.faq
   const badges = details.badges || defaultDetails.badges
-  const pricing = details.pricing || null
-  const courses = details.courses || defaultDetails.courses || []
+  
+  const pricing = getPricing(tourData)
+  const courses = getCourses(tourData).length > 0 ? getCourses(tourData) : defaultDetails.courses || []
 
   // Dynamic Theme Styling Object
   const primaryTextColor = theme.primaryColor ? { color: theme.primaryColor } : {}
@@ -840,42 +826,36 @@ export default function College() {
   let currentPriceElement = null
 
   if (pricing) {
-    const orig = pricing.originalPrice
-    const disc = pricing.discountedPrice
+    const orig = pricing.price
+    const disc = pricing.discountPrice
     const curSymbol = pricing.currencySymbol || '₹'
 
-    if (orig !== undefined && orig !== null && orig !== disc) {
+    if (pricing.hasDiscount) {
       originalPriceElement = (
         <span className="text-secondary line-through mr-2 text-lg">
-          {curSymbol}{orig}
+          {curSymbol}{orig.toFixed(2)}
+        </span>
+      )
+      currentPriceElement = (
+        <span
+          className="font-headline text-3xl font-extrabold text-primary"
+          style={primaryTextColor}
+        >
+          {curSymbol}{disc.toFixed(2)}
+        </span>
+      )
+    } else {
+      currentPriceElement = (
+        <span
+          className="font-headline text-3xl font-extrabold text-primary"
+          style={primaryTextColor}
+        >
+          {curSymbol}{orig.toFixed(2)}
         </span>
       )
     }
-
-    currentPriceElement = (
-      <span
-        className="font-headline text-3xl font-extrabold text-primary"
-        style={primaryTextColor}
-      >
-        {curSymbol}{disc !== undefined ? disc : '0.00'}
-      </span>
-    )
-  } else {
-    // Fallback to normal database column or hardcoded price
-    const curSymbol = '₹'
-    const basePrice =
-      tourData.price !== undefined && tourData.price !== null
-        ? tourData.price
-        : '149.00'
-    currentPriceElement = (
-      <span
-        className="font-headline text-3xl font-extrabold text-primary"
-        style={primaryTextColor}
-      >
-        {curSymbol}{basePrice}
-      </span>
-    )
   }
+
 
   const bookLink = `/book-tour?tourId=${encodeURIComponent(tourData.id)}`
 
