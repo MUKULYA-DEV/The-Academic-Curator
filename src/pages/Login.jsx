@@ -240,6 +240,27 @@ export default function Login() {
     setAuthError(null)
     setAuthInfo(null)
 
+    if (!firstName.trim()) {
+      setAuthError('First name is required.')
+      return
+    }
+    if (!lastName.trim()) {
+      setAuthError('Last name is required.')
+      return
+    }
+    if (!signUpPhone.trim()) {
+      setAuthError('Phone number is required.')
+      return
+    }
+    if (signUpPassword !== signUpConfirmPassword) {
+      setAuthError('Passwords do not match.')
+      return
+    }
+    if (signUpPassword.length < 6) {
+      setAuthError('Password must be at least 6 characters.')
+      return
+    }
+
     if (signUpAuthStep === 'email') {
       await handleSendOTP('signup')
       return
@@ -248,10 +269,6 @@ export default function Login() {
     if (signUpAuthStep === 'otp') {
       if (!termsAccepted) {
         setAuthError('Please agree to the Terms of Service and Privacy Policy.')
-        return
-      }
-      if (signUpPassword !== signUpConfirmPassword) {
-        setAuthError('Passwords do not match.')
         return
       }
       await handleVerifyOTP('signup')
