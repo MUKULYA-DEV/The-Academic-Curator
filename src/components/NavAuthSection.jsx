@@ -53,6 +53,14 @@ export function UserAvatarMenu({ className = '' }) {
           >
             Profile
           </Link>
+          <Link
+            to="/bookings"
+            role="menuitem"
+            className="block px-4 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high"
+            onClick={() => setOpen(false)}
+          >
+            My Bookings
+          </Link>
           <button
             type="button"
             role="menuitem"
