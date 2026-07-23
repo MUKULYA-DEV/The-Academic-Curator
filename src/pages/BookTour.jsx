@@ -1100,40 +1100,7 @@ export default function BookTour() {
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-slate-100 bg-white px-4 pt-2 pb-6 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] md:hidden">
-        <Link
-          to="/explore"
-          className="flex flex-col items-center justify-center text-slate-400"
-        >
-          <span className="material-symbols-outlined">explore</span>
-          <span className="font-inter mt-1 text-[10px] font-medium tracking-wide uppercase">
-            Explore
-          </span>
-        </Link>
-        <div className="flex flex-col items-center justify-center rounded-xl bg-slate-50 px-3 py-1 text-[#002045]">
-          <span
-            className="material-symbols-outlined"
-            style={{ fontVariationSettings: '"FILL" 1' }}
-          >
-            event_available
-          </span>
-          <span className="font-inter mt-1 text-[10px] font-medium tracking-wide uppercase">
-            My Tours
-          </span>
-        </div>
-        <div className="flex flex-col items-center justify-center text-slate-400">
-          <span className="material-symbols-outlined">school</span>
-          <span className="font-inter mt-1 text-[10px] font-medium tracking-wide uppercase">
-            Curators
-          </span>
-        </div>
-        <div className="flex flex-col items-center justify-center text-slate-400">
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-inter mt-1 text-[10px] font-medium tracking-wide uppercase">
-            Profile
-          </span>
-        </div>
-      </nav>
+
     </div>
   )
 }
