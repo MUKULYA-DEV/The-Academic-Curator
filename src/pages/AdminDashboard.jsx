@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   // Calculate dynamic stats
   const totalBookingsCount = bookings.length
-  const liveToursCount = tours.length
+  const liveToursCount = tours.filter(t => t.status === 'published').length
   
   // Pending bookings: status is 'upcoming' (i.e. not completed/cancelled)
   const pendingBookings = bookings.filter(b => b.status === 'upcoming')
