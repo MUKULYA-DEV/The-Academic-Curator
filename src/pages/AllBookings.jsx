@@ -608,21 +608,30 @@ export default function AllBookings() {
             <div className="flex flex-wrap items-center gap-4">
               <button
                 type="button"
-                onClick={() => setActiveTab('upcoming')}
+                onClick={() => {
+                  setActiveTab('upcoming')
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
                 className={activeTab === 'upcoming' ? tabActiveClass : tabInactiveClass}
               >
                 Upcoming Tours
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('completed')}
+                onClick={() => {
+                  setActiveTab('completed')
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
                 className={activeTab === 'completed' ? tabActiveClass : tabInactiveClass}
               >
                 Completed Tours
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('cancelled')}
+                onClick={() => {
+                  setActiveTab('cancelled')
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
                 className={activeTab === 'cancelled' ? tabActiveClass : tabInactiveClass}
               >
                 Cancelled
