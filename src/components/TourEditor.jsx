@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { saveTour } from '../services/tourService.js'
 import { generateDefaultTemplate, sanitizeTourJson, validateTourJson, generateSlug } from '../utils/tourJsonUtils.js'
-
-
+import MediaPicker from './MediaPicker.jsx'
 
 export default function TourEditor({ tour, onSave, onCancel }) {
   const isEditMode = !!tour
+  const [localTourId] = useState(tour?.id || crypto.randomUUID())
 
   // Top level fields
   const [universityName, setUniversityName] = useState(tour?.university_name || '')
@@ -236,6 +236,7 @@ export default function TourEditor({ tour, onSave, onCancel }) {
       }
 
       const tourPayload = {
+        id: localTourId,
         university_name: universityName.trim(),
         title: title.trim(),
         city: city.trim(),
@@ -249,10 +250,6 @@ export default function TourEditor({ tour, onSave, onCancel }) {
         slug: isEditMode ? tour.slug : generateSlug(universityName, title),
         details: detailsPayload,
         updated_at: new Date().toISOString()
-      }
-
-      if (isEditMode) {
-        tourPayload.id = tour.id
       }
 
       const savedData = await saveTour(tourPayload)
@@ -389,14 +386,13 @@ export default function TourEditor({ tour, onSave, onCancel }) {
               />
             </div>
             <div className="md:col-span-2 space-y-1">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Main Campus Image URL</label>
-              <input 
-                type="url" 
-                value={imageUrl}
-                onChange={e => setImageUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/..." 
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10"
-                required
+              <MediaPicker 
+                tourId={localTourId}
+                folderType="cover"
+                label="Main Campus Image"
+                currentUrl={imageUrl}
+                onUploadSuccess={({ public_url }) => setImageUrl(public_url)}
+                onClear={() => setImageUrl('')}
               />
             </div>
             <div className="grid grid-cols-2 gap-4 md:col-span-2 border-t border-slate-100 pt-6">
@@ -670,12 +666,20 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                   />
                 </div>
                 <div className="space-y-1 md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Guide Image URL</label>
-                  <input 
-                    type="url" 
-                    value={details.guide?.image || ''}
-                    onChange={e => updateGuideField('image', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none"
+                  <MediaPicker 
+                    tourId={localTourId}
+                    folderType="guide"
+                    label="Guide Image"
+                    currentStoragePath={details.guide?.storage_path}
+                    currentUrl={details.guide?.image}
+                    onUploadSuccess={({ storage_path, public_url }) => {
+                      updateGuideField('storage_path', storage_path)
+                      updateGuideField('image', public_url)
+                    }}
+                    onClear={() => {
+                      updateGuideField('storage_path', '')
+                      updateGuideField('image', '')
+                    }}
                   />
                 </div>
                 <div className="space-y-1 md:col-span-2">
@@ -728,11 +732,29 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                       <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Image URL</label>
+                      <MediaPicker 
+                        tourId={localTourId}
+                        folderType="gallery"
+                        label="Gallery Image"
+                        currentStoragePath={img.storage_path}
+                        currentUrl={img.url}
+                        onUploadSuccess={({ storage_path, public_url }) => {
+                          updateGalleryField(gIdx, 'storage_path', storage_path)
+                          updateGalleryField(gIdx, 'url', public_url)
+                        }}
+                        onClear={() => {
+                          updateGalleryField(gIdx, 'storage_path', '')
+                          updateGalleryField(gIdx, 'url', '')
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alt Text (Accessibility)</label>
                       <input 
-                        type="url" 
-                        value={img.url}
-                        onChange={e => updateGalleryField(gIdx, 'url', e.target.value)}
+                        type="text" 
+                        value={img.alt_text || ''}
+                        onChange={e => updateGalleryField(gIdx, 'alt_text', e.target.value)}
+                        placeholder="e.g. Students walking across the main quad"
                         className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none"
                       />
                     </div>
@@ -740,7 +762,7 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Caption</label>
                       <input 
                         type="text" 
-                        value={img.caption}
+                        value={img.caption || ''}
                         onChange={e => updateGalleryField(gIdx, 'caption', e.target.value)}
                         className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none"
                       />
