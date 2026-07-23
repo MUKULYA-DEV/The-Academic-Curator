@@ -174,6 +174,21 @@ export default function TourEditor({ tour, onSave, onCancel }) {
     })
   }
 
+  const addStoryParagraph = () => {
+    setDetails(prev => ({
+      ...prev,
+      story: { ...prev.story, paragraphs: [...(prev.story.paragraphs || []), ''] }
+    }))
+  }
+
+  const removeStoryParagraph = (pIdx) => {
+    setDetails(prev => {
+      const paragraphs = [...prev.story.paragraphs]
+      paragraphs.splice(pIdx, 1)
+      return { ...prev, story: { ...prev.story, paragraphs } }
+    })
+  }
+
   // SEO Helpers
   const updateSeoField = (field, val) => {
     setDetails(prev => ({
@@ -514,6 +529,38 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none"
                   />
                 </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Paragraphs</label>
+                    <button 
+                      type="button" 
+                      onClick={addStoryParagraph}
+                      className="text-xs text-[#002045] font-bold flex items-center gap-1 hover:underline"
+                    >
+                      <span className="material-symbols-outlined text-xs">add</span>
+                      <span>Add Paragraph</span>
+                    </button>
+                  </div>
+                  {(details.story?.paragraphs || []).map((p, pIdx) => (
+                    <div key={pIdx} className="relative">
+                      <textarea 
+                        value={p}
+                        rows={3}
+                        onChange={e => updateStoryParagraph(pIdx, e.target.value)}
+                        className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none pr-10"
+                        placeholder={`Paragraph ${pIdx + 1}`}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => removeStoryParagraph(pIdx)}
+                        className="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded-lg"
+                        title="Remove Paragraph"
+                      >
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Story Highlight Quote</label>
                   <input 
@@ -522,18 +569,6 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                     onChange={e => updateStoryField('quote', e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none"
                   />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Paragraphs</label>
-                  {(details.story?.paragraphs || []).map((p, pIdx) => (
-                    <textarea 
-                      key={pIdx}
-                      value={p}
-                      rows={3}
-                      onChange={e => updateStoryParagraph(pIdx, e.target.value)}
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none"
-                    />
-                  ))}
                 </div>
               </div>
             </div>
