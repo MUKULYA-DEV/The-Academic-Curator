@@ -11,6 +11,8 @@ import BookingSuccess from './pages/BookingSuccess.jsx'
 import Profile from './pages/Profile.jsx'
 import ContactSupport from './pages/ContactSupport.jsx'
 import AllBookings from './pages/AllBookings.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
+
 
 function ProtectedRoute({ children }) {
   const { session, authReady } = useAuth()
@@ -103,6 +105,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AllBookings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminDashboard />
           </ProtectedRoute>
         }
       />

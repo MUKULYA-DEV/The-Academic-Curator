@@ -76,6 +76,14 @@ export function UserAvatarMenu({ className = '' }) {
           >
             My Bookings
           </Link>
+          <Link
+            to="/admin"
+            role="menuitem"
+            className="block px-4 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high"
+            onClick={() => setOpen(false)}
+          >
+            Admin Portal
+          </Link>
           <button
             type="button"
             role="menuitem"
