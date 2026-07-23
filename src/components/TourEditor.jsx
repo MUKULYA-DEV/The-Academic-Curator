@@ -119,6 +119,21 @@ export default function TourEditor({ tour, onSave, onCancel }) {
     })
   }
 
+  const addHighlight = () => {
+    setDetails(prev => ({
+      ...prev,
+      highlights: [...(prev.highlights || []), { icon: 'star', title: '', description: '' }]
+    }))
+  }
+
+  const removeHighlight = (hIdx) => {
+    setDetails(prev => {
+      const highlights = [...prev.highlights]
+      highlights.splice(hIdx, 1)
+      return { ...prev, highlights }
+    })
+  }
+
   // Gallery Helpers
   const addGalleryImage = () => {
     setDetails(prev => ({
@@ -574,10 +589,28 @@ export default function TourEditor({ tour, onSave, onCancel }) {
             </div>
 
             <div className="space-y-4 border-t border-slate-100 pt-6">
-              <h3 className="text-sm font-bold text-[#002045] uppercase tracking-wider">Tour Highlights</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-bold text-[#002045] uppercase tracking-wider">Tour Highlights</h3>
+                <button 
+                  type="button" 
+                  onClick={addHighlight}
+                  className="text-xs text-[#002045] font-bold flex items-center gap-1 hover:underline"
+                >
+                  <span className="material-symbols-outlined text-xs">add</span>
+                  <span>Add Highlight</span>
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {(details.highlights || []).map((hl, hIdx) => (
-                  <div key={hIdx} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
+                  <div key={hIdx} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-3 relative">
+                    <button 
+                      type="button" 
+                      onClick={() => removeHighlight(hIdx)}
+                      className="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded-lg"
+                      title="Remove Highlight"
+                    >
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                    </button>
                     <div className="space-y-1">
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Icon Name</label>
                       <input 
