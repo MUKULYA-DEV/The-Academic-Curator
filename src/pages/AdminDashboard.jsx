@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient.js'
+import TourEditor from '../components/TourEditor.jsx'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -22,6 +23,9 @@ export default function AdminDashboard() {
   
   // Feedback messages
   const [notification, setNotification] = useState(null)
+
+  // Selected tour for dynamic creation/edit
+  const [selectedTourForEdit, setSelectedTourForEdit] = useState(null)
 
   // Fetch all necessary admin stats
   async function fetchAdminData() {
@@ -160,6 +164,13 @@ export default function AdminDashboard() {
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'bookings' ? "'FILL' 1" : undefined }}>calendar_today</span>
             <span>Bookings</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('tours')}
+            className={`w-full text-left rounded-lg font-bold flex items-center gap-3 px-4 py-3 transition-all duration-200 ${activeTab === 'tours' || activeTab === 'edit_tour' ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'tours' || activeTab === 'edit_tour' ? "'FILL' 1" : undefined }}>domain</span>
+            <span>Manage Colleges</span>
           </button>
           <button 
             onClick={() => setActiveTab('ambassadors')}
@@ -510,12 +521,18 @@ export default function AdminDashboard() {
               
               <div className="bg-[#e0e3e5]/20 p-8 rounded-3xl flex flex-col justify-center border-2 border-dashed border-slate-200 text-center">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-primary shadow-sm">
-                  <span className="material-symbols-outlined">add_chart</span>
+                  <span className="material-symbols-outlined">add_business</span>
                 </div>
-                <h4 className="text-sm font-bold text-[#002045] font-headline mb-1">New Widget?</h4>
-                <p className="text-[10px] text-[#545f72]">Configure custom queries and widgets for your university analytics.</p>
-                <button className="mt-4 text-[10px] font-bold text-[#002045] uppercase tracking-widest border-b-2 border-[#002045]/20 pb-1 self-center hover:border-[#002045] transition-colors">
-                  Add Widget
+                <h4 className="text-sm font-bold text-[#002045] font-headline mb-1">Expand Platform</h4>
+                <p className="text-[10px] text-[#545f72]">Add a new college or university to the platform.</p>
+                <button 
+                  onClick={() => {
+                    setSelectedTourForEdit(null)
+                    setActiveTab('edit_tour')
+                  }}
+                  className="mt-4 px-4 py-2 bg-[#002045] text-white rounded-xl text-xs font-bold hover:opacity-90 transition-opacity self-center"
+                >
+                  Add New College
                 </button>
               </div>
             </div>
@@ -789,6 +806,120 @@ export default function AdminDashboard() {
                 Save Configuration
               </button>
             </div>
+          </section>
+        )}
+
+        {/* Tab: Tours Listing */}
+        {activeTab === 'tours' && (
+          <section className="pt-24 pb-12 px-8 max-w-7xl mx-auto space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-extrabold text-[#002045] font-headline">Explore College Listings</h2>
+                <p className="text-[#545f72] text-sm mt-1">Manage and edit your institution listings, courses, templates and metadata.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setSelectedTourForEdit(null)
+                  setActiveTab('edit_tour')
+                }}
+                className="px-4 py-2.5 bg-[#002045] text-white text-xs font-bold rounded-xl shadow hover:opacity-95 transition-all flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-sm">add</span>
+                <span>List New College</span>
+              </button>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              {loading ? (
+                <div className="p-12 text-center text-slate-500">Loading colleges...</div>
+              ) : tours.length === 0 ? (
+                <div className="p-12 text-center text-slate-500">No colleges listed yet. Click "List New College" to start.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 text-[#545f72] text-[10px] font-bold uppercase tracking-widest border-b border-slate-100">
+                        <th className="px-6 py-4">College Details</th>
+                        <th className="px-6 py-4">University Affiliate</th>
+                        <th className="px-6 py-4">Location</th>
+                        <th className="px-6 py-4">Pricing</th>
+                        <th className="px-6 py-4">Courses Offered</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-sm">
+                      {tours.map((t) => {
+                        const coursesCount = t.details?.courses?.length || 0
+                        return (
+                          <tr key={t.id} className="hover:bg-slate-50/20 transition-colors">
+                            <td className="px-6 py-4 flex items-center gap-3">
+                              {t.image_url ? (
+                                <img src={t.image_url} alt={t.title} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#002045]">
+                                  <span className="material-symbols-outlined text-lg">school</span>
+                                </div>
+                              )}
+                              <div>
+                                <p className="font-bold text-[#002045]">{t.title}</p>
+                                <p className="text-[10px] text-slate-400 font-mono">#{String(t.id).slice(0, 8)}</p>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 font-semibold text-slate-700">
+                              {t.university_name}
+                            </td>
+                            <td className="px-6 py-4 text-slate-500">
+                              {t.location}
+                            </td>
+                            <td className="px-6 py-4">
+                              <p className="font-semibold">{t.currency_symbol}{t.price}</p>
+                              {t.discount_price !== null && (
+                                <p className="text-xs text-emerald-600 font-bold">Discount: {t.currency_symbol}{t.discount_price}</p>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-xs font-medium px-2.5 py-1 bg-blue-50 text-[#002045] rounded-full font-bold">
+                                {coursesCount} Courses
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  setSelectedTourForEdit(t)
+                                  setActiveTab('edit_tour')
+                                }}
+                                className="px-3 py-1.5 bg-slate-100 text-[#002045] text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors"
+                              >
+                                Edit / Operate Details
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Tab: Tour Editor Component Integration */}
+        {activeTab === 'edit_tour' && (
+          <section className="pt-24 pb-12 px-8 max-w-7xl mx-auto">
+            <TourEditor 
+              tour={selectedTourForEdit}
+              onSave={(savedTour) => {
+                showNotification(`College ${selectedTourForEdit ? 'updated' : 'listed'} successfully!`)
+                fetchAdminData()
+                setActiveTab('tours')
+              }}
+              onCancel={() => {
+                setActiveTab('tours')
+              }}
+            />
           </section>
         )}
       </main>

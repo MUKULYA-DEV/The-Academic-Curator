@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../supabaseClient.js'
-import { fetchTourById, getPricing, getCourses } from '../services/tourService.js'
+import { fetchTourById, fetchTourBySlug, getPricing, getCourses } from '../services/tourService.js'
 
 // 1. HeroSection Component
 function HeroSection({
@@ -619,7 +619,9 @@ const defaultDetails = {
 
 // Main Page Controller
 export default function College() {
+  const { slug } = useParams()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const tourId = searchParams.get('tourId')
   const [tourData, setTourData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -743,17 +745,19 @@ export default function College() {
   }
 
   useEffect(() => {
-    if (!tourId) {
-      setErrorMsg('No Tour ID provided in the URL.')
-      setLoading(false)
-      return
-    }
+    async function loadTourData() {
+      if (!slug && !tourId) {
+        setErrorMsg('Invalid URL. Missing college identifier.')
+        setLoading(false)
+        return
+      }
 
-    async function loadData() {
+      setLoading(true)
       try {
-        setLoading(true)
-        setErrorMsg(null)
-        const data = await fetchTourById(tourId)
+        const data = slug 
+          ? await fetchTourBySlug(slug) 
+          : await fetchTourById(tourId)
+          
         setTourData(data)
       } catch (err) {
         console.error('Error loading tour details:', err)
@@ -763,8 +767,8 @@ export default function College() {
       }
     }
 
-    loadData()
-  }, [tourId])
+    loadTourData()
+  }, [slug, tourId])
 
   // SEO updates based on dynamic JSON fields
   useEffect(() => {

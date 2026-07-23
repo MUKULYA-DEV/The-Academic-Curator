@@ -25,6 +25,21 @@ export async function fetchTourById(tourId) {
   return data
 }
 
+export async function fetchTourBySlug(slug) {
+  if (!slug) throw new Error('Slug is required')
+
+  const { data, error } = await supabase
+    .from('tours')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+
+  if (error) throw error
+  if (!data) throw new Error('Tour not found')
+
+  return data
+}
+
 /**
  * Safely extracts courses and branches from the tour details JSON.
  * @param {Object} tourData - The tour record.
@@ -112,3 +127,50 @@ export function formatBookingName(universityName, course, branch) {
   }
   return name
 }
+
+/**
+ * Saves (inserts or updates) a tour record in the database.
+ * @param {Object} tour - The tour data object to save.
+ * @returns {Promise<Object>} - The saved tour record.
+ */
+export async function saveTour(tour) {
+  let finalSlug = tour.slug;
+  
+  // If this is a new tour (no id), check for slug collisions
+  if (!tour.id && finalSlug) {
+    const { data: existing } = await supabase
+      .from('tours')
+      .select('slug')
+      .ilike('slug', `${finalSlug}%`);
+      
+    if (existing && existing.length > 0) {
+      // Find the highest suffix number
+      let maxSuffix = 0;
+      for (const row of existing) {
+        if (row.slug === finalSlug) {
+          maxSuffix = Math.max(maxSuffix, 1);
+        } else {
+          const match = row.slug.match(new RegExp(`^${finalSlug}-(\\d+)$`));
+          if (match) {
+            maxSuffix = Math.max(maxSuffix, parseInt(match[1], 10));
+          }
+        }
+      }
+      
+      if (maxSuffix > 0) {
+        finalSlug = `${finalSlug}-${maxSuffix + 1}`;
+        tour.slug = finalSlug;
+      }
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('tours')
+    .upsert(tour)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+

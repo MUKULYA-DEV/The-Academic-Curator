@@ -4,172 +4,6 @@ import { NavAuthSection } from '../components/NavAuthSection.jsx'
 import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../supabaseClient.js'
 
-const INSTITUTIONS = [
-  'Harvard University',
-  'Stanford University',
-  'Princeton University',
-  'UC Berkeley',
-]
-
-const TOURS = [
-  {
-    id: '1',
-    school: 'Harvard University',
-    title: 'Historic Yard Walk & Library Access',
-    location: 'Cambridge, MA',
-    city: 'Cambridge',
-    dateLine: 'Oct 24, 2024 • 10:00 AM',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBSZcVLZN6b_hAYTROpuBEgADA9Nq1OB9viFLOb2jsYp3c0qkfu3drxWDdrQKuB6a1Ww3r2E0QtKOkNd10NKZlBH5-22NOLKxTK8Nijq8nF2I1_u24fn7dqGAKxOd4dz7t-uS8hK-ZSwW2iOSPE21CosOhAxq3KNGmQbJ2RCkQd4taqlv6VrWMIxYWzICLjKyCP4hgx6YrwozeT6kCenAQlcI3QbmCxgEr_e7PZI4qMEfpBhKf2Qt3DIIOSQ0IYDoTwFA0SYhMEVj9v',
-    alt: 'Harvard University Campus',
-    badge: '8 SLOTS LEFT',
-    badgeVariant: 'slots',
-    cta: 'view',
-    course: 'B.Tech',
-    major: 'Computer Science',
-    courses: [
-      {
-        name: 'B.Tech',
-        branches: [
-          { name: 'Computer Science', seats: 60 },
-          { name: 'Electronics Engineering', seats: 30 }
-        ]
-      },
-      {
-        name: 'MBA',
-        branches: [
-          { name: 'Finance', seats: 20 },
-          { name: 'Marketing', seats: 25 }
-        ]
-      }
-    ]
-  },
-  {
-    id: '2',
-    school: 'Stanford University',
-    title: 'Tech Innovation Path: Engineering Hub',
-    location: 'Stanford, CA',
-    city: 'Stanford',
-    dateLine: 'Oct 26, 2024 • 2:30 PM',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDdkxzuYbabAdYMtbx8uYqlw02ArEWTLSO-QsLO_zbzVwvHZqTtSIIiz-g8onZypX7H2qZjIL4RmqbnycVgFWsUKqDAboTbF1uv7x6nhOiQzhypNRnJ8iT4uTMp60yD3iEXF_ekiCtreyGmFDK4fFBrVM79_FYE9z5kjaPOuNSBPR0_ipfL_95_9NJ3P3sLwCmvisEoPpHCeZ8vH9UCQi8UIkRO5vg2dHivVtZFkeQKGNtYgA041F-ou_YncTysrv-WnI0mo9sI-EyU',
-    alt: 'Stanford University Campus',
-    badge: 'LAST SLOT',
-    badgeVariant: 'last',
-    cta: 'book',
-    course: 'B.Tech',
-    major: 'Electronics Engineering',
-    courses: [
-      {
-        name: 'B.Tech',
-        branches: [
-          { name: 'Electronics Engineering', seats: 45 },
-          { name: 'Computer Science', seats: 60 }
-        ]
-      }
-    ]
-  },
-  {
-    id: '3',
-    school: 'Princeton University',
-    title: 'Ivy Gothic: Architecture & Arts Tour',
-    location: 'Princeton, NJ',
-    city: 'Princeton',
-    dateLine: 'Nov 02, 2024 • 11:00 AM',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBK6x8sbhDVSD7He5hXlI73tLQbKm0vnx0s94_Z5X2a0gczJbs4MkulOuryw6cNhaPnYXU1SWupjClh9POzK-ZAKZrVHiIrMN28UudVWY-7mkyxIUuccgL_gozubMca0maTTbNl1qvN79R7wq8RaDsdlaoMRUX1ITdfDYkSo47DxrttCi5rWeY7a38e5998yY9I5YZseFSiPte1HExr6GJv96JZvi_u_-h4X8UDvCCwvCT7Wfmk1N9s8Ng_xb4vAhLnDFxZ5Mmmg36U',
-    alt: 'Princeton University',
-    badge: '12 SLOTS LEFT',
-    badgeVariant: 'slots',
-    cta: 'view',
-    course: 'MBA',
-    major: 'Finance',
-    courses: [
-      {
-        name: 'MBA',
-        branches: [
-          { name: 'Finance', seats: 30 },
-          { name: 'Marketing', seats: 20 }
-        ]
-      }
-    ]
-  },
-  {
-    id: '4',
-    school: 'UC Berkeley',
-    title: 'The Activist Spirit: Campus Roots',
-    location: 'Berkeley, CA',
-    city: 'Berkeley',
-    dateLine: 'Nov 05, 2024 • 1:00 PM',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCtfg0JuLEbIaYFTRTwFask08s9w3sNZQol0FWYFzuUXCjWJWpOAKr8CE8FOAGTzsX_FdOJbpDztRvuyM67PBdPAME8XLaIyjTfmHzLg6_wXSUKkZtucAsPAlSaYu4TpboheKLvnv1pfuT6hx3Z6xGNlgOzetjPlUwxMoUofyk29rr2Xi1G-a0U3dXp9o2Vtd6m9Tp-fTdh6qKSRuBjTHpA5FYbLnoz3PwxmhnV2ZOEYw7k5QPiVwL2aazfiIS7iBE5m8biOPnHu1kw',
-    alt: 'UC Berkeley',
-    badge: '5 SLOTS LEFT',
-    badgeVariant: 'slots',
-    cta: 'view',
-    course: 'B.Tech',
-    major: 'Computer Science',
-    courses: [
-      {
-        name: 'B.Tech',
-        branches: [
-          { name: 'Computer Science', seats: 60 },
-          { name: 'Data Science', seats: 30 }
-        ]
-      }
-    ]
-  },
-  {
-    id: '5',
-    school: 'Columbia University',
-    title: 'Morningside Heights: Urban Excellence',
-    location: 'New York, NY',
-    city: 'New York',
-    dateLine: 'Nov 10, 2024 • 10:30 AM',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCHNcmuHPQEnHR2K9kjxsxfRc5f1Ct1a8wtQM_bPU8PyiZDbZ-gbARSYunwV_MxWchI3Ttwvt1foLq9r-OGw1MENgJZPbcQPLyAiDbA8E8xFeibi17pU5p4NYK5EN1gDDitJQSf1ATx2FVmaXeZLOvht1qPyjez7xwCr8Yj4P81VXfPS87XXPdAgLz3LDZdcOviinKMlPEAEiAkB69oHqv_u5w6TlqcJNQ7PH5Dqt1Gfgmk5rTDUKBmgQpFswMdqgbi6V_Cwb5-uH4l',
-    alt: 'Columbia University',
-    badge: '15 SLOTS LEFT',
-    badgeVariant: 'slots',
-    cta: 'view',
-    course: 'MBA',
-    major: 'Marketing',
-    courses: [
-      {
-        name: 'MBA',
-        branches: [
-          { name: 'Marketing', seats: 45 },
-          { name: 'Finance', seats: 30 }
-        ]
-      }
-    ]
-  },
-  {
-    id: '6',
-    school: 'Univ. of Washington',
-    title: 'Pacific Northwest: Research & Nature',
-    location: 'Seattle, WA',
-    city: 'Seattle',
-    dateLine: 'Nov 12, 2024 • 9:00 AM',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuC5MSBeXVczwSZzaMEU7V0BIeqcoRQoqHLpz6qDlZci3KgLpMdbx_PlcjwBdFcFnfhYLUdSxNLOeuKQRmD-Glz6Lt_vFegbPksK1uBgJRSI-kigijr9nAHQr2H7oPor5XgS_2L7neqLEEDkFrReuW1Vg1sQtcegybuHQn-myh_GJzfHT6ZWe5ZVmr5ztmtpQFkRQKXx3G4d_5fQ_LoVjPRvmq9Di4dHDhoUfAaMJ5jCs2gYlJf1Rx6DhanZaPxyezBE_9LVPgK3qrm4',
-    alt: 'University of Washington',
-    badge: '2 SLOTS LEFT',
-    badgeVariant: 'slots',
-    cta: 'view',
-    course: 'B.Sc',
-    major: 'Data Science',
-    courses: [
-      {
-        name: 'B.Sc',
-        branches: [
-          { name: 'Data Science', seats: 30 }
-        ]
-      }
-    ]
-  },
-]
-
 function badgeClass(variant) {
   if (variant === 'last') return 'bg-error-container text-on-error-container'
   return 'bg-tertiary-fixed text-on-tertiary-fixed'
@@ -177,15 +11,18 @@ function badgeClass(variant) {
 
 function TourCardLink({ tour }) {
   const navigate = useNavigate()
-  const tourIdParam = encodeURIComponent(tour.id)
-
+  
   function handleCardClick() {
-    navigate(`/college?tourId=${tourIdParam}`)
+    if (tour.slug) {
+      navigate(`/college/${encodeURIComponent(tour.slug)}`)
+    } else {
+      navigate(`/college?tourId=${encodeURIComponent(tour.id)}`)
+    }
   }
 
   function handleBookClick(e) {
     e.stopPropagation()
-    navigate(`/book-tour?tourId=${tourIdParam}`)
+    navigate(`/book-tour?tourId=${tour.id}`)
   }
 
   return (
@@ -234,7 +71,7 @@ function TourCardLink({ tour }) {
   )
 }
 
-const DEFAULT_TOUR_IMAGE = TOURS[0]?.image ?? ''
+const DEFAULT_TOUR_IMAGE = ''
 
 function escapeIlikePattern(raw) {
   return raw
@@ -261,8 +98,13 @@ function mapTourRow(row) {
     }
   }
 
+  const courses = detailsObj?.courses || []
+  const major = courses[0]?.branches?.[0]?.name || 'Program'
+  const course = courses[0]?.name || 'Degree'
+
   return {
     id: String(row.id),
+    slug: row.slug,
     school: row.university_name ?? 'University',
     title: row.title ?? 'Campus Tour',
     location: loc && loc.length > 0 ? loc : city && city.length > 0 ? city : '—',
@@ -423,11 +265,12 @@ export default function ExploreTours() {
         const { data: dbData, error: dbErr } = await supabase
           .from('tours')
           .select('*')
+          .eq('status', 'published')
         if (cancelled) return
         if (dbData && !dbErr) {
           sourceList = dbData.map(mapTourRow)
         } else {
-          sourceList = [...TOURS]
+          sourceList = []
         }
       }
 
@@ -512,7 +355,7 @@ export default function ExploreTours() {
     const rangeFrom = nextPage * PAGE_SIZE
     const rangeTo = rangeFrom + PAGE_SIZE - 1
 
-    let query = supabase.from('tours').select('*').order('created_at', { ascending: false })
+    let query = supabase.from('tours').select('*').eq('status', 'published').order('created_at', { ascending: false })
     query = applySearchFilterToQuery(query, term)
 
     const { data, error } = await query.range(rangeFrom, rangeTo)

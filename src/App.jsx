@@ -77,6 +77,14 @@ export default function App() {
         }
       />
       <Route
+        path="/college/:slug"
+        element={
+          <ProtectedRoute>
+            <College />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/book-tour"
         element={
           <ProtectedRoute>
