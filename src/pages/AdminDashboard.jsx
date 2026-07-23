@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient.js'
 import TourEditor from '../components/TourEditor.jsx'
+import QueriesManager from '../components/QueriesManager.jsx'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -171,6 +172,13 @@ export default function AdminDashboard() {
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'tours' || activeTab === 'edit_tour' ? "'FILL' 1" : undefined }}>domain</span>
             <span>Manage Colleges</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('queries')}
+            className={`w-full text-left rounded-lg font-bold flex items-center gap-3 px-4 py-3 transition-all duration-200 ${activeTab === 'queries' ? 'bg-white/10 text-white' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'queries' ? "'FILL' 1" : undefined }}>forum</span>
+            <span>Student Queries</span>
           </button>
           <button 
             onClick={() => setActiveTab('ambassadors')}
@@ -920,6 +928,17 @@ export default function AdminDashboard() {
                 setActiveTab('tours')
               }}
             />
+          </section>
+        )}
+
+        {/* Tab: Queries */}
+        {activeTab === 'queries' && (
+          <section className="animate-in fade-in zoom-in-[0.98] duration-300 pt-24 pb-12 px-8 max-w-7xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-4xl font-extrabold text-[#002045] font-headline mb-2">Student Queries</h1>
+              <p className="text-slate-500 text-sm">Manage user inquiries and track communication across all colleges.</p>
+            </div>
+            <QueriesManager />
           </section>
         )}
       </main>

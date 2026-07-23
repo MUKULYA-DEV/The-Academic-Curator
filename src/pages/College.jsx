@@ -634,6 +634,7 @@ export default function College() {
   const [queryEmail, setQueryEmail] = useState('')
   const [queryCountryCode, setQueryCountryCode] = useState('+91')
   const [queryPhone, setQueryPhone] = useState('')
+  const [queryCourse, setQueryCourse] = useState('')
   const [queryMessage, setQueryMessage] = useState('')
   const [submittingQuery, setSubmittingQuery] = useState(false)
   const [querySuccess, setQuerySuccess] = useState(false)
@@ -681,7 +682,17 @@ export default function College() {
       setSubmittingQuery(false)
       return
     }
-    
+    // Spam Prevention / Rate Limiting
+    const lastSubmission = localStorage.getItem('last_query_submission')
+    if (lastSubmission) {
+      const timeSince = Date.now() - parseInt(lastSubmission, 10)
+      if (timeSince < 60000) { // 60 seconds
+        alert('Please wait a minute before submitting another query.')
+        setSubmittingQuery(false)
+        return
+      }
+    }
+
     try {
       const fullPhone = `${queryCountryCode} ${queryPhone.trim()}`
       const { data: { user } } = await supabase.auth.getUser()
@@ -692,10 +703,12 @@ export default function College() {
           last_name: queryLastName.trim(),
           email: queryEmail.trim(),
           phone: fullPhone,
+          course_interested: queryCourse.trim(),
           message: queryMessage.trim(),
           college_name: tourData?.title ?? tourData?.university_name ?? 'Unknown College',
           tour_id: tourData?.id || null,
-          user_id: user?.id || null
+          user_id: user?.id || null,
+          status: 'open'
         })
 
       if (error) {
@@ -730,8 +743,12 @@ export default function College() {
         throw error
       }
 
+      // Record submission for rate limiting
+      localStorage.setItem('last_query_submission', Date.now().toString())
+
       setQuerySuccess(true)
       setQueryMessage('')
+      setQueryCourse('')
       setTimeout(() => {
         setQuerySuccess(false)
         setIsQueryOpen(false)
@@ -1240,6 +1257,20 @@ export default function College() {
                       className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <label className="font-label text-[10px] font-bold tracking-widest text-secondary uppercase" htmlFor="query-course">
+                    Course Interested In (Optional)
+                  </label>
+                  <input
+                    id="query-course"
+                    type="text"
+                    value={queryCourse}
+                    onChange={(e) => setQueryCourse(e.target.value)}
+                    placeholder="e.g. B.Tech Computer Science"
+                    className="bg-surface-container-low text-on-surface w-full rounded-lg border-none px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none"
+                  />
                 </div>
 
                 <div className="space-y-2 text-left">
