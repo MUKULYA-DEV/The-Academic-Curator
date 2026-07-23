@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth } from './hooks/useAuth.js'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
@@ -31,6 +32,12 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
   return (
     <Routes>
       <Route path="/" element={<Home />} />
