@@ -3,12 +3,24 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient.js'
 import TourEditor from '../components/TourEditor.jsx'
 import QueriesManager from '../components/QueriesManager.jsx'
+import MediaPicker from '../components/MediaPicker.jsx'
+import { settingsService } from '../services/settingsService.js'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
   
   // Navigation / Tabs
   const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard', 'bookings', 'ambassadors', 'reports', 'settings'
+  
+  const [heroMedia, setHeroMedia] = useState(null)
+
+  useEffect(() => {
+    if (activeTab === 'settings') {
+      settingsService.getSetting('hero_media').then(val => {
+        if (val) setHeroMedia(val)
+      })
+    }
+  }, [activeTab])
   
   // Real DB Data
   const [bookings, setBookings] = useState([])
@@ -780,6 +792,23 @@ export default function AdminDashboard() {
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-[#545f72] uppercase tracking-wider">Homepage Hero Image</label>
+                <MediaPicker 
+                  value={heroMedia}
+                  onChange={async (val) => {
+                    setHeroMedia(val)
+                    const { error } = await settingsService.setSetting('hero_media', val)
+                    if (error) {
+                      alert('Failed to update image: ' + error.message)
+                    } else {
+                      showNotification('Hero image updated successfully!')
+                    }
+                  }}
+                  bucketName="tour-media"
+                />
+              </div>
+
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-[#545f72] uppercase tracking-wider">Institution Name</label>
                 <input 

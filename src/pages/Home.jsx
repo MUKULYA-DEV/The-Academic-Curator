@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../supabaseClient.js'
+import { settingsService } from '../services/settingsService.js'
+import { getPublicUrl } from '../services/mediaService.js'
 
 const UPCOMING_TOURS = [
   {
@@ -174,9 +176,17 @@ export default function Home() {
   const [heroSearch, setHeroSearch] = useState('')
   const [tours, setTours] = useState([])
   const [loading, setLoading] = useState(true)
+  const [heroImage, setHeroImage] = useState(null)
 
   useEffect(() => {
     document.title = 'The Academic Curator | Book Your Campus Tour'
+    
+    // Fetch dynamic hero image
+    settingsService.getSetting('hero_media').then(storagePath => {
+      if (storagePath) {
+        setHeroImage(getPublicUrl(storagePath))
+      }
+    }).catch(err => console.error('Failed to load hero image:', err))
   }, [])
 
   useEffect(() => {
@@ -266,8 +276,8 @@ export default function Home() {
               <div className="ghost-shadow relative z-10 -rotate-2 transform overflow-hidden rounded-xl">
                 <img
                   alt="Stately red brick university campus building with clock tower"
-                  className="h-[500px] w-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV5-UmBceAZWTUMwBXAlffid7KmcIlnwYaFoOsIIccWW6YwwKv5mYBdqTudsNpqIGcSdvfNWw1e5dAJAEYbbiKFzKjhDn7Ptk2UdxuAGFeruarW3-9uyX18qpEO-4ifP-3kP_LlxdHg5vdhO0mDd04Nrz4da43nmPnyWL77faR1RdZLp4Xz41kl6XiAHFLFPcsKFXa4Znxm3FQEbh7-vhlf-iNDpYvvqM9bZuzS0Opd1KQJ90fVxHt6DKtwN0Autjfp_HfDhvGYCRd"
+                  className="h-[500px] w-full object-cover transition-opacity duration-700"
+                  src={heroImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuDV5-UmBceAZWTUMwBXAlffid7KmcIlnwYaFoOsIIccWW6YwwKv5mYBdqTudsNpqIGcSdvfNWw1e5dAJAEYbbiKFzKjhDn7Ptk2UdxuAGFeruarW3-9uyX18qpEO-4ifP-3kP_LlxdHg5vdhO0mDd04Nrz4da43nmPnyWL77faR1RdZLp4Xz41kl6XiAHFLFPcsKFXa4Znxm3FQEbh7-vhlf-iNDpYvvqM9bZuzS0Opd1KQJ90fVxHt6DKtwN0Autjfp_HfDhvGYCRd"}
                 />
               </div>
               <div className="absolute -top-10 -right-10 h-64 w-64 rounded-full bg-tertiary-fixed opacity-20 blur-3xl" />
