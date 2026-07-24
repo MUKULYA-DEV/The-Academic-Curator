@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
+import { isAdmin } from '../services/authService.js'
 
 /** Get initials from first name and last name, fallback to email local part first letter. */
 function getInitials(user) {
@@ -29,6 +30,7 @@ function getInitials(user) {
 export function UserAvatarMenu({ className = '' }) {
   const { session, signOut } = useAuth()
   const [open, setOpen] = useState(false)
+  const [userIsAdmin, setUserIsAdmin] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
@@ -40,6 +42,20 @@ export function UserAvatarMenu({ className = '' }) {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    let mounted = true
+    if (session) {
+      isAdmin().then(result => {
+        if (mounted) {
+          setUserIsAdmin(result.isAuthorized || result === true)
+        }
+      })
+    } else {
+      setUserIsAdmin(false)
+    }
+    return () => { mounted = false }
+  }, [session])
 
   const initial = getInitials(session?.user)
 
@@ -76,14 +92,16 @@ export function UserAvatarMenu({ className = '' }) {
           >
             My Bookings
           </Link>
-          <Link
-            to="/admin"
-            role="menuitem"
-            className="block px-4 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high"
-            onClick={() => setOpen(false)}
-          >
-            Admin Portal
-          </Link>
+          {userIsAdmin && (
+            <Link
+              to="/admin"
+              role="menuitem"
+              className="block px-4 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-high"
+              onClick={() => setOpen(false)}
+            >
+              Admin Portal
+            </Link>
+          )}
           <button
             type="button"
             role="menuitem"
