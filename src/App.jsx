@@ -13,6 +13,7 @@ import Profile from './pages/Profile.jsx'
 import ContactSupport from './pages/ContactSupport.jsx'
 import AllBookings from './pages/AllBookings.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
+import ProtectedAdminRoute from './components/ProtectedAdminRoute.jsx'
 
 
 function ProtectedRoute({ children }) {
@@ -126,9 +127,9 @@ export default function App() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedAdminRoute>
             <AdminDashboard />
-          </ProtectedRoute>
+          </ProtectedAdminRoute>
         }
       />
     </Routes>
