@@ -180,6 +180,7 @@ export default function ExploreTours() {
       const { data, error } = await supabase
         .from('tours')
         .select('*')
+        .eq('status', 'published')
       if (cancelled) return
       if (data && !error) {
         setAllToursForFilters(data.map(mapTourRow))

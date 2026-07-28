@@ -19,6 +19,13 @@ export default function TourEditor({ tour, onSave, onCancel }) {
   const [currencySymbol, setCurrencySymbol] = useState(tour?.currency_symbol || '₹')
   const [status, setStatus] = useState(tour?.status || 'draft')
 
+  // Schedule, Timings & Badges
+  const initialDateParts = (tour?.date_line || '').split('•').map(s => s.trim())
+  const [tourDate, setTourDate] = useState(initialDateParts[0] || 'Schedule TBD')
+  const [tourTime, setTourTime] = useState(initialDateParts[1] || '')
+  const [badgeText, setBadgeText] = useState(tour?.badge || 'OPEN')
+  const [badgeVariant, setBadgeVariant] = useState(tour?.badge_variant || 'slots')
+
   // JSON Details
   const [details, setDetails] = useState(() => {
     return sanitizeTourJson(tour?.details);
@@ -247,6 +254,9 @@ export default function TourEditor({ tour, onSave, onCancel }) {
         currency,
         currency_symbol: currencySymbol,
         status: status,
+        date_line: tourDate.trim() ? (tourTime.trim() ? `${tourDate.trim()} • ${tourTime.trim()}` : tourDate.trim()) : 'Schedule TBD',
+        badge: badgeText.trim(),
+        badge_variant: badgeVariant,
         slug: isEditMode ? tour.slug : generateSlug(universityName, title),
         details: detailsPayload,
         updated_at: new Date().toISOString()
@@ -293,19 +303,35 @@ export default function TourEditor({ tour, onSave, onCancel }) {
         </button>
       </div>
 
-      <div className="bg-slate-50 border-b border-slate-100 px-8 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status:</label>
-          <select 
-            value={status} 
-            onChange={(e) => setStatus(e.target.value)}
-            className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 outline-none"
-          >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="archived">Archived</option>
-          </select>
+      <div className="bg-slate-50/90 border-b border-slate-100 px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status:</span>
+          <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-2xs gap-1">
+            {[
+              { id: 'draft', label: 'Draft', dot: 'bg-amber-500', active: 'bg-amber-50 text-amber-900 border-amber-300 ring-1 ring-amber-400' },
+              { id: 'published', label: 'Published (Live)', dot: 'bg-emerald-500 animate-pulse', active: 'bg-emerald-50 text-emerald-900 border-emerald-300 ring-1 ring-emerald-400' },
+              { id: 'archived', label: 'Archived', dot: 'bg-slate-500', active: 'bg-slate-100 text-slate-800 border-slate-300 ring-1 ring-slate-400' }
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setStatus(opt.id)}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 border border-transparent ${
+                  status === opt.id ? opt.active : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${opt.dot}`} />
+                <span>{opt.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
+        <span className="text-xs text-slate-500 font-semibold flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200/60 shadow-2xs">
+          <span className="material-symbols-outlined text-base text-slate-400">info</span>
+          {status === 'draft' && <span>Hidden from general users. Only visible in Admin Portal.</span>}
+          {status === 'published' && <span className="text-emerald-700">Visible and searchable by all visitors on the live platform.</span>}
+          {status === 'archived' && <span>Unpublished and archived from public listings.</span>}
+        </span>
       </div>
 
       <div className="border-b border-slate-100 bg-slate-50 px-8 py-3 flex gap-4 overflow-x-auto no-scrollbar">
@@ -384,6 +410,47 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10"
                 required
               />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Tour Schedule Date</label>
+              <input 
+                type="text" 
+                value={tourDate}
+                onChange={e => setTourDate(e.target.value)}
+                placeholder="e.g. November 15, 2025 or Schedule TBD" 
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10 font-medium"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Tour Timings</label>
+              <input 
+                type="text" 
+                value={tourTime}
+                onChange={e => setTourTime(e.target.value)}
+                placeholder="e.g. 10:00 AM - 1:00 PM EST or 02:00 PM - 5:00 PM IST" 
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10 font-medium"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Card Badge Text (Slots / Status)</label>
+              <input 
+                type="text" 
+                value={badgeText}
+                onChange={e => setBadgeText(e.target.value)}
+                placeholder="e.g. 5 Slots Left or OPEN or FULL" 
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10 font-medium"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Badge Styling Theme</label>
+              <select 
+                value={badgeVariant}
+                onChange={e => setBadgeVariant(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10 font-semibold text-slate-700"
+              >
+                <option value="slots">Standard / Slots Available (Amber/Light Pill)</option>
+                <option value="last">Urgent / Last Slot (Red/Alert Pill)</option>
+              </select>
             </div>
             <div className="md:col-span-2 space-y-1">
               <MediaPicker 

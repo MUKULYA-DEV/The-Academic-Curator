@@ -878,6 +878,7 @@ export default function AdminDashboard() {
                     <thead>
                       <tr className="bg-slate-50 text-[#545f72] text-[10px] font-bold uppercase tracking-widest border-b border-slate-100">
                         <th className="px-6 py-4">College Details</th>
+                        <th className="px-6 py-4">Status</th>
                         <th className="px-6 py-4">University Affiliate</th>
                         <th className="px-6 py-4">Location</th>
                         <th className="px-6 py-4">Pricing</th>
@@ -902,6 +903,20 @@ export default function AdminDashboard() {
                                 <p className="font-bold text-[#002045]">{t.title}</p>
                                 <p className="text-[10px] text-slate-400 font-mono">#{String(t.id).slice(0, 8)}</p>
                               </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize border ${
+                                t.status === 'published' 
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                  : t.status === 'archived'
+                                  ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200'
+                              }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${
+                                  t.status === 'published' ? 'bg-emerald-500 animate-pulse' : t.status === 'archived' ? 'bg-slate-400' : 'bg-amber-500'
+                                }`} />
+                                {t.status || 'draft'}
+                              </span>
                             </td>
                             <td className="px-6 py-4 font-semibold text-slate-700">
                               {t.university_name}
