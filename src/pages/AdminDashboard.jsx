@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../supabaseClient.js'
+
 import TourEditor from '../components/TourEditor.jsx'
 import QueriesManager from '../components/QueriesManager.jsx'
 import MediaPicker from '../components/MediaPicker.jsx'
 import { settingsService } from '../services/settingsService.js'
+import { getAdminDashboardData, updateBookingStatus } from '../services/adminService.js'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -44,36 +45,10 @@ export default function AdminDashboard() {
   async function fetchAdminData() {
     setLoading(true)
     try {
-      // 1. Fetch bookings with tour details
-      const { data: bookingsData, error: bookingsErr } = await supabase
-        .from('bookings')
-        .select('*, tours(university_name, title, image_url)')
-        .order('created_at', { ascending: false })
-      
-      if (bookingsErr) throw bookingsErr
-      setBookings(bookingsData || [])
-
-      // 2. Fetch profiles
-      const { data: profilesData, error: profilesErr } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-      
-      if (profilesErr) {
-        console.warn('Profiles table not found or query error, defaulting to empty list:', profilesErr.message)
-      } else {
-        setProfiles(profilesData || [])
-      }
-
-      // 3. Fetch tours
-      const { data: toursData, error: toursErr } = await supabase
-        .from('tours')
-        .select('*')
-        .order('created_at', { ascending: false })
-      
-      if (toursErr) throw toursErr
-      setTours(toursData || [])
-
+      const data = await getAdminDashboardData()
+      setBookings(data.bookings)
+      setProfiles(data.profiles)
+      setTours(data.tours)
     } catch (err) {
       console.error('Error fetching admin dashboard data:', err)
       showNotification('Error loading dashboard data. Please try again.', 'error')
@@ -97,15 +72,8 @@ export default function AdminDashboard() {
   async function handleUpdateStatus(bookingId, newStatus) {
     setActionLoadingId(bookingId)
     try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId)
-
-      if (error) throw error
-
+      await updateBookingStatus(bookingId, newStatus)
       showNotification(`Booking status updated to ${newStatus}!`)
-      // Refresh local data
       fetchAdminData()
     } catch (err) {
       console.error('Error updating booking status:', err)

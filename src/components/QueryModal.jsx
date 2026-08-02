@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../supabaseClient'
+import { submitQuery } from '../services/queryService'
 
 export default function QueryModal({ isOpen, onClose, tour }) {
   const [formData, setFormData] = useState({
@@ -84,19 +84,18 @@ export default function QueryModal({ isOpen, onClose, tour }) {
     setErrors({})
 
     try {
-      const { error } = await supabase
-        .from('queries')
-        .insert([{
+      await submitQuery({
           tour_id: tour.id,
-          name: formData.name.trim(),
+          first_name: formData.name.trim().split(' ')[0] || '',
+          last_name: formData.name.trim().split(' ').slice(1).join(' ') || '',
           email: formData.email.trim().toLowerCase(),
           phone: formData.phone.trim(),
           course_interested: formData.course_interested.trim(),
           message: formData.message.trim(),
-          status: 'open' // Explicitly set scalable workflow default
-        }])
+          status: 'open'
+        })
 
-      if (error) throw error
+      
 
       // Success
       localStorage.setItem('last_query_submission', Date.now().toString())

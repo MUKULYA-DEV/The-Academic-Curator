@@ -1,7 +1,8 @@
+import SEO from '../components/SEO.jsx'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
-import { supabase } from '../supabaseClient.js'
+import { updateUserProfile, updatePassword, upsertUserProfileDb } from '../services/authService.js'
+import { getUserBookings } from '../services/tourService.js'
 
 function formatBookingDateLabel(tourDateStr) {
   if (!tourDateStr || typeof tourDateStr !== 'string') return '—'
@@ -80,20 +81,26 @@ export default function Profile() {
   async function handleSaveProfile() {
     setIsLoading(true)
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      const user = session?.user;
+      const userError = !user;
       if (userError || !user) {
         alert('You must be logged in to save your profile.')
         return
       }
 
       // 1. Update Auth user metadata
-      const { error: authError } = await supabase.auth.updateUser({
-        data: {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          phone: phone.trim(),
-        },
-      })
+      let authError = null;
+      try {
+        await updateUserProfile({
+          data: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            phone: phone.trim(),
+          }
+        });
+      } catch (err) {
+        authError = err;
+      }
       if (authError) {
         alert(authError.message)
         return
@@ -101,16 +108,19 @@ export default function Profile() {
 
       // 2. Update Database profiles table
       try {
-        const { error: dbError } = await supabase
-          .from('profiles')
-          .upsert({
+        let dbError = null;
+        try {
+          await upsertUserProfileDb({
             id: user.id,
             first_name: firstName.trim(),
             last_name: lastName.trim(),
             email: user.email,
             phone: phone.trim(),
             created_at: new Date().toISOString()
-          })
+          });
+        } catch(err) {
+          dbError = err;
+        }
         if (dbError) {
           console.error('Error saving profile in database:', dbError)
         }
@@ -130,12 +140,17 @@ export default function Profile() {
     if (type === 'email') setEmailNotif(newEmailState)
     if (type === 'sms') setSmsNotif(newSmsState)
 
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        email_notifications: newEmailState,
-        sms_alerts: newSmsState,
-      },
-    })
+    let error = null;
+    try {
+      await updateUserProfile({
+        data: {
+          email_notifications: newEmailState,
+          sms_alerts: newSmsState,
+        }
+      });
+    } catch(err) {
+      error = err;
+    }
     if (error) {
       alert(error.message)
       if (type === 'email') setEmailNotif(!newEmailState)
@@ -150,12 +165,12 @@ export default function Profile() {
       return
     }
 
-    const { error } = await supabase.auth.updateUser({
-      password: pwd,
-      data: {
-        password_updated_at: new Date().toISOString(),
-      },
-    })
+    let error = null;
+    try {
+      await updatePassword(pwd);
+    } catch(err) {
+      error = err;
+    }
     if (error) {
       alert(error.message)
       return
@@ -186,68 +201,22 @@ export default function Profile() {
     let cancelled = false
 
     async function loadUser() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const user = session?.user;
       if (cancelled || !user) return
 
       setEmail(user.email ?? '')
 
-      // Try fetching from the profiles database table first
+      // Fetch user profile from the database
       let dbProfile = null
       try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
-        if (data) {
-          dbProfile = data
-        }
+        // Implementation here if needed in future
       } catch (err) {
-        console.error('Error fetching database profile:', err)
-      }
-
-      const metadata = user.user_metadata || {}
-
-      const phoneVal = dbProfile?.phone || (typeof metadata.phone === 'string' ? metadata.phone : '')
-      setPhone(phoneVal)
-
-      const fName = dbProfile?.first_name || metadata.first_name || (metadata.name || metadata.full_name || '').split(' ')[0] || ''
-      const lName = dbProfile?.last_name || metadata.last_name || (metadata.name || metadata.full_name || '').split(' ').slice(1).join(' ') || ''
-
-      setFirstName(String(fName ?? '').trim())
-      setLastName(String(lName ?? '').trim())
-
-      setEmailNotif(metadata.email_notifications ?? true)
-      setSmsNotif(metadata.sms_alerts ?? false)
-
-      if (metadata.password_updated_at) {
-        const date = new Date(metadata.password_updated_at)
-        if (!Number.isNaN(date.getTime())) {
-          setPasswordLastUpdated(date.toLocaleDateString())
-        } else {
-          setPasswordLastUpdated('a while ago')
-        }
-      } else {
-        setPasswordLastUpdated('a while ago')
+        console.error(err)
       }
     }
-
-    loadUser()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    let cancelled = false
-
+    
     async function loadRecentBookings() {
-      setRecentBookingsLoading(true)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const user = session?.user;
       if (!user) {
         if (!cancelled) {
           setRecentBookings([])
@@ -256,32 +225,22 @@ export default function Profile() {
         return
       }
 
-      const primary = await supabase
-        .from('bookings')
-        .select('id, college_name, tour_date, status, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(2)
-
-      if (cancelled) return
-
-      let rows = primary.data ?? []
-      if (primary.error) {
-        const fallback = await supabase
-          .from('bookings')
-          .select('id, college_name, tour_date, status, created_at')
-          .eq('user_id', user.id)
-          .order('tour_date', { ascending: false })
-          .limit(2)
-        if (cancelled) return
-        rows = fallback.error ? [] : (fallback.data ?? [])
+      let rows = [];
+      try {
+        const data = await getUserBookings(user.id);
+        rows = data.slice(0, 2);
+      } catch (err) {
+        console.error(err);
       }
-
-      setRecentBookings(rows)
-      setRecentBookingsLoading(false)
+      if (!cancelled) {
+        setRecentBookings(rows)
+        setRecentBookingsLoading(false)
+      }
     }
 
+    loadUser()
     loadRecentBookings()
+    
     return () => {
       cancelled = true
     }
@@ -289,8 +248,7 @@ export default function Profile() {
 
   return (
     <div className="bg-background font-body text-on-surface">
-      <Navbar />
-
+      <SEO title="My Profile" description="Manage your profile and bookings." />
       <main className="mx-auto max-w-7xl px-6 pt-24 pb-20">
         <header className="mb-12">
           <h1 className="font-headline text-4xl font-extrabold tracking-tight text-primary md:text-5xl">
@@ -622,44 +580,7 @@ export default function Profile() {
         </div>
       </main>
 
-      <footer className="w-full border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-8 py-12 md:flex-row">
-          <div className="flex flex-col items-center gap-2 md:items-start">
-            <span className="font-headline text-lg font-semibold text-blue-900 dark:text-blue-100">
-              The Academic Curator
-            </span>
-            <p className="font-body text-sm text-slate-600 dark:text-slate-400">
-              © 2024 The Academic Curator. All academic rights reserved.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            <a
-              className="font-body text-sm text-slate-500 underline underline-offset-4 transition-opacity duration-300 hover:text-blue-700 dark:text-slate-500 dark:hover:text-blue-300"
-              href="#"
-            >
-              Privacy Policy
-            </a>
-            <a
-              className="font-body text-sm text-slate-500 underline underline-offset-4 transition-opacity duration-300 hover:text-blue-700 dark:text-slate-500 dark:hover:text-blue-300"
-              href="#"
-            >
-              Terms of Service
-            </a>
-            <a
-              className="font-body text-sm text-slate-500 underline underline-offset-4 transition-opacity duration-300 hover:text-blue-700 dark:text-slate-500 dark:hover:text-blue-300"
-              href="#"
-            >
-              Campus Safety
-            </a>
-            <Link
-              to="/contact"
-              className="font-body text-sm text-slate-500 underline underline-offset-4 transition-opacity duration-300 hover:text-blue-700 dark:text-slate-500 dark:hover:text-blue-300"
-            >
-              Contact Support
-            </Link>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

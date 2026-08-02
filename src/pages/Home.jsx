@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
-import { supabase } from '../supabaseClient.js'
+import { getPublishedTours } from '../services/tourService.js'
 import { settingsService } from '../services/settingsService.js'
 import { getPublicUrl } from '../services/mediaService.js'
+import SEO from '../components/SEO.jsx'
 
 const UPCOMING_TOURS = [
   {
@@ -125,6 +125,7 @@ function HomeFeaturedTourCard({ tour }) {
       onClick={handleCardClick}
       className="group ghost-shadow flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] bg-surface-container-lowest transition-all duration-500 hover:shadow-2xl"
     >
+      <SEO title="The Academic Curator | Book Your Campus Tour" description="Find your future university with curated campus experiences led by top-tier student ambassadors." />
       <div className="relative h-64 shrink-0 overflow-hidden">
         <img
           alt={tour.imageAlt}
@@ -179,7 +180,7 @@ export default function Home() {
   const [heroImage, setHeroImage] = useState(null)
 
   useEffect(() => {
-    document.title = 'The Academic Curator | Book Your Campus Tour'
+    
     
     // Fetch dynamic hero image
     settingsService.getSetting('hero_media').then(storagePath => {
@@ -192,17 +193,11 @@ export default function Home() {
   useEffect(() => {
     async function fetchFeaturedTours() {
       try {
-        const { data, error } = await supabase
-          .from('tours')
-          .select('*')
-          .eq('status', 'published')
-          .order('created_at', { ascending: false })
-          .limit(3)
+        const publishedTours = await getPublishedTours()
+        const featured = publishedTours.slice(0, 3)
 
-        if (error) throw error
-
-        if (data && data.length > 0) {
-          setTours(data.map(mapSupabaseTourToHomeTour))
+        if (featured.length > 0) {
+          setTours(featured.map(mapSupabaseTourToHomeTour))
         } else {
           setTours(UPCOMING_TOURS)
         }
@@ -235,8 +230,6 @@ export default function Home() {
 
   return (
     <>
-      <Navbar active="home" />
-
       <main className="pt-24">
         <section className="relative overflow-hidden bg-surface-container-low px-8 py-20 lg:py-32">
           <div className="mx-auto grid max-w-screen-2xl items-center gap-12 lg:grid-cols-2">
@@ -370,23 +363,23 @@ export default function Home() {
                 life and academic rigor.
               </p>
               <div className="flex gap-4">
-                <button
-                  className="rounded-lg bg-tertiary px-8 py-4 font-semibold text-on-tertiary transition-colors hover:bg-tertiary-container"
-                  type="button"
+                <Link
+                  to="/ambassadors"
+                  className="rounded-lg bg-tertiary px-8 py-4 font-semibold text-center text-on-tertiary transition-colors hover:bg-tertiary-container"
                 >
                   Meet Ambassadors
-                </button>
-                <button
-                  className="rounded-lg border border-outline-variant bg-transparent px-8 py-4 font-semibold text-on-primary transition-colors hover:bg-white/10"
-                  type="button"
+                </Link>
+                <Link
+                  to="/explore"
+                  className="rounded-lg border border-outline-variant bg-transparent px-8 py-4 font-semibold text-center text-on-primary transition-colors hover:bg-white/10"
                 >
                   The Curriculum
-                </button>
+                </Link>
               </div>
             </div>
             <div className="grid flex-1 grid-cols-2 gap-4">
               <div className="space-y-4 pt-12">
-                <div className="rounded-xl border border-white/5 bg-surface-container-lowest/10 p-4 backdrop-blur-sm">
+                <Link to="/ambassadors" className="block rounded-xl border border-white/5 bg-surface-container-lowest/10 p-4 backdrop-blur-sm transition-transform hover:scale-105 hover:bg-surface-container-lowest/20">
                   <img
                     alt="Smiling female university student portrait"
                     className="mb-4 aspect-square w-full rounded-lg object-cover"
@@ -396,10 +389,10 @@ export default function Home() {
                   <p className="text-xs uppercase tracking-widest text-on-primary-container">
                     Physics @ MIT
                   </p>
-                </div>
+                </Link>
               </div>
               <div className="space-y-4">
-                <div className="rounded-xl border border-white/5 bg-surface-container-lowest/10 p-4 backdrop-blur-sm">
+                <Link to="/ambassadors" className="block rounded-xl border border-white/5 bg-surface-container-lowest/10 p-4 backdrop-blur-sm transition-transform hover:scale-105 hover:bg-surface-container-lowest/20">
                   <img
                     alt="Smiling male university student portrait"
                     className="mb-4 aspect-square w-full rounded-lg object-cover"
@@ -409,60 +402,12 @@ export default function Home() {
                   <p className="text-xs uppercase tracking-widest text-on-primary-container">
                     Law @ Columbia
                   </p>
-                </div>
+                </Link>
               </div>
             </div>
           </div>
         </section>
       </main>
-
-      <footer className="w-full border-t border-slate-200/90 bg-[#F8FAFF]">
-        <div className="mx-auto flex max-w-screen-2xl flex-col items-center justify-between gap-6 px-12 py-10 md:flex-row">
-          <div className="flex flex-col items-center gap-2 md:items-start">
-            <Link
-              to="/"
-              className="font-manrope text-lg font-bold text-[#002045]"
-            >
-              The Academic Curator
-            </Link>
-            <p className="font-inter text-sm leading-relaxed text-[#5c6578]">
-              © 2024 The Academic Curator. All rights reserved.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              University Partners
-            </a>
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Admissions Office
-            </a>
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Privacy Policy
-            </a>
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Accessibility
-            </a>
-            <Link
-              to="/contact"
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-            >
-              Contact Support
-            </Link>
-          </div>
-        </div>
-      </footer>
     </>
   )
 }

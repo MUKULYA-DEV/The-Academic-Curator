@@ -32,3 +32,40 @@ export async function isAdmin() {
     return { isAuthorized: false, reason: `Exception: ${error.message}` }
   }
 }
+
+/**
+ * Updates the user's profile information.
+ * @param {Object} attributes - The attributes to update (e.g., data: { display_name, phone }).
+ */
+export async function updateUserProfile(attributes) {
+  const { data, error } = await supabase.auth.updateUser(attributes)
+  if (error) throw error
+  return data
+}
+
+/**
+ * Updates the user's password.
+ * @param {string} newPassword - The new password.
+ */
+export async function updatePassword(newPassword) {
+  const { data, error } = await supabase.auth.updateUser({ 
+    password: newPassword,
+    data: {
+      password_updated_at: new Date().toISOString(),
+    }
+  })
+  if (error) throw error
+  return data
+}
+
+/**
+ * Upserts the user's profile in the profiles table.
+ * @param {Object} profileData 
+ */
+export async function upsertUserProfileDb(profileData) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .upsert(profileData)
+  if (error) throw error
+  return data
+}

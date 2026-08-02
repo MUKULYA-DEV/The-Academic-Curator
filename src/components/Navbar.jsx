@@ -1,90 +1,93 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { NavAuthSection } from './NavAuthSection.jsx'
 
 /**
- * Global pill nav (same as Home). Optional `active` highlights the current route in the main links.
- * @param {'home' | 'explore' | 'about' | undefined} [active]
+ * Global pill nav.
  */
-export default function Navbar({ active }) {
+export default function Navbar() {
+  const location = useLocation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const isActive = (path) => {
+    if (path === '/' && location.pathname !== '/') return false
+    return location.pathname.startsWith(path)
+  }
+
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Explore Tours', path: '/explore' },
+    { name: 'Ambassadors', path: '/ambassadors' },
+    { name: 'About Us', path: '/about' },
+  ]
+
   return (
     <div className="fixed top-6 right-0 left-0 z-50 flex justify-center px-4">
-      <nav className="glass-nav premium-nav-shadow w-full max-w-6xl rounded-full border border-white/40 bg-white/70 px-8 py-3">
+      <nav className="glass-nav premium-nav-shadow w-full max-w-6xl rounded-full border border-white/40 bg-white/70 px-6 py-3 sm:px-8">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center">
             <Link
               to="/"
               className="text-sm font-extrabold tracking-tighter whitespace-nowrap text-[#002045] sm:text-lg"
+              onClick={() => setMobileMenuOpen(false)}
             >
               The Academic Curator
             </Link>
           </div>
+          
+          {/* Desktop Nav */}
           <div className="hidden items-center gap-8 md:flex">
-            {active === 'home' ? (
+            {navLinks.map((link) => (
               <Link
-                to="/"
-                className="relative text-sm font-bold text-[#002045] after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-[#735C00] after:content-['']"
+                key={link.name}
+                to={link.path}
+                className={
+                  isActive(link.path)
+                    ? "relative text-sm font-bold text-[#002045] after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-[#735C00] after:content-['']"
+                    : "text-sm font-semibold text-[#545F72] transition-colors hover:text-[#002045]"
+                }
               >
-                Home
+                {link.name}
               </Link>
-            ) : (
-              <Link
-                to="/"
-                className="text-sm font-semibold text-[#545F72] transition-colors hover:text-[#002045]"
-              >
-                Home
-              </Link>
-            )}
-            {active === 'explore' ? (
-              <Link
-                to="/explore"
-                className="relative text-sm font-bold text-[#002045] after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-[#735C00] after:content-['']"
-              >
-                Explore Tours
-              </Link>
-            ) : (
-              <Link
-                to="/explore"
-                className="text-sm font-semibold text-[#545F72] transition-colors hover:text-[#002045]"
-              >
-                Explore Tours
-              </Link>
-            )}
-            {active === 'ambassadors' ? (
-              <Link
-                to="/ambassadors"
-                className="relative text-sm font-bold text-[#002045] after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-[#735C00] after:content-['']"
-              >
-                Ambassadors
-              </Link>
-            ) : (
-              <Link
-                to="/ambassadors"
-                className="text-sm font-semibold text-[#545F72] transition-colors hover:text-[#002045]"
-              >
-                Ambassadors
-              </Link>
-            )}
-            {active === 'about' ? (
-              <Link
-                to="/about"
-                className="relative text-sm font-bold text-[#002045] after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-[#735C00] after:content-['']"
-              >
-                About Us
-              </Link>
-            ) : (
-              <Link
-                to="/about"
-                className="text-sm font-semibold text-[#545F72] transition-colors hover:text-[#002045]"
-              >
-                About Us
-              </Link>
-            )}
+            ))}
           </div>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2 sm:gap-3">
             <NavAuthSection variant="dual" />
+            
+            {/* Mobile menu button */}
+            <button
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-full text-primary hover:bg-surface-container"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              <span className="material-symbols-outlined">
+                {mobileMenuOpen ? 'close' : 'menu'}
+              </span>
+            </button>
           </div>
         </div>
       </nav>
+
+      {/* Mobile dropdown */}
+      {mobileMenuOpen && (
+        <div className="absolute top-20 left-4 right-4 rounded-2xl bg-white/95 backdrop-blur-md border border-white/40 shadow-xl p-4 flex flex-col gap-2 md:hidden">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              to={link.path}
+              onClick={() => setMobileMenuOpen(false)}
+              className={`p-3 rounded-xl text-center text-sm font-bold ${
+                isActive(link.path)
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-secondary hover:bg-surface-container'
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

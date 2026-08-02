@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../supabaseClient'
+import { getAllAdminQueries, updateQueryStatus } from '../services/adminService.js'
 
 export default function QueriesManager() {
   const [queries, setQueries] = useState([])
@@ -21,15 +21,7 @@ export default function QueriesManager() {
   const fetchQueries = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('queries')
-        .select(`
-          *,
-          tours ( university_name, title )
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
+      const data = await getAllAdminQueries()
       setQueries(data || [])
     } catch (err) {
       console.error('Error fetching queries:', err)
@@ -75,29 +67,15 @@ export default function QueriesManager() {
 
   const handleStatusChange = async (queryId, newStatus) => {
     try {
-      const updatePayload = {
-        status: newStatus,
-        updated_at: new Date().toISOString()
-      }
-      
-      if (newStatus === 'resolved') {
-        updatePayload.resolved_at = new Date().toISOString()
-      }
-      
-      const { error } = await supabase
-        .from('queries')
-        .update(updatePayload)
-        .eq('id', queryId)
-        
-      if (error) throw error
+      const updatedQuery = await updateQueryStatus(queryId, newStatus, selectedQuery?.id === queryId ? adminNotes : undefined)
       
       // Update local state
       setQueries(prev => prev.map(q => 
-        q.id === queryId ? { ...q, ...updatePayload } : q
+        q.id === queryId ? { ...q, ...updatedQuery } : q
       ))
       
       if (selectedQuery && selectedQuery.id === queryId) {
-        setSelectedQuery(prev => ({ ...prev, ...updatePayload }))
+        setSelectedQuery(prev => ({ ...prev, ...updatedQuery }))
       }
     } catch (err) {
       console.error('Error updating status:', err)
@@ -109,15 +87,7 @@ export default function QueriesManager() {
     if (!selectedQuery) return
     setSavingNotes(true)
     try {
-      const { error } = await supabase
-        .from('queries')
-        .update({
-          admin_notes: adminNotes,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedQuery.id)
-        
-      if (error) throw error
+      const updatedQuery = await updateQueryStatus(selectedQuery.id, selectedQuery.status, adminNotes)
       
       // Update local state
       setQueries(prev => prev.map(q => 

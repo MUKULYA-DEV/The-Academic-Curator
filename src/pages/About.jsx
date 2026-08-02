@@ -1,16 +1,14 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
-
+import SEO from '../components/SEO.jsx'
 export default function About() {
   useEffect(() => {
     document.title = 'About Us | The Academic Curator'
   }, [])
 
   return (
-    <div className="selection:bg-primary-fixed selection:text-on-primary-fixed bg-surface font-body text-on-surface">
-      <Navbar active="about" />
-
+    <>
+      <SEO title="About Us" description="Learn about our mission to provide authentic campus experiences." />
       <main className="pt-32">
         <section className="mx-auto mb-24 max-w-7xl px-8">
           <div className="relative flex flex-col items-center gap-12 overflow-hidden rounded-xl bg-primary-container p-12 md:flex-row md:p-24">
@@ -165,54 +163,6 @@ export default function About() {
           </div>
         </section>
       </main>
-
-      <footer className="w-full border-t border-slate-200/90 bg-[#F8FAFF]">
-        <div className="mx-auto flex max-w-screen-2xl flex-col items-center justify-between gap-6 px-12 py-10 md:flex-row">
-          <div className="flex flex-col items-center gap-2 md:items-start">
-            <Link
-              to="/"
-              className="font-manrope text-lg font-bold text-[#002045]"
-            >
-              The Academic Curator
-            </Link>
-            <p className="font-inter text-sm leading-relaxed text-[#5c6578]">
-              © 2024 The Academic Curator. Excellence in Campus Discovery.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              University Partners
-            </a>
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Admissions Office
-            </a>
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Privacy Policy
-            </a>
-            <a
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Accessibility
-            </a>
-            <Link
-              to="/contact"
-              className="font-inter text-sm text-[#5c6578] transition-colors hover:text-[#002045]"
-            >
-              Contact Support
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   )
 }

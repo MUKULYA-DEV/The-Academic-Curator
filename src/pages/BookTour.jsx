@@ -1,8 +1,9 @@
+import SEO from '../components/SEO.jsx'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { UserAvatarMenu } from '../components/NavAuthSection.jsx'
 import { useAuth } from '../hooks/useAuth.js'
-import { supabase } from '../supabaseClient.js'
+import { getBookingById, checkDuplicateBooking, createBooking, updateBooking, fetchTourByLegacyName } from '../services/tourService.js'
 import {
   fetchTourById,
   getCourses,
@@ -67,7 +68,8 @@ function formatSidebarDate(d) {
 }
 
 function showLimitedSlotDot(date, inCurrentMonth) {
-  return inCurrentMonth && date.getDate() === 4
+  // Originally hardcoded to the 4th of every month. Removed to support dynamic logic in the future.
+  return false
 }
 
 function getBranchName(branchItem) {
@@ -239,12 +241,12 @@ export default function BookTour() {
 
   // Load user phone number from session metadata
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const fromMeta = session?.user?.user_metadata?.phone
+    if (session?.user?.user_metadata?.phone) {
+      const fromMeta = session.user.user_metadata.phone;
       if (typeof fromMeta === 'string' && fromMeta.trim()) {
         setPhoneNumber(fromMeta.trim())
       }
-    })
+    }
   }, [])
 
   // Check if course has branches and update selected branch accordingly
@@ -274,7 +276,7 @@ export default function BookTour() {
         setTourNotFoundError(false)
         setNetworkError(null)
 
-        const { data: { user } } = await supabase.auth.getUser()
+        const user = session?.user;
         if (cancelled) return
         if (!user) {
           setNetworkError('You must be signed in to edit a booking.')
@@ -282,11 +284,13 @@ export default function BookTour() {
           return
         }
 
-        const { data: row, error } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('id', editId)
-          .maybeSingle()
+        let row = null;
+        let error = null;
+        try {
+          row = await getBookingById(editId);
+        } catch (err) {
+          error = err;
+        }
 
         if (cancelled) return
         if (error) {
@@ -317,13 +321,8 @@ export default function BookTour() {
           // Fallback legacy method
           const { base } = parseStoredCollegeName(row.college_name)
           if (base) {
-            const { data: tourRow } = await supabase
-              .from('tours')
-              .select('*')
-              .or(`university_name.eq."${base}",title.eq."${base}"`)
-              .limit(1)
-              .maybeSingle()
-            tour = tourRow
+            const tourRow = await fetchTourByLegacyName(base);
+            tour = tourRow;
           }
         }
 
@@ -426,42 +425,8 @@ export default function BookTour() {
 
       const tour_date = toLocalDateKey(selectedDate)
 
-      let q = supabase
-        .from('bookings')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('tour_id', tourData.id)
-        .eq('tour_date', tour_date)
-        .eq('time_slot', timeSlot)
-        .limit(1)
-
-      if (editId != null) {
-        q = q.neq('id', editId)
-      }
-
-      const { data: rows, error } = await q
-
-      if (cancelled) return
-      if (error) {
-        // Legacy fallback duplicate check using college_name
-        const legacyName = formatBookingName(tourData.title || tourData.university_name, residencyCourse, selectedBranch)
-        let legacyQ = supabase
-          .from('bookings')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('college_name', legacyName)
-          .eq('tour_date', tour_date)
-          .eq('time_slot', timeSlot)
-          .limit(1)
-        if (editId != null) {
-          legacyQ = legacyQ.neq('id', editId)
-        }
-        const { data: legacyRows } = await legacyQ
-        if (cancelled) return
-        setIsDuplicateDetected(Array.isArray(legacyRows) && legacyRows.length > 0)
-        return
-      }
-      setIsDuplicateDetected(Array.isArray(rows) && rows.length > 0)
+      const isDuplicate = await checkDuplicateBooking(user.id, tourData.id, tour_date, timeSlot, editId);
+      setIsDuplicateDetected(isDuplicate);
     }
 
     checkExistingBooking()
@@ -520,10 +485,8 @@ export default function BookTour() {
     setIsLoading(true)
 
     try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
+      const user = session?.user;
+      const userError = !user;
       if (userError || !user) {
         setBookingError('You must be signed in to book.')
         return
@@ -552,11 +515,12 @@ export default function BookTour() {
       }
 
       if (isEditMode) {
-        const { error } = await supabase
-          .from('bookings')
-          .update(payload)
-          .eq('id', editId)
-          .eq('user_id', user.id)
+        let error = null;
+        try {
+          await updateBooking(editId, user.id, payload);
+        } catch (err) {
+          error = err;
+        }
         
         if (error) {
           setBookingError(error.message)
@@ -574,7 +538,12 @@ export default function BookTour() {
         status: 'upcoming',
       }
 
-      const { error } = await supabase.from('bookings').insert(insertPayload)
+      let error = null;
+      try {
+        await createBooking(insertPayload);
+      } catch (err) {
+        error = err;
+      }
       if (error) {
         setBookingError(error.message)
         return
@@ -600,7 +569,8 @@ export default function BookTour() {
   if (tourNotFoundError) {
     return (
       <div className="font-body flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center text-on-surface">
-        <header className="fixed top-0 z-50 w-full bg-white/80 shadow-sm backdrop-blur-md">
+      <SEO title="Book Your Tour" description="Secure your spot for an authentic campus experience." />
+              <header className="fixed top-0 z-50 w-full bg-white/80 shadow-sm backdrop-blur-md">
           <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
             <Link to="/" className="text-xl font-extrabold tracking-tight text-[#002045]">
               The Academic Curator

@@ -1,8 +1,8 @@
+import SEO from '../components/SEO.jsx'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { NavAuthSection } from '../components/NavAuthSection.jsx'
-import Navbar from '../components/Navbar.jsx'
-import { supabase } from '../supabaseClient.js'
+import { getPublishedTours, searchPublishedTours } from '../services/tourService.js'
 
 function badgeClass(variant) {
   if (variant === 'last') return 'bg-error-container text-on-error-container'
@@ -30,7 +30,7 @@ function TourCardLink({ tour }) {
       onClick={handleCardClick}
       className="group cursor-pointer overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0px_12px_32px_rgba(24,28,30,0.06)] transition-all duration-300 hover:-translate-y-2"
     >
-      <div className="relative h-64 overflow-hidden">
+            <div className="relative h-64 overflow-hidden">
         <img
           alt={tour.alt}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -49,7 +49,7 @@ function TourCardLink({ tour }) {
           {tour.school}
         </p>
         <h3 className="font-headline mb-4 text-xl leading-tight font-extrabold text-primary">{tour.title}</h3>
-        <div className="mb-6 space-y-2">
+        <div className="mb-4 space-y-2">
           <div className="flex items-center gap-2 text-sm text-secondary">
             <span className="material-symbols-outlined text-sm">location_on</span>
             <span>{tour.location}</span>
@@ -58,6 +58,18 @@ function TourCardLink({ tour }) {
             <span className="material-symbols-outlined text-sm">calendar_month</span>
             <span>{tour.dateLine}</span>
           </div>
+        </div>
+        <div className="mb-6 flex items-baseline gap-2">
+          {tour.discountPrice ? (
+            <>
+              <span className="font-headline text-xl font-bold text-primary">{tour.currencySymbol}{tour.discountPrice}</span>
+              <span className="font-headline text-sm text-secondary line-through">{tour.currencySymbol}{tour.price}</span>
+            </>
+          ) : tour.price ? (
+            <span className="font-headline text-xl font-bold text-primary">{tour.currencySymbol}{tour.price}</span>
+          ) : (
+            <span className="font-headline text-xl font-bold text-primary">Free</span>
+          )}
         </div>
         <button
           type="button"
@@ -72,14 +84,6 @@ function TourCardLink({ tour }) {
 }
 
 const DEFAULT_TOUR_IMAGE = ''
-
-function escapeIlikePattern(raw) {
-  return raw
-    .replace(/\\/g, '\\\\')
-    .replace(/%/g, '\\%')
-    .replace(/_/g, '\\_')
-    .replace(/,/g, ' ')
-}
 
 function mapTourRow(row) {
   const city = row.city?.trim()
@@ -114,6 +118,9 @@ function mapTourRow(row) {
     alt: row.university_name ?? 'Campus tour',
     badge: row.badge && row.badge.trim() !== '' ? row.badge : 'OPEN',
     badgeVariant: row.badge_variant === 'last' ? 'last' : 'slots',
+    price: row.price,
+    discountPrice: row.discount_price,
+    currencySymbol: row.currency_symbol || '₹',
     cta: row.cta === 'book' ? 'book' : 'view',
     course: row.course ?? null,
     major: row.major ?? null,
@@ -133,15 +140,6 @@ function filterStaticTours(searchTerm) {
 }
 
 const PAGE_SIZE = 6
-
-function applySearchFilterToQuery(query, term) {
-  if (!term) return query
-  const escaped = escapeIlikePattern(term)
-  const pattern = `%${escaped}%`
-  return query.or(
-    `university_name.ilike.${pattern},city.ilike.${pattern},major.ilike.${pattern},course.ilike.${pattern},title.ilike.${pattern}`,
-  )
-}
 
 export default function ExploreTours() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -177,14 +175,12 @@ export default function ExploreTours() {
   useEffect(() => {
     let cancelled = false
     async function loadAllToursForFilters() {
-      const { data, error } = await supabase
-        .from('tours')
-        .select('*')
-        .eq('status', 'published')
-      if (cancelled) return
-      if (data && !error) {
+      try {
+        const data = await getPublishedTours()
+        if (cancelled) return
         setAllToursForFilters(data.map(mapTourRow))
-      } else {
+      } catch (err) {
+        if (cancelled) return
         setAllToursForFilters([...TOURS])
       }
     }
@@ -263,14 +259,12 @@ export default function ExploreTours() {
 
       let sourceList = allToursForFilters
       if (sourceList.length === 0) {
-        const { data: dbData, error: dbErr } = await supabase
-          .from('tours')
-          .select('*')
-          .eq('status', 'published')
-        if (cancelled) return
-        if (dbData && !dbErr) {
+        try {
+          const dbData = await getPublishedTours()
+          if (cancelled) return
           sourceList = dbData.map(mapTourRow)
-        } else {
+        } catch (err) {
+          if (cancelled) return
           sourceList = []
         }
       }
@@ -356,21 +350,23 @@ export default function ExploreTours() {
     const rangeFrom = nextPage * PAGE_SIZE
     const rangeTo = rangeFrom + PAGE_SIZE - 1
 
-    let query = supabase.from('tours').select('*').eq('status', 'published').order('created_at', { ascending: false })
-    query = applySearchFilterToQuery(query, term)
+    try {
+      const data = await searchPublishedTours(term, rangeFrom, rangeTo)
+      
+      const rows = Array.isArray(data) ? data : []
+      if (rows.length === 0) {
+        setSupabaseListExhausted(true)
+        setLoadMoreLoading(false)
+        return
+      }
 
-    const { data, error } = await query.range(rangeFrom, rangeTo)
-
-    if (error) {
+      const mapped = rows.map(mapTourRow)
+      setTourCards((prev) => [...prev, ...mapped])
+      setPageIndex(nextPage)
+    } catch (err) {
+      console.error(err)
+    } finally {
       setLoadMoreLoading(false)
-      return
-    }
-
-    const rows = Array.isArray(data) ? data : []
-    if (rows.length === 0) {
-      setSupabaseListExhausted(true)
-      setLoadMoreLoading(false)
-      return
     }
 
     const mapped = rows.map(mapTourRow)
@@ -533,8 +529,7 @@ export default function ExploreTours() {
 
   return (
     <div className="bg-surface font-body text-on-surface">
-      <Navbar active="explore" />
-
+      <SEO title="Explore Tours" description="Browse our selection of authentic campus tours." />
       <main className="mx-auto max-w-7xl px-6 pb-20 pt-12">
         <header className="mb-16 pt-24 text-center">
           <h1 className="font-headline mb-4 text-3xl sm:text-5xl font-extrabold tracking-tight text-primary md:text-6xl">
@@ -858,45 +853,7 @@ export default function ExploreTours() {
         ) : null}
       </main>
 
-      <footer className="w-full border-t border-slate-200/90 bg-[#F8FAFF] pt-16 pb-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-8">
-          <Link
-            to="/"
-            className="font-manrope text-2xl font-bold tracking-tighter text-[#002045]"
-          >
-            The Academic Curator
-          </Link>
-          <div className="flex flex-wrap justify-center gap-10">
-            <a
-              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Privacy Policy
-            </a>
-            <a
-              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Terms of Service
-            </a>
-            <a
-              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
-              href="#"
-            >
-              Campus Safety
-            </a>
-            <Link
-              to="/contact"
-              className="font-inter text-xs tracking-wide text-[#5c6578] uppercase transition-colors hover:text-[#002045]"
-            >
-              Contact Support
-            </Link>
-          </div>
-          <div className="font-inter mt-4 text-xs tracking-wide text-slate-500 uppercase">
-            © 2024 The Academic Curator. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

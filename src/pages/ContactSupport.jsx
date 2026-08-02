@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
+import SEO from '../components/SEO.jsx'
 
 export default function ContactSupport() {
   function handleSubmit(e) {
@@ -8,8 +8,7 @@ export default function ContactSupport() {
 
   return (
     <div className="bg-surface font-body text-on-surface antialiased">
-      <Navbar />
-
+      <SEO title="Contact Support" description="Get in touch with The Academic Curator team for any questions or support." />
       <main className="mx-auto max-w-7xl px-6 pt-24 pb-24 md:px-12">
         <section className="mb-16 text-center">
           <h1 className="font-headline mb-4 text-5xl font-extrabold tracking-tight text-primary md:text-6xl">
@@ -175,65 +174,7 @@ export default function ContactSupport() {
         </section>
       </main>
 
-      <footer className="w-full px-6 pt-6 pb-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="bg-primary-container flex flex-col items-center rounded-[3rem] px-8 py-12 text-center md:px-16">
-            <div className="mb-8">
-              <span className="font-headline text-2xl font-extrabold tracking-tighter text-white italic">
-                The Academic Curator
-              </span>
-            </div>
-            <nav className="mb-10 flex flex-wrap justify-center gap-x-8 gap-y-4">
-              <Link
-                to="/explore"
-                className="text-sm font-medium text-blue-100/80 transition-colors hover:text-white"
-              >
-                Browse Tours
-              </Link>
-              <a
-                className="text-sm font-medium text-blue-100/80 transition-colors hover:text-white"
-                href="#"
-              >
-                Become an Ambassador
-              </a>
-              <a
-                className="text-sm font-medium text-blue-100/80 transition-colors hover:text-white"
-                href="#"
-              >
-                Institutional Access
-              </a>
-              <a
-                className="text-sm font-medium text-blue-100/80 transition-colors hover:text-white"
-                href="#"
-              >
-                Privacy Policy
-              </a>
-              <a
-                className="text-sm font-medium text-blue-100/80 transition-colors hover:text-white"
-                href="#"
-              >
-                Terms
-              </a>
-            </nav>
-            <div className="flex w-full flex-col items-center justify-between gap-6 border-t border-white/10 pt-8 md:flex-row">
-              <p className="font-headline text-sm italic text-blue-200/60">
-                Preserving the sanctity of higher education through personalized exploration.
-              </p>
-              <div className="flex items-center gap-6">
-                <a className="text-white transition-colors hover:text-blue-300" href="#" aria-label="Share">
-                  <span className="material-symbols-outlined text-xl">share</span>
-                </a>
-                <a className="text-white transition-colors hover:text-blue-300" href="#" aria-label="Web">
-                  <span className="material-symbols-outlined text-xl">public</span>
-                </a>
-              </div>
-              <p className="text-xs font-medium text-blue-200/40">
-                © 2024 The Academic Curator. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

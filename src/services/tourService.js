@@ -41,6 +41,83 @@ export async function fetchTourBySlug(slug) {
 }
 
 /**
+ * Fetches a tour by legacy college name for backward compatibility.
+ * @param {string} baseName 
+ */
+export async function fetchTourByLegacyName(baseName) {
+  const { data } = await supabase
+    .from('tours')
+    .select('*')
+    .or(`university_name.eq."${baseName}",title.eq."${baseName}"`)
+    .limit(1)
+    .maybeSingle()
+  return data
+}
+
+/**
+ * Fetches published tours, ordered by created_at descending.
+ * @param {Object} [options]
+ * @param {number} [options.limit] - Maximum number of tours to return.
+ * @returns {Promise<Array<Object>>} - Array of tour records.
+ */
+export async function getPublishedTours({ limit } = {}) {
+  let query = supabase
+    .from('tours')
+    .select('*')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false })
+
+  if (limit) {
+    query = query.limit(limit)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data || []
+}
+
+function escapeIlikePattern(raw) {
+  return raw
+    .replace(/\\/g, '\\\\')
+    .replace(/%/g, '\\%')
+    .replace(/_/g, '\\_')
+    .replace(/,/g, ' ')
+}
+
+/**
+ * Searches published tours, ordered by created_at descending.
+ * @param {string} searchTerm - The search keyword.
+ * @param {number} [rangeFrom] - Pagination start index.
+ * @param {number} [rangeTo] - Pagination end index.
+ * @returns {Promise<Array<Object>>} - Array of tour records.
+ */
+export async function searchPublishedTours(searchTerm, rangeFrom, rangeTo) {
+  let query = supabase
+    .from('tours')
+    .select('*')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false })
+
+  if (searchTerm) {
+    const escaped = escapeIlikePattern(searchTerm)
+    const pattern = `%${escaped}%`
+    query = query.or(
+      `university_name.ilike.${pattern},city.ilike.${pattern},major.ilike.${pattern},course.ilike.${pattern},title.ilike.${pattern}`
+    )
+  }
+
+  if (typeof rangeFrom === 'number' && typeof rangeTo === 'number') {
+    query = query.range(rangeFrom, rangeTo)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data || []
+}
+
+/**
  * Safely extracts courses and branches from the tour details JSON.
  * @param {Object} tourData - The tour record.
  * @returns {Array<Object>} - Array of course objects.
@@ -174,3 +251,105 @@ export async function saveTour(tour) {
   return data
 }
 
+/**
+ * Fetches a single booking by ID.
+ */
+export async function getBookingById(bookingId) {
+  if (!bookingId) throw new Error('Booking ID is required')
+  
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('id', bookingId)
+    .maybeSingle()
+    
+  if (error) throw error
+  return data
+}
+
+/**
+ * Checks if a booking already exists for the user at the exact time.
+ */
+export async function checkDuplicateBooking(userId, tourId, tourDate, timeSlot, editId = null) {
+  let q = supabase
+    .from('bookings')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('tour_id', tourId)
+    .eq('tour_date', tourDate)
+    .eq('time_slot', timeSlot)
+    .limit(1)
+
+  if (editId != null) {
+    q = q.neq('id', editId)
+  }
+
+  const { data, error } = await q
+  if (error) {
+    console.error('Error checking duplicate booking:', error)
+    return false
+  }
+  return Array.isArray(data) && data.length > 0
+}
+
+/**
+ * Creates a new booking.
+ */
+export async function createBooking(payload) {
+  const { error, data } = await supabase.from('bookings').insert(payload).select().single()
+  if (error) throw error
+  return data
+}
+
+/**
+ * Updates an existing booking.
+ */
+export async function updateBooking(editId, userId, payload) {
+  const { error, data } = await supabase
+    .from('bookings')
+    .update(payload)
+    .eq('id', editId)
+    .eq('user_id', userId)
+    .select()
+    .single()
+    
+  if (error) throw error
+  return data
+}
+
+/**
+ * Gets all bookings for a user.
+ */
+export async function getUserBookings(userId) {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*, tours(university_name, title, image_url)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    
+  if (error) {
+    // Fallback if tours relation fails
+    const fallback = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    if (fallback.error) throw fallback.error
+    return fallback.data || []
+  }
+  return data || []
+}
+
+/**
+ * Deletes/Cancels a booking.
+ */
+export async function cancelBooking(bookingId, userId) {
+  const { error } = await supabase
+    .from('bookings')
+    .delete()
+    .eq('id', bookingId)
+    .eq('user_id', userId)
+    
+  if (error) throw error
+  return true
+}

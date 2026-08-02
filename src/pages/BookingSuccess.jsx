@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth.js'
 
 const FALLBACK_DATE_LINE = 'Monday, Oct 14, 2024'
 const FALLBACK_TIME_RANGE = '09:00 AM — 12:30 PM'
@@ -150,6 +151,8 @@ function parseBookingState(state) {
 }
 
 export default function BookingSuccess() {
+  const { session } = useAuth()
+  const userEmail = session?.user?.email || 'your registered email'
   const location = useLocation()
   const parsed = parseBookingState(location.state)
   const { dateLine, timeRange, sessionLabel, ymd, timeSlot, tourName, meetingLocation } = parsed
@@ -199,7 +202,7 @@ export default function BookingSuccess() {
             </h1>
             <p className="mx-auto max-w-md text-lg leading-relaxed text-secondary">
               We&apos;ve sent a confirmation email to{' '}
-              <span className="font-semibold text-on-surface">julian.vance@example.com.</span>
+              <span className="font-semibold text-on-surface">{userEmail}</span>
             </p>
           </section>
 
@@ -270,7 +273,7 @@ export default function BookingSuccess() {
                   <span className="material-symbols-outlined">person</span>
                 </div>
                 <p className="text-sm leading-relaxed text-secondary">
-                  Meet your ambassador, Julian, at the entrance.
+                  Meet your campus ambassador at the entrance.
                 </p>
               </div>
             </div>
@@ -294,45 +297,7 @@ export default function BookingSuccess() {
         </div>
       </main>
 
-      <footer className="w-full border-t border-slate-200/15 bg-slate-50 dark:bg-slate-950">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-6 px-8 py-12 md:flex-row">
-          <Link
-            to="/"
-            className="font-headline text-lg font-bold tracking-tighter text-blue-900 dark:text-blue-100"
-          >
-            The Academic Curator
-          </Link>
-          <div className="flex flex-wrap justify-center gap-8">
-            <a
-              className="font-inter text-sm tracking-wide text-slate-500 uppercase transition-colors hover:text-blue-900"
-              href="#"
-            >
-              Privacy Policy
-            </a>
-            <a
-              className="font-inter text-sm tracking-wide text-slate-500 uppercase transition-colors hover:text-blue-900"
-              href="#"
-            >
-              Terms of Service
-            </a>
-            <Link
-              to="/contact"
-              className="font-inter text-sm tracking-wide text-slate-500 uppercase transition-colors hover:text-blue-900"
-            >
-              Contact Support
-            </Link>
-            <a
-              className="font-inter text-sm tracking-wide text-slate-500 uppercase transition-colors hover:text-blue-900"
-              href="#"
-            >
-              University Partners
-            </a>
-          </div>
-          <div className="font-inter text-sm tracking-wide text-slate-500 uppercase">
-            © 2024 The Academic Curator. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

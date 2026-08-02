@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
-import { supabase } from '../supabaseClient.js'
+import { getUserBookings, updateBooking } from '../services/tourService.js'
 import { formatBookingName } from '../services/tourService.js'
 
 const DEFAULT_IMAGES = [
@@ -387,9 +386,7 @@ export default function AllBookings() {
 
     async function loadBookings() {
       setIsLoading(true)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const user = session?.user;
       if (!user) {
         if (!cancelled) {
           const data = []
@@ -400,46 +397,14 @@ export default function AllBookings() {
         return
       }
 
-      let primary = await supabase
-        .from('bookings')
-        .select('*, tours(university_name, title, image_url)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (cancelled) return
-
-      let rows = primary.data ?? []
-      if (primary.error) {
-        primary = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-        if (cancelled) return
-        rows = primary.data ?? []
+      let rows = [];
+      try {
+        rows = await getUserBookings(user.id);
+      } catch (err) {
+        console.error(err);
       }
-
-      if (!rows.length) {
-        const fallback = await supabase
-          .from('bookings')
-          .select('*, tours(university_name, title, image_url)')
-          .eq('user_id', user.id)
-          .order('tour_date', { ascending: false })
-        if (cancelled) return
-        rows = fallback.data ?? []
-        if (fallback.error) {
-          const fallbackSimple = await supabase
-            .from('bookings')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('tour_date', { ascending: false })
-          if (cancelled) return
-          rows = fallbackSimple.data ?? []
-        }
-      }
-
-
-      const data = rows
+      if (cancelled) return;
+      const data = rows;
       setBookings(data)
       console.log('All Bookings from DB:', data)
       setIsLoading(false)
@@ -477,7 +442,12 @@ export default function AllBookings() {
       return prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
     })
 
-    const { error } = await supabase.from('bookings').update({ status: newStatus }).eq('id', bookingId)
+    let error = null;
+    try {
+      await updateBooking(bookingId, session?.user?.id, { status: newStatus });
+    } catch(err) {
+      error = err;
+    }
 
     if (error) {
       setBookings((prev) =>
@@ -496,7 +466,12 @@ export default function AllBookings() {
       return prev.map((b) => (b.id === bookingId ? { ...b, status: 'cancelled' } : b))
     })
 
-    const { error } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId)
+    let error = null;
+    try {
+      await updateBooking(bookingId, session?.user?.id, { status: 'cancelled' });
+    } catch(err) {
+      error = err;
+    }
 
     if (error) {
       setBookings((prev) =>
@@ -589,8 +564,6 @@ export default function AllBookings() {
           {toastMessage.text}
         </div>
       ) : null}
-
-      <Navbar />
 
       <main className="mx-auto min-h-screen max-w-7xl px-6 pt-24 pb-20">
         <header className="mb-12">
@@ -911,44 +884,7 @@ export default function AllBookings() {
         </div>
       </main>
 
-      <footer className="border-outline-variant/10 border-t bg-[#F7FAFC] dark:bg-slate-950">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-8 py-12 md:flex-row">
-          <div className="flex flex-col items-center md:items-start">
-            <span className="mb-2 font-headline text-lg font-bold text-[#002045] dark:text-slate-200">
-              The Academic Curator
-            </span>
-            <p className="text-center font-body text-sm tracking-wide text-[#545F72] md:text-left dark:text-slate-400">
-              © 2024 The Academic Curator. Empowering the next generation of scholars.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6 font-body text-sm tracking-wide text-[#545F72] dark:text-slate-400">
-            <a
-              className="opacity-80 transition-colors hover:text-[#735C00] hover:underline hover:opacity-100"
-              href="#"
-            >
-              Privacy Policy
-            </a>
-            <a
-              className="opacity-80 transition-colors hover:text-[#735C00] hover:underline hover:opacity-100"
-              href="#"
-            >
-              Terms of Service
-            </a>
-            <a
-              className="opacity-80 transition-colors hover:text-[#735C00] hover:underline hover:opacity-100"
-              href="#"
-            >
-              Campus Safety
-            </a>
-            <Link
-              to="/contact"
-              className="opacity-80 transition-colors hover:text-[#735C00] hover:underline hover:opacity-100"
-            >
-              Contact Support
-            </Link>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

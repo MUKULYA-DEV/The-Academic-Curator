@@ -1,20 +1,29 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import React, { useEffect, Suspense } from 'react'
 import { useAuth } from './hooks/useAuth.js'
+
+import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
-import ExploreTours from './pages/ExploreTours.jsx'
-import About from './pages/About.jsx'
-import Ambassadors from './pages/Ambassadors.jsx'
-import College from './pages/College.jsx'
-import BookTour from './pages/BookTour.jsx'
-import BookingSuccess from './pages/BookingSuccess.jsx'
-import Profile from './pages/Profile.jsx'
-import ContactSupport from './pages/ContactSupport.jsx'
-import AllBookings from './pages/AllBookings.jsx'
-import AdminDashboard from './pages/AdminDashboard.jsx'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute.jsx'
 
+// Lazy-loaded components for better performance
+const ExploreTours = React.lazy(() => import('./pages/ExploreTours.jsx'))
+const About = React.lazy(() => import('./pages/About.jsx'))
+const Ambassadors = React.lazy(() => import('./pages/Ambassadors.jsx'))
+const College = React.lazy(() => import('./pages/College.jsx'))
+const BookTour = React.lazy(() => import('./pages/BookTour.jsx'))
+const BookingSuccess = React.lazy(() => import('./pages/BookingSuccess.jsx'))
+const Profile = React.lazy(() => import('./pages/Profile.jsx'))
+const ContactSupport = React.lazy(() => import('./pages/ContactSupport.jsx'))
+const AllBookings = React.lazy(() => import('./pages/AllBookings.jsx'))
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard.jsx'))
+
+const NotFound = React.lazy(() => import('./pages/NotFound.jsx'))
+const ComingSoon = React.lazy(() => import('./pages/ComingSoon.jsx'))
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy.jsx'))
+const TermsOfService = React.lazy(() => import('./pages/TermsOfService.jsx'))
+const Accessibility = React.lazy(() => import('./pages/Accessibility.jsx'))
 
 function ProtectedRoute({ children }) {
   const { session, authReady } = useAuth()
@@ -32,6 +41,18 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+function SuspenseWrapper({ children }) {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      {children}
+    </Suspense>
+  )
+}
+
 export default function App() {
   const { pathname } = useLocation()
 
@@ -41,86 +62,13 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      {/* Routes WITHOUT Global Layout */}
       <Route path="/login" element={<Login />} />
-      <Route path="/contact" element={<ContactSupport />} />
-      <Route
-        path="/explore"
-        element={
-          <ProtectedRoute>
-            <ExploreTours />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/explore-tours"
-        element={
-          <ProtectedRoute>
-            <ExploreTours />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <ProtectedRoute>
-            <About />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/ambassadors"
-        element={
-          <ProtectedRoute>
-            <Ambassadors />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/college"
-        element={
-          <ProtectedRoute>
-            <College />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/college/:slug"
-        element={
-          <ProtectedRoute>
-            <College />
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/book-tour"
         element={
           <ProtectedRoute>
-            <BookTour />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/success"
-        element={
-          <ProtectedRoute>
-            <BookingSuccess />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/bookings"
-        element={
-          <ProtectedRoute>
-            <AllBookings />
+            <SuspenseWrapper><BookTour /></SuspenseWrapper>
           </ProtectedRoute>
         }
       />
@@ -128,10 +76,62 @@ export default function App() {
         path="/admin"
         element={
           <ProtectedAdminRoute>
-            <AdminDashboard />
+            <SuspenseWrapper><AdminDashboard /></SuspenseWrapper>
           </ProtectedAdminRoute>
         }
       />
+
+      {/* Routes WITH Global Layout */}
+      <Route element={<Layout />}>
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/contact" element={<SuspenseWrapper><ContactSupport /></SuspenseWrapper>} />
+        <Route path="/coming-soon" element={<SuspenseWrapper><ComingSoon /></SuspenseWrapper>} />
+        <Route path="/privacy" element={<SuspenseWrapper><PrivacyPolicy /></SuspenseWrapper>} />
+        <Route path="/terms" element={<SuspenseWrapper><TermsOfService /></SuspenseWrapper>} />
+        <Route path="/accessibility" element={<SuspenseWrapper><Accessibility /></SuspenseWrapper>} />
+        
+        {/* Protected Routes */}
+        <Route
+          path="/explore"
+          element={<ProtectedRoute><SuspenseWrapper><ExploreTours /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/explore-tours"
+          element={<ProtectedRoute><SuspenseWrapper><ExploreTours /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/about"
+          element={<ProtectedRoute><SuspenseWrapper><About /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/ambassadors"
+          element={<ProtectedRoute><SuspenseWrapper><Ambassadors /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/college"
+          element={<ProtectedRoute><SuspenseWrapper><College /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/college/:slug"
+          element={<ProtectedRoute><SuspenseWrapper><College /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/success"
+          element={<ProtectedRoute><SuspenseWrapper><BookingSuccess /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/profile"
+          element={<ProtectedRoute><SuspenseWrapper><Profile /></SuspenseWrapper></ProtectedRoute>}
+        />
+        <Route
+          path="/bookings"
+          element={<ProtectedRoute><SuspenseWrapper><AllBookings /></SuspenseWrapper></ProtectedRoute>}
+        />
+
+        {/* Catch-all 404 */}
+        <Route path="*" element={<SuspenseWrapper><NotFound /></SuspenseWrapper>} />
+      </Route>
     </Routes>
   )
 }

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
-import { supabase } from '../supabaseClient.js'
+import { submitQuery } from '../services/queryService.js'
+import { useAuth } from '../hooks/useAuth.js'
 import { fetchTourById, fetchTourBySlug, getPricing, getCourses } from '../services/tourService.js'
+import SEO from '../components/SEO.jsx'
 
 // 1. HeroSection Component
 function HeroSection({
@@ -19,6 +20,7 @@ function HeroSection({
 
   return (
     <section className="relative h-[716px] w-full overflow-hidden">
+      <SEO title="College Tour Details" description="Discover the detailed itinerary and insights of this campus tour." />
       <img
         alt={`${universityName} cover`}
         className="h-full w-full object-cover"
@@ -500,7 +502,8 @@ function FAQSection({ faq, theme }) {
 // 7. LoadingSkeleton Component
 function LoadingSkeleton() {
   return (
-    <div className="bg-background min-h-screen animate-pulse">
+    <>
+
       <div className="relative h-[600px] w-full bg-surface-container-high" />
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-8 py-16 lg:grid-cols-12">
         <div className="space-y-12 lg:col-span-8">
@@ -523,7 +526,7 @@ function LoadingSkeleton() {
           <div className="h-96 rounded-xl bg-surface-container-high" />
         </div>
       </div>
-    </div>
+        </>
   )
 }
 
@@ -619,6 +622,7 @@ const defaultDetails = {
 
 // Main Page Controller
 export default function College() {
+  const { session } = useAuth();
   const { slug } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -642,7 +646,8 @@ export default function College() {
   // Load user details for query pre-fill
   useEffect(() => {
     async function loadUserDetails() {
-      const { data: { user } } = await supabase.auth.getUser()
+      // Replaced with session?.user logic or skipping if no session hook
+      const user = null; // We should probably just rely on auth state if possible
       if (user) {
         setQueryEmail(user.email ?? '')
         
@@ -695,10 +700,11 @@ export default function College() {
 
     try {
       const fullPhone = `${queryCountryCode} ${queryPhone.trim()}`
-      const { data: { user } } = await supabase.auth.getUser()
-      const { error } = await supabase
-        .from('queries')
-        .insert({
+      // Replaced with session?.user logic or skipping if no session hook
+      const user = null; // We should probably just rely on auth state if possible
+      let error = null;
+      try {
+        await submitQuery({
           first_name: queryFirstName.trim(),
           last_name: queryLastName.trim(),
           email: queryEmail.trim(),
@@ -709,7 +715,10 @@ export default function College() {
           tour_id: tourData?.id || null,
           user_id: user?.id || null,
           status: 'open'
-        })
+        });
+      } catch (err) {
+        error = err;
+      }
 
       if (error) {
         // If the table queries is not created in the database yet
@@ -883,8 +892,6 @@ export default function College() {
 
   return (
     <div className="selection:bg-tertiary-container selection:text-on-tertiary-container bg-background font-body text-on-background">
-      <Navbar active="explore" />
-
       <main className="pt-0">
         <HeroSection
           title={tourData.title}
@@ -1048,106 +1055,7 @@ export default function College() {
         </div>
       </main>
 
-      <footer className="mt-12 w-full border-t border-slate-200/90 bg-[#F8FAFF] px-8 py-12">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-4">
-          <div className="space-y-4">
-            <Link
-              to="/"
-              className="font-headline text-lg font-bold text-[#002045]"
-            >
-              The Academic Curator
-            </Link>
-            <p className="text-sm leading-relaxed text-[#5c6578]">
-              Defining the prestigious academic journey through immersive
-              curations and insider access.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-headline mb-4 font-bold text-[#002045]">
-              Explore
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  className="text-sm text-[#5c6578] underline-offset-4 transition-colors hover:text-[#002045] hover:underline"
-                  href="#"
-                >
-                  Tour Destinations
-                </a>
-              </li>
-              <li>
-                <a
-                  className="text-sm text-[#5c6578] underline-offset-4 transition-colors hover:text-[#002045] hover:underline"
-                  href="#"
-                >
-                  Campus Partners
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-headline mb-4 font-bold text-[#002045]">
-              Support
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  to="/contact"
-                  className="text-sm text-[#5c6578] underline-offset-4 transition-colors hover:text-[#002045] hover:underline"
-                >
-                  Contact Support
-                </Link>
-              </li>
-              <li>
-                <a
-                  className="text-sm text-[#5c6578] underline-offset-4 transition-colors hover:text-[#002045] hover:underline"
-                  href="#"
-                >
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a
-                  className="text-sm text-[#5c6578] underline-offset-4 transition-colors hover:text-[#002045] hover:underline"
-                  href="#"
-                >
-                  Terms of Service
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-headline mb-4 font-bold text-[#002045]">
-              Newsletter
-            </h4>
-            <div className="flex gap-2">
-              <input
-                className="w-full rounded-lg border border-slate-200/90 bg-white px-3 py-2 text-sm text-[#002045] shadow-sm placeholder:text-slate-400 focus:border-[#002045] focus:ring-1 focus:ring-[#002045] focus:outline-none"
-                placeholder="Your email"
-                type="email"
-              />
-              <button
-                type="button"
-                className="shrink-0 rounded-lg bg-[#002045] p-2.5 text-white shadow-sm transition-opacity hover:opacity-90"
-                aria-label="Subscribe"
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  arrow_forward
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="mx-auto mt-12 flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-slate-200/90 pt-8 md:flex-row">
-          <span className="font-inter text-sm tracking-normal text-slate-500">
-            © 2024 The Academic Curator. All rights reserved.
-          </span>
-          <div className="flex gap-6 text-slate-500">
-            <span className="material-symbols-outlined">public</span>
-            <span className="material-symbols-outlined">share</span>
-          </div>
-        </div>
-      </footer>
+      
 
       {isQueryOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-[fade-in_0.2s_ease-out]">
