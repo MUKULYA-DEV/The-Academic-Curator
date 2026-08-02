@@ -801,12 +801,14 @@ export default function College() {
     if (!tourData) return
 
     const details = tourData.details || {}
+    const collegeName = tourData.title || tourData.university_name || 'College'
+    
     const seoTitle =
       details.seo?.title ||
-      `${tourData.university_name || 'University'} Tour | The Academic Curator`
+      `${collegeName} | The Academic Curator`
     const seoDesc =
       details.seo?.description ||
-      `Explore ${tourData.university_name || 'campus'} with our student-led guide.`
+      `Explore ${collegeName} with our student-led guide.`
 
     document.title = seoTitle
 
