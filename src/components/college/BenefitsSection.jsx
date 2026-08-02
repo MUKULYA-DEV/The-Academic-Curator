@@ -21,8 +21,8 @@ function useIntersectionObserver(options = {}) {
 }
 
 function CountdownTimer({ expiresAt }) {
-  const [timeLeft, setTimeLeft] = useState('')
-
+  const [timeLeft, setTimeLeft] = useState(null)
+  
   useEffect(() => {
     if (!expiresAt) return
 
@@ -32,47 +32,85 @@ function CountdownTimer({ expiresAt }) {
       const difference = expiration.getTime() - now.getTime()
 
       if (difference <= 0) {
-        return 'Expired'
+        return null
       }
 
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24))
-      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24)
-      const minutes = Math.floor((difference / 1000 / 60) % 60)
-      
-      const parts = []
-      if (days > 0) parts.push(`${days}d`)
-      if (hours > 0 || days > 0) parts.push(`${hours}h`)
-      parts.push(`${minutes}m`)
-
-      return `Expires in ${parts.join(' ')}`
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)).toString().padStart(2, '0'),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24).toString().padStart(2, '0'),
+        minutes: Math.floor((difference / 1000 / 60) % 60).toString().padStart(2, '0'),
+        seconds: Math.floor((difference / 1000) % 60).toString().padStart(2, '0'),
+      }
     }
 
     setTimeLeft(calculateTimeLeft())
 
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft())
-    }, 60000) // Update every minute
+    }, 1000) // Update every second
 
     return () => clearInterval(timer)
   }, [expiresAt])
 
   if (!expiresAt) {
     return (
-      <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tracking-wide text-slate-600 transition-opacity duration-500">
-        <span className="material-symbols-outlined text-sm">schedule</span>
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tracking-wide text-slate-600">
+        <span className="material-symbols-outlined text-sm normal-case" style={{ fontFamily: '"Material Symbols Outlined"' }}>schedule</span>
         Available for this intake
       </div>
     )
   }
 
-  const isExpired = timeLeft === 'Expired'
+  if (!timeLeft) {
+    return (
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold tracking-wide text-red-600">
+        <span className="material-symbols-outlined text-sm normal-case" style={{ fontFamily: '"Material Symbols Outlined"' }}>event_busy</span>
+        Offer Expired
+      </div>
+    )
+  }
+
+  const expirationDate = new Date(expiresAt)
+  const formattedDate = expirationDate.toLocaleString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', 
+    hour: '2-digit', minute: '2-digit'
+  })
 
   return (
-    <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold tracking-wide transition-opacity duration-500 ${isExpired ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
-      <span className="material-symbols-outlined text-sm">
-        {isExpired ? 'event_busy' : 'timer'}
-      </span>
-      {timeLeft}
+    <div className="mt-2 w-full max-w-sm rounded-xl border-2 border-[#D4AF37]/20 bg-gradient-to-br from-[#D4AF37]/5 to-transparent p-5 shadow-sm">
+      <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+        <span className="material-symbols-outlined text-sm normal-case text-[#D4AF37]" style={{ fontFamily: '"Material Symbols Outlined"' }}>schedule</span>
+        Time Remaining
+      </div>
+      
+      <div className="flex items-start gap-3">
+        <div className="flex flex-col items-center">
+          <span className="font-headline text-3xl font-extrabold text-[#D4AF37] leading-none">{timeLeft.days}</span>
+          <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Days</span>
+        </div>
+        <span className="text-xl font-bold text-slate-300 mt-1">:</span>
+        
+        <div className="flex flex-col items-center">
+          <span className="font-headline text-3xl font-extrabold text-[#D4AF37] leading-none">{timeLeft.hours}</span>
+          <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Hrs</span>
+        </div>
+        <span className="text-xl font-bold text-slate-300 mt-1">:</span>
+        
+        <div className="flex flex-col items-center">
+          <span className="font-headline text-3xl font-extrabold text-[#D4AF37] leading-none">{timeLeft.minutes}</span>
+          <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Min</span>
+        </div>
+        <span className="text-xl font-bold text-slate-300 mt-1">:</span>
+        
+        <div className="flex flex-col items-center">
+          <span className="font-headline text-3xl font-extrabold text-[#D4AF37] leading-none">{timeLeft.seconds}</span>
+          <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Sec</span>
+        </div>
+      </div>
+      
+      <div className="mt-4 pt-3 border-t border-slate-200/60 text-xs font-medium text-slate-500">
+        Expires {formattedDate}
+      </div>
     </div>
   )
 }
@@ -127,7 +165,7 @@ export default function BenefitsSection({ details, discountPrice, currencySymbol
               {benefits.items.map((item, idx) => (
                 <div 
                   key={idx} 
-                  className={`flex flex-col gap-3 rounded-lg border border-slate-100 bg-white p-4 transition-all duration-500 hover:border-slate-300 hover:shadow-sm ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 motion-reduce:opacity-100 motion-reduce:translate-y-0'}`}
+                  className={`flex flex-col gap-3 rounded-xl border-2 border-slate-200 bg-white p-5 transition-all duration-500 hover:border-slate-300 hover:shadow-sm ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 motion-reduce:opacity-100 motion-reduce:translate-y-0'}`}
                   style={{ transitionDelay: `${100 + idx * 100}ms` }}
                 >
                   <div 
