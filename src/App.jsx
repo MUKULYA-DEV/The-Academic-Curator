@@ -27,6 +27,7 @@ const Accessibility = React.lazy(() => import('./pages/Accessibility.jsx'))
 
 function ProtectedRoute({ children }) {
   const { session, authReady } = useAuth()
+  const location = useLocation()
 
   if (!authReady) {
     return (
@@ -36,7 +37,8 @@ function ProtectedRoute({ children }) {
     )
   }
   if (!session) {
-    return <Navigate to="/login" replace />
+    const returnUrl = location.pathname + location.search + location.hash
+    return <Navigate to={`/login?redirect=${encodeURIComponent(returnUrl)}`} state={{ from: returnUrl }} replace />
   }
   return children
 }
@@ -91,15 +93,24 @@ export default function App() {
         <Route path="/terms" element={<SuspenseWrapper><TermsOfService /></SuspenseWrapper>} />
         <Route path="/accessibility" element={<SuspenseWrapper><Accessibility /></SuspenseWrapper>} />
         
-        {/* Protected Routes */}
         <Route
           path="/explore"
-          element={<ProtectedRoute><SuspenseWrapper><ExploreTours /></SuspenseWrapper></ProtectedRoute>}
+          element={<SuspenseWrapper><ExploreTours /></SuspenseWrapper>}
         />
         <Route
           path="/explore-tours"
-          element={<ProtectedRoute><SuspenseWrapper><ExploreTours /></SuspenseWrapper></ProtectedRoute>}
+          element={<SuspenseWrapper><ExploreTours /></SuspenseWrapper>}
         />
+        <Route
+          path="/college"
+          element={<SuspenseWrapper><College /></SuspenseWrapper>}
+        />
+        <Route
+          path="/college/:slug"
+          element={<SuspenseWrapper><College /></SuspenseWrapper>}
+        />
+        
+        {/* Protected Routes */}
         <Route
           path="/about"
           element={<ProtectedRoute><SuspenseWrapper><About /></SuspenseWrapper></ProtectedRoute>}
@@ -107,14 +118,6 @@ export default function App() {
         <Route
           path="/ambassadors"
           element={<ProtectedRoute><SuspenseWrapper><Ambassadors /></SuspenseWrapper></ProtectedRoute>}
-        />
-        <Route
-          path="/college"
-          element={<ProtectedRoute><SuspenseWrapper><College /></SuspenseWrapper></ProtectedRoute>}
-        />
-        <Route
-          path="/college/:slug"
-          element={<ProtectedRoute><SuspenseWrapper><College /></SuspenseWrapper></ProtectedRoute>}
         />
         <Route
           path="/success"

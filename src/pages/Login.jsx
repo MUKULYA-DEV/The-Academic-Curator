@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '../supabaseClient.js'
 
 const AMBASSADOR_IMAGES = [
@@ -87,6 +87,12 @@ function BrandingPanel({ mode }) {
 export default function Login() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  
+  // Extract return URL
+  const getReturnUrl = () => {
+    return searchParams.get('redirect') || location.state?.from || '/explore'
+  }
   const activeTab = searchParams.get('tab') === 'signup' ? 'signup' : 'signin'
   const [showPwSignup, setShowPwSignup] = useState(false)
   const [showPwConfirm, setShowPwConfirm] = useState(false)
@@ -116,7 +122,7 @@ export default function Login() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate('/explore', { replace: true })
+      if (session) navigate(getReturnUrl(), { replace: true })
     })
   }, [navigate])
 
@@ -239,7 +245,7 @@ export default function Login() {
     }
 
     setAuthLoading(false)
-    navigate('/explore')
+    navigate(getReturnUrl())
   }
 
   async function handleResendOTP(context) {
@@ -371,7 +377,7 @@ export default function Login() {
 
         if (data.session) {
           setAuthLoading(false)
-          navigate('/explore')
+          navigate(getReturnUrl())
         } else {
           setAuthInfo('Registration successful! Please check your email inbox to confirm your account and log in.')
           setAuthLoading(false)

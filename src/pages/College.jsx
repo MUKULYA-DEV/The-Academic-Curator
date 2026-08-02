@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom'
 import { submitQuery } from '../services/queryService.js'
-import { useAuth } from '../hooks/useAuth.js'
+import { useRequireAuth } from '../hooks/useRequireAuth.js'
 import { fetchTourById, fetchTourBySlug, getPricing, getCourses } from '../services/tourService.js'
 import SEO from '../components/SEO.jsx'
 
@@ -622,7 +622,7 @@ const defaultDetails = {
 
 // Main Page Controller
 export default function College() {
-  const { session } = useAuth();
+  const { requireAuth, session } = useRequireAuth();
   const { slug } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -646,8 +646,7 @@ export default function College() {
   // Load user details for query pre-fill
   useEffect(() => {
     async function loadUserDetails() {
-      // Replaced with session?.user logic or skipping if no session hook
-      const user = null; // We should probably just rely on auth state if possible
+      const user = session?.user;
       if (user) {
         setQueryEmail(user.email ?? '')
         
@@ -675,7 +674,7 @@ export default function College() {
       }
     }
     loadUserDetails()
-  }, [])
+  }, [session])
 
   const handleQuerySubmit = async (e) => {
     e.preventDefault()
@@ -1006,16 +1005,17 @@ export default function College() {
                   </div>
                 </div>
               </div>
-              <Link
-                to={bookLink}
+              <button
+                type="button"
+                onClick={() => requireAuth(() => navigate(bookLink))}
                 style={primaryBgColor}
                 className="font-headline block w-full rounded-full bg-primary py-4 text-center text-lg font-extrabold text-on-primary shadow-lg transition-all hover:shadow-primary/20 active:scale-95"
               >
                 Book Tour
-              </Link>
+              </button>
               <button
                 type="button"
-                onClick={() => setIsQueryOpen(true)}
+                onClick={() => requireAuth(() => setIsQueryOpen(true))}
                 className="font-headline block w-full rounded-full border border-primary/25 bg-transparent py-3.5 text-center text-base font-bold text-primary transition-all duration-200 hover:bg-primary/5 active:scale-95"
                 style={{ borderColor: theme.primaryColor, color: theme.primaryColor }}
               >

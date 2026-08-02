@@ -4,6 +4,7 @@ import { getPublishedTours } from '../services/tourService.js'
 import { settingsService } from '../services/settingsService.js'
 import { getPublicUrl } from '../services/mediaService.js'
 import { getTourBadgeDetails } from '../utils/badgeUtils.js'
+import { useRequireAuth } from '../hooks/useRequireAuth.js'
 import SEO from '../components/SEO.jsx'
 
 const UPCOMING_TOURS = [
@@ -85,6 +86,7 @@ function mapSupabaseTourToHomeTour(row) {
 
 function HomeFeaturedTourCard({ tour }) {
   const navigate = useNavigate()
+  const { requireAuth } = useRequireAuth()
   const idParam = encodeURIComponent(tour.id)
 
   function handleCardClick() {
@@ -93,7 +95,7 @@ function HomeFeaturedTourCard({ tour }) {
 
   function handleBookClick(e) {
     e.stopPropagation()
-    navigate(`/book-tour?tourId=${idParam}`)
+    requireAuth(() => navigate(`/book-tour?tourId=${idParam}`))
   }
 
   return (

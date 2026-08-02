@@ -5,9 +5,11 @@ import { NavAuthSection } from '../components/NavAuthSection.jsx'
 import { getPublishedTours, searchPublishedTours } from '../services/tourService.js'
 
 import { getTourBadgeDetails } from '../utils/badgeUtils.js'
+import { useRequireAuth } from '../hooks/useRequireAuth.js'
 
 function TourCardLink({ tour }) {
   const navigate = useNavigate()
+  const { requireAuth } = useRequireAuth()
   
   function handleCardClick() {
     if (tour.slug) {
@@ -19,7 +21,7 @@ function TourCardLink({ tour }) {
 
   function handleBookClick(e) {
     e.stopPropagation()
-    navigate(`/book-tour?tourId=${tour.id}`)
+    requireAuth(() => navigate(`/book-tour?tourId=${tour.id}`))
   }
 
   return (
