@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getPublishedTours } from '../services/tourService.js'
 import { settingsService } from '../services/settingsService.js'
 import { getPublicUrl } from '../services/mediaService.js'
+import { getTourBadgeDetails } from '../utils/badgeUtils.js'
 import SEO from '../components/SEO.jsx'
 
 const UPCOMING_TOURS = [
@@ -58,32 +59,7 @@ function mapSupabaseTourToHomeTour(row) {
   const loc = row.location?.trim()
   const locationText = loc && loc.length > 0 ? loc : city && city.length > 0 ? city : '—'
 
-  const badgeText = row.badge && row.badge.trim() !== '' ? row.badge : 'OPEN'
-  const isLast = row.badge_variant === 'last'
-
-  let badgeClass = ''
-  let badgeDotClass = ''
-
-  if (isLast) {
-    badgeClass =
-      'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-error-container/50 bg-error/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-white uppercase shadow-sm'
-    badgeDotClass = 'h-2 w-2 animate-ping rounded-full bg-white'
-  } else if (badgeText.toLowerCase().includes('slots left')) {
-    const slots = parseInt(badgeText)
-    if (!isNaN(slots) && slots <= 3) {
-      badgeClass =
-        'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-tertiary uppercase shadow-sm'
-      badgeDotClass = 'h-2 w-2 animate-pulse rounded-full bg-tertiary'
-    } else {
-      badgeClass =
-        'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-orange-700 uppercase shadow-sm'
-      badgeDotClass = 'h-2 w-2 rounded-full bg-orange-400'
-    }
-  } else {
-    badgeClass =
-      'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-blue-700 uppercase shadow-sm'
-    badgeDotClass = 'h-2 w-2 rounded-full bg-blue-400'
-  }
+  const { badgeClass, dotClass: badgeDotClass, text: badgeText } = getTourBadgeDetails(row, 3)
 
   let dateLine = row.date_line ?? 'Schedule TBD'
   let timeLine = ''

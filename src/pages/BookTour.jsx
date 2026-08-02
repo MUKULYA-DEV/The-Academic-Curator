@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { UserAvatarMenu } from '../components/NavAuthSection.jsx'
 import { useAuth } from '../hooks/useAuth.js'
+import { getPublicUrl } from '../services/mediaService.js'
+import { getTourBadgeDetails } from '../utils/badgeUtils.js'
 import { getBookingById, checkDuplicateBooking, createBooking, updateBooking, fetchTourByLegacyName } from '../services/tourService.js'
 import {
   fetchTourById,
@@ -480,6 +482,12 @@ export default function BookTour() {
       setBookingError('Group size must be between 1 and 15.')
       return
     }
+    
+    // Validate slots against dynamic backend field
+    if (tourData.available_slots !== undefined && groupSize > tourData.available_slots) {
+      setBookingError(`Only ${tourData.available_slots} slots are currently available for this tour.`)
+      return
+    }
 
     setBookingError(null)
     setIsLoading(true)
@@ -545,7 +553,12 @@ export default function BookTour() {
         error = err;
       }
       if (error) {
-        setBookingError(error.message)
+        if (error.message && error.message.includes('Insufficient slots')) {
+          setBookingError('This tour has just sold out or does not have enough slots for your group size.')
+        } else {
+          setBookingError(error.message || 'An error occurred while booking. Please try again.')
+        }
+        setIsLoading(false)
         return
       }
 
@@ -1034,7 +1047,8 @@ export default function BookTour() {
                       disabled={
                         isLoading ||
                         isLoadingEditBooking ||
-                        (isDuplicateDetected && !isEditMode)
+                        (isDuplicateDetected && !isEditMode) ||
+                        (tourData && !getTourBadgeDetails(tourData, 3).canBook)
                       }
                       className="block w-full rounded-xl bg-white py-4 text-center font-bold text-primary shadow-lg transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-60"
                     >
@@ -1046,7 +1060,9 @@ export default function BookTour() {
                             ? 'Update Booking'
                             : isDuplicateDetected
                               ? 'Booked'
-                              : 'Confirm Booking'}
+                              : (tourData && !getTourBadgeDetails(tourData, 3).canBook)
+                                ? 'Sold Out'
+                                : 'Confirm Booking'}
                     </button>
                     <p className="mt-4 text-center font-label text-[10px] uppercase tracking-widest text-on-primary-container/60">
                       Secure transaction via Scholar Trail

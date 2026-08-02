@@ -4,10 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { NavAuthSection } from '../components/NavAuthSection.jsx'
 import { getPublishedTours, searchPublishedTours } from '../services/tourService.js'
 
-function badgeClass(variant) {
-  if (variant === 'last') return 'bg-error-container text-on-error-container'
-  return 'bg-tertiary-fixed text-on-tertiary-fixed'
-}
+import { getTourBadgeDetails } from '../utils/badgeUtils.js'
 
 function TourCardLink({ tour }) {
   const navigate = useNavigate()
@@ -36,13 +33,15 @@ function TourCardLink({ tour }) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           src={tour.image}
         />
-        <div className="absolute top-4 left-4">
-          <span
-            className={`font-label rounded-full px-3 py-1 text-[10px] font-bold tracking-widest uppercase ${badgeClass(tour.badgeVariant)}`}
-          >
-            {tour.badge}
-          </span>
-        </div>
+        {tour.badgeDetails && (
+          <div className="absolute top-4 left-4">
+            <span
+              className={tour.badgeDetails.badgeClass.replace('pill-badge absolute top-5 left-5', 'font-label rounded-full px-3 py-1 text-[10px] font-bold tracking-widest uppercase')}
+            >
+              {tour.badgeDetails.text}
+            </span>
+          </div>
+        )}
       </div>
       <div className="p-6">
         <p className="font-label mb-1 text-[10px] font-bold tracking-widest text-tertiary uppercase">
@@ -116,8 +115,7 @@ function mapTourRow(row) {
     dateLine: row.date_line ?? 'Schedule TBD',
     image: row.image_url && row.image_url.trim() !== '' ? row.image_url : DEFAULT_TOUR_IMAGE,
     alt: row.university_name ?? 'Campus tour',
-    badge: row.badge && row.badge.trim() !== '' ? row.badge : 'OPEN',
-    badgeVariant: row.badge_variant === 'last' ? 'last' : 'slots',
+    badgeDetails: getTourBadgeDetails(row, 3),
     price: row.price,
     discountPrice: row.discount_price,
     currencySymbol: row.currency_symbol || '₹',

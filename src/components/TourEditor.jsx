@@ -23,8 +23,8 @@ export default function TourEditor({ tour, onSave, onCancel }) {
   const initialDateParts = (tour?.date_line || '').split('•').map(s => s.trim())
   const [tourDate, setTourDate] = useState(initialDateParts[0] || 'Schedule TBD')
   const [tourTime, setTourTime] = useState(initialDateParts[1] || '')
-  const [badgeText, setBadgeText] = useState(tour?.badge || 'OPEN')
-  const [badgeVariant, setBadgeVariant] = useState(tour?.badge_variant || 'slots')
+  const [totalSlots, setTotalSlots] = useState(tour?.total_slots ?? 15)
+  const availableSlots = tour?.available_slots ?? 15 // Read-only from DB, calculated via triggers
 
   // JSON Details
   const [details, setDetails] = useState(() => {
@@ -255,8 +255,7 @@ export default function TourEditor({ tour, onSave, onCancel }) {
         currency_symbol: currencySymbol,
         status: status,
         date_line: tourDate.trim() ? (tourTime.trim() ? `${tourDate.trim()} • ${tourTime.trim()}` : tourDate.trim()) : 'Schedule TBD',
-        badge: badgeText.trim(),
-        badge_variant: badgeVariant,
+        total_slots: parseInt(totalSlots, 10),
         slug: isEditMode ? tour.slug : generateSlug(universityName, title),
         details: detailsPayload,
         updated_at: new Date().toISOString()
@@ -432,25 +431,23 @@ export default function TourEditor({ tour, onSave, onCancel }) {
               />
             </div>
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Card Badge Text (Slots / Status)</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Total Slots (Capacity)</label>
               <input 
-                type="text" 
-                value={badgeText}
-                onChange={e => setBadgeText(e.target.value)}
-                placeholder="e.g. 5 Slots Left or OPEN or FULL" 
+                type="number" 
+                min="0"
+                value={totalSlots}
+                onChange={e => setTotalSlots(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10 font-medium"
               />
             </div>
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Badge Styling Theme</label>
-              <select 
-                value={badgeVariant}
-                onChange={e => setBadgeVariant(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-900/10 font-semibold text-slate-700"
-              >
-                <option value="slots">Standard / Slots Available (Amber/Light Pill)</option>
-                <option value="last">Urgent / Last Slot (Red/Alert Pill)</option>
-              </select>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Available Slots (Read-Only)</label>
+              <input 
+                type="text" 
+                value={availableSlots}
+                disabled
+                className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-500 cursor-not-allowed"
+              />
             </div>
             <div className="md:col-span-2 space-y-1">
               <MediaPicker 

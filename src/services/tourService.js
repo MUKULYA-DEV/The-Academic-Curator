@@ -293,11 +293,13 @@ export async function checkDuplicateBooking(userId, tourId, tourDate, timeSlot, 
 }
 
 /**
- * Creates a new booking.
+ * Creates a new booking using the secure RPC.
  */
 export async function createBooking(payload) {
-  const { error, data } = await supabase.from('bookings').insert(payload).select().single()
-  if (error) throw error
+  const { error, data } = await supabase.rpc('create_booking', { payload })
+  if (error) {
+    throw new Error(error.message || 'Failed to create booking.')
+  }
   return data
 }
 
