@@ -3,7 +3,7 @@ import React from 'react'
 export default function BenefitsSection({ details, discountPrice, currencySymbol }) {
   const benefits = details?.benefits
 
-  if (!benefits || !benefits.enabled || !discountPrice || discountPrice <= 0) {
+  if (!benefits || !benefits.enabled) {
     return null
   }
 
@@ -41,12 +41,14 @@ export default function BenefitsSection({ details, discountPrice, currencySymbol
               </p>
             </div>
             
-            <div className="flex shrink-0 flex-col items-center justify-center rounded-2xl bg-white p-6 shadow-md md:items-end">
-              <span className="mb-1 text-sm font-bold text-secondary uppercase tracking-wider">Estimated Student Savings</span>
-              <span className="font-headline text-5xl font-extrabold tracking-tight" style={{ color: accentColor }}>
-                {currencySymbol}{discountPrice}
-              </span>
-            </div>
+            {discountPrice !== undefined && discountPrice !== null && (
+              <div className="flex shrink-0 flex-col items-center justify-center rounded-2xl bg-white p-6 shadow-md md:items-end">
+                <span className="mb-1 text-sm font-bold text-secondary uppercase tracking-wider">Admission Benefit Value</span>
+                <span className="font-headline text-5xl font-extrabold tracking-tight" style={{ color: accentColor }}>
+                  {currencySymbol}{discountPrice}
+                </span>
+              </div>
+            )}
           </div>
 
           {benefits.items && benefits.items.length > 0 && (

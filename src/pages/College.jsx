@@ -907,7 +907,7 @@ export default function College() {
 
         <BenefitsSection 
           details={details} 
-          discountPrice={pricing?.discountPrice} 
+          discountPrice={tourData.discount_price} 
           currencySymbol={pricing?.currencySymbol || '₹'} 
         />
 
