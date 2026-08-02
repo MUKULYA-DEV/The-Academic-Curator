@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { saveTour } from '../services/tourService.js'
 import { generateDefaultTemplate, sanitizeTourJson, validateTourJson, generateSlug } from '../utils/tourJsonUtils.js'
 import MediaPicker from './MediaPicker.jsx'
+import BenefitsSection from './college/BenefitsSection.jsx'
 
 export default function TourEditor({ tour, onSave, onCancel }) {
   const isEditMode = !!tour
@@ -114,6 +115,55 @@ export default function TourEditor({ tour, onSave, onCancel }) {
       const faq = [...prev.faq]
       faq[fIdx] = { ...faq[fIdx], [field]: val }
       return { ...prev, faq }
+    })
+  }
+
+  // Benefits Helpers
+  const toggleBenefits = () => {
+    setDetails(prev => ({
+      ...prev,
+      benefits: {
+        ...prev.benefits,
+        enabled: !(prev.benefits?.enabled)
+      }
+    }))
+  }
+
+  const updateBenefitDesc = (val) => {
+    setDetails(prev => ({
+      ...prev,
+      benefits: { ...prev.benefits, description: val }
+    }))
+  }
+
+  const addBenefit = () => {
+    setDetails(prev => ({
+      ...prev,
+      benefits: {
+        ...prev.benefits,
+        items: [...(prev.benefits?.items || []), { icon: 'star', title: '', description: '' }]
+      }
+    }))
+  }
+
+  const removeBenefit = (idx) => {
+    setDetails(prev => ({
+      ...prev,
+      benefits: {
+        ...prev.benefits,
+        items: prev.benefits.items.filter((_, i) => i !== idx)
+      }
+    }))
+  }
+
+  const updateBenefitField = (idx, field, val) => {
+    setDetails(prev => {
+      const items = [...(prev.benefits?.items || [])]
+      items[idx] = { ...items[idx], [field]: val }
+      return {
+        ...prev,
+        benefits: { ...prev.benefits, items }
+      }
     })
   }
 
@@ -340,6 +390,7 @@ export default function TourEditor({ tour, onSave, onCancel }) {
           { id: 'story', label: 'Story & Highlights' },
           { id: 'guide', label: 'Campus Guide' },
           { id: 'faq', label: 'FAQ & SEO' },
+          { id: 'benefits', label: 'Admission Benefits' },
           { id: 'json', label: 'Advanced: Raw JSON' },
           { id: 'preview', label: 'Preview' }
         ].map(sub => (
@@ -472,7 +523,7 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Discounted Price (Optional, 0 = Free)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Admission Benefit Value (Optional)</label>
                 <input 
                   type="number" 
                   value={discountPrice}
@@ -920,6 +971,109 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                     className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none"
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Admission Benefits */}
+        {activeSubTab === 'benefits' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[#002045] uppercase tracking-wider">Admission Benefits Configuration</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-xs font-bold text-slate-500 uppercase">Enable Section</span>
+                <input
+                  type="checkbox"
+                  checked={!!details.benefits?.enabled}
+                  onChange={toggleBenefits}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                />
+              </label>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Section Description</label>
+                <textarea
+                  value={details.benefits?.description || ''}
+                  rows={2}
+                  onChange={e => updateBenefitDesc(e.target.value)}
+                  className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none"
+                  placeholder="Receive exclusive benefits when you apply through The Academic Curator."
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Benefit Cards</h4>
+                  <button 
+                    type="button" 
+                    onClick={addBenefit}
+                    className="px-3 py-1.5 bg-slate-100 text-[#002045] text-xs font-bold rounded-lg flex items-center gap-1 hover:bg-slate-200"
+                  >
+                    <span className="material-symbols-outlined text-xs">add</span>
+                    <span>Add Card</span>
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(details.benefits?.items || []).map((item, idx) => (
+                    <div key={idx} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl relative space-y-3">
+                      <button 
+                        type="button" 
+                        onClick={() => removeBenefit(idx)}
+                        className="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded-lg"
+                      >
+                        <span className="material-symbols-outlined text-lg">close</span>
+                      </button>
+                      
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Material Icon Name</label>
+                        <input 
+                          type="text" 
+                          value={item.icon || ''}
+                          onChange={e => updateBenefitField(idx, 'icon', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Title</label>
+                        <input 
+                          type="text" 
+                          value={item.title || ''}
+                          onChange={e => updateBenefitField(idx, 'title', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Description</label>
+                        <textarea 
+                          value={item.description || ''}
+                          rows={2}
+                          onChange={e => updateBenefitField(idx, 'description', e.target.value)}
+                          className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs outline-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-8 border-t border-slate-100">
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Live Preview</h4>
+              <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white">
+                <BenefitsSection 
+                  details={details} 
+                  discountPrice={discountPrice} 
+                  currencySymbol={currencySymbol || '₹'} 
+                />
+                {(!details.benefits?.enabled) && (
+                  <div className="p-8 text-center text-slate-400 text-sm font-medium bg-slate-50">
+                    Benefits section is currently disabled and will not appear on the public page.
+                  </div>
+                )}
               </div>
             </div>
           </div>

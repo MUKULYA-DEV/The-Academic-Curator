@@ -13,6 +13,7 @@ import {
   calculateTotal,
   formatBookingName
 } from '../services/tourService.js'
+import { settingsService } from '../services/settingsService.js'
 
 function startOfMonth(d) {
   return new Date(d.getFullYear(), d.getMonth(), 1)
@@ -152,6 +153,9 @@ export default function BookTour() {
   const [networkError, setNetworkError] = useState(null)
   const [courseWarning, setCourseWarning] = useState(null)
   const [branchWarning, setBranchWarning] = useState(null)
+  
+  // Benefits Config
+  const [benefitsConfig, setBenefitsConfig] = useState(null)
 
   const editIdParam = searchParams.get('editId')
   const editId = useMemo(() => {
@@ -249,6 +253,11 @@ export default function BookTour() {
         setPhoneNumber(fromMeta.trim())
       }
     }
+    
+    // Fetch benefits config for checkout labels
+    settingsService.getSetting('benefits_config').then(config => {
+      if (config) setBenefitsConfig(config)
+    }).catch(err => console.error('Failed to load benefits config:', err))
   }, [])
 
   // Check if course has branches and update selected branch accordingly
@@ -1011,7 +1020,11 @@ export default function BookTour() {
                         {pricing.hasDiscount && (
                           <>
                             <div className="flex justify-between text-green-300">
-                              <span>Discounted Price</span>
+                              <span>
+                                {tourData?.details?.benefits?.enabled 
+                                  ? (benefitsConfig?.checkout_label || 'Admission Benefit') 
+                                  : 'Discounted Price'}
+                              </span>
                               <span>
                                 {pricing.currencySymbol}
                                 {pricing.discountPrice.toFixed(2)}
@@ -1067,6 +1080,11 @@ export default function BookTour() {
                     <p className="mt-4 text-center font-label text-[10px] uppercase tracking-widest text-on-primary-container/60">
                       Secure transaction via Scholar Trail
                     </p>
+                    {tourData?.details?.benefits?.enabled && benefitsConfig?.legal_disclaimer && (
+                      <p className="mt-3 text-center text-[10px] leading-relaxed text-on-primary-container/60">
+                        * {benefitsConfig.legal_disclaimer}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

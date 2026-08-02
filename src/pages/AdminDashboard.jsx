@@ -894,8 +894,8 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-6 py-4">
                               <p className="font-semibold">{t.currency_symbol}{t.price}</p>
-                              {t.discount_price !== null && (
-                                <p className="text-xs text-emerald-600 font-bold">Discount: {t.currency_symbol}{t.discount_price}</p>
+                              {t.discount_price !== null && t.discount_price > 0 && (
+                                <p className="text-xs text-emerald-600 font-bold">Benefit: {t.currency_symbol}{t.discount_price}</p>
                               )}
                             </td>
                             <td className="px-6 py-4">

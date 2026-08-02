@@ -44,6 +44,13 @@ function TourCardLink({ tour }) {
             </span>
           </div>
         )}
+        {tour.benefitsEnabled && (
+          <div className="absolute bottom-4 left-4">
+            <span className="font-label rounded-full bg-primary px-3 py-1 text-[10px] font-bold tracking-widest text-on-primary uppercase shadow-lg">
+              🎓 Exclusive Benefit
+            </span>
+          </div>
+        )}
       </div>
       <div className="p-6">
         <p className="font-label mb-1 text-[10px] font-bold tracking-widest text-tertiary uppercase">
@@ -125,6 +132,7 @@ function mapTourRow(row) {
     course: row.course ?? null,
     major: row.major ?? null,
     courses: detailsObj?.courses ?? null,
+    benefitsEnabled: detailsObj?.benefits?.enabled ?? false,
   }
 }
 

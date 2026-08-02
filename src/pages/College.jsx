@@ -3,6 +3,7 @@ import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom'
 import { submitQuery } from '../services/queryService.js'
 import { useRequireAuth } from '../hooks/useRequireAuth.js'
 import { fetchTourById, fetchTourBySlug, getPricing, getCourses } from '../services/tourService.js'
+import BenefitsSection from '../components/college/BenefitsSection.jsx'
 import SEO from '../components/SEO.jsx'
 
 // 1. HeroSection Component
@@ -902,6 +903,12 @@ export default function College() {
           imageUrl={tourData.image_url}
           badges={badges}
           theme={theme}
+        />
+
+        <BenefitsSection 
+          details={details} 
+          discountPrice={pricing?.discountPrice} 
+          currencySymbol={pricing?.currencySymbol || '₹'} 
         />
 
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-8 py-16 lg:grid-cols-12">

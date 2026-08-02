@@ -70,6 +70,15 @@ function mapSupabaseTourToHomeTour(row) {
     timeLine = parts[1].trim()
   }
 
+  let detailsObj = null
+  if (row.details) {
+    if (typeof row.details === 'string') {
+      try { detailsObj = JSON.parse(row.details) } catch (e) { detailsObj = null }
+    } else {
+      detailsObj = row.details
+    }
+  }
+
   return {
     id: String(row.id),
     image: row.image_url && row.image_url.trim() !== '' ? row.image_url : DEFAULT_TOUR_IMAGE,
@@ -81,6 +90,7 @@ function mapSupabaseTourToHomeTour(row) {
     title: row.title ?? `${row.university_name} Campus Tour`,
     dateLine,
     timeLine,
+    benefitsEnabled: detailsObj?.benefits?.enabled ?? false,
   }
 }
 
@@ -113,6 +123,13 @@ function HomeFeaturedTourCard({ tour }) {
         <div className={tour.badgeClass}>
           <span className={tour.badgeDotClass} /> {tour.badgeText}
         </div>
+        {tour.benefitsEnabled && (
+          <div className="absolute bottom-4 left-4">
+            <span className="font-label rounded-full bg-primary px-3 py-1 text-[10px] font-bold tracking-widest text-on-primary uppercase shadow-lg">
+              🎓 Exclusive Benefit
+            </span>
+          </div>
+        )}
       </div>
       <div className="flex min-h-0 flex-1 flex-col p-8">
         <div className="mb-3 flex items-center gap-2">
@@ -156,6 +173,7 @@ export default function Home() {
   const [tours, setTours] = useState([])
   const [loading, setLoading] = useState(true)
   const [heroImage, setHeroImage] = useState(null)
+  const [trustSection, setTrustSection] = useState(null)
 
   useEffect(() => {
     
@@ -166,6 +184,24 @@ export default function Home() {
         setHeroImage(getPublicUrl(storagePath))
       }
     }).catch(err => console.error('Failed to load hero image:', err))
+
+    // Fetch trust section from site settings
+    settingsService.getSetting('benefits_config').then(config => {
+      if (config && config.home_trust_section) {
+        setTrustSection(config.home_trust_section)
+      } else {
+        // Fallback default if not seeded yet
+        setTrustSection({
+          title: "Why Book Through Us",
+          items: [
+            { icon: "verified", title: "Official Campus Visit" },
+            { icon: "school", title: "Admission Guidance" },
+            { icon: "support_agent", title: "Dedicated Counselor" },
+            { icon: "payments", title: "Application Fee Benefit" }
+          ]
+        })
+      }
+    }).catch(err => console.error('Failed to load benefits config:', err))
   }, [])
 
   useEffect(() => {
@@ -272,6 +308,28 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {trustSection && trustSection.items && (
+          <section className="bg-surface-container-lowest py-16">
+            <div className="mx-auto max-w-screen-2xl px-4 sm:px-8">
+              <div className="mb-12 text-center">
+                <h2 className="font-headline text-3xl font-extrabold text-primary">
+                  {trustSection.title || 'Why Book Through Us'}
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:gap-8">
+                {trustSection.items.map((item, idx) => (
+                  <div key={idx} className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-outline-variant/30 shadow-sm transition-all hover:shadow-md">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
+                      <span className="material-symbols-outlined text-2xl">{item.icon || 'star'}</span>
+                    </div>
+                    <h3 className="font-headline font-bold text-primary">{item.title}</h3>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="mx-auto max-w-screen-2xl px-4 sm:px-8 py-16 md:py-24">
           <div className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between items-start gap-6">
