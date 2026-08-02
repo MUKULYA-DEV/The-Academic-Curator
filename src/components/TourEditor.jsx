@@ -136,6 +136,13 @@ export default function TourEditor({ tour, onSave, onCancel }) {
     }))
   }
 
+  const updateBenefitExpiration = (val) => {
+    setDetails(prev => ({
+      ...prev,
+      benefits: { ...prev.benefits, expires_at: val }
+    }))
+  }
+
   const addBenefit = () => {
     setDetails(prev => ({
       ...prev,
@@ -1001,6 +1008,16 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                   onChange={e => updateBenefitDesc(e.target.value)}
                   className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none"
                   placeholder="Receive exclusive benefits when you apply through The Academic Curator."
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Benefit Expiration Date (Optional)</label>
+                <input
+                  type="datetime-local"
+                  value={details.benefits?.expires_at || ''}
+                  onChange={e => updateBenefitExpiration(e.target.value)}
+                  className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none"
                 />
               </div>
 
