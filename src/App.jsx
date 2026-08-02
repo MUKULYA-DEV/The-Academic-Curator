@@ -109,12 +109,13 @@ export default function App() {
           path="/college/:slug"
           element={<SuspenseWrapper><College /></SuspenseWrapper>}
         />
-        
-        {/* Protected Routes */}
         <Route
           path="/about"
-          element={<ProtectedRoute><SuspenseWrapper><About /></SuspenseWrapper></ProtectedRoute>}
+          element={<SuspenseWrapper><About /></SuspenseWrapper>}
         />
+        
+        {/* Protected Routes */}
+
         <Route
           path="/ambassadors"
           element={<ProtectedRoute><SuspenseWrapper><Ambassadors /></SuspenseWrapper></ProtectedRoute>}
