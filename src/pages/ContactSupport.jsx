@@ -128,7 +128,12 @@ export default function ContactSupport() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-4">
+                <a 
+                  href="https://wa.me/919355226993" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-start gap-4 transition-opacity hover:opacity-80"
+                >
                   <div className="bg-primary-fixed flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-primary">
                     <span className="material-symbols-outlined">chat</span>
                   </div>
@@ -139,7 +144,7 @@ export default function ContactSupport() {
                     <p className="font-headline font-semibold text-primary">WhatsApp</p>
                     <p className="text-sm text-secondary">+91 9355226993</p>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
           </div>
