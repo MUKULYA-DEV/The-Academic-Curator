@@ -5,6 +5,7 @@ import { useRequireAuth } from '../hooks/useRequireAuth.js'
 import { fetchTourById, fetchTourBySlug, getPricing, getCourses, getRecommendations } from '../services/tourService.js'
 import BenefitsSection from '../components/college/BenefitsSection.jsx'
 import SEO from '../components/SEO.jsx'
+import CustomSelect from '../components/CustomSelect.jsx'
 
 // 1. HeroSection Component
 function HeroSection({
@@ -1170,20 +1171,21 @@ export default function College() {
                     Phone Number
                   </label>
                   <div className="flex gap-2">
-                    <select
+                    <CustomSelect
                       value={queryCountryCode}
                       onChange={(e) => setQueryCountryCode(e.target.value)}
-                      className="bg-surface-container-low text-on-surface rounded-lg border-none px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none shrink-0"
-                    >
-                      <option value="+91">🇮🇳 +91</option>
-                      <option value="+1">🇺🇸/🇨🇦 +1</option>
-                      <option value="+44">🇬🇧 +44</option>
-                      <option value="+61">🇦🇺 +61</option>
-                      <option value="+49">🇩🇪 +49</option>
-                      <option value="+33">🇫🇷 +33</option>
-                      <option value="+971">🇦🇪 +971</option>
-                      <option value="+65">🇸🇬 +65</option>
-                    </select>
+                      className="bg-surface-container-low text-on-surface rounded-lg border-none px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary/15 focus:outline-none shrink-0 w-[105px]"
+                      options={[
+                        { label: '🇮🇳 +91', value: '+91' },
+                        { label: '🇺🇸/🇨🇦 +1', value: '+1' },
+                        { label: '🇬🇧 +44', value: '+44' },
+                        { label: '🇦🇺 +61', value: '+61' },
+                        { label: '🇩🇪 +49', value: '+49' },
+                        { label: '🇫🇷 +33', value: '+33' },
+                        { label: '🇦🇪 +971', value: '+971' },
+                        { label: '🇸🇬 +65', value: '+65' }
+                      ]}
+                    />
                     <input
                       id="query-phone"
                       type="tel"

@@ -5,6 +5,7 @@ import { UserAvatarMenu } from '../components/NavAuthSection.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { getPublicUrl } from '../services/mediaService.js'
 import { getTourBadgeDetails } from '../utils/badgeUtils.js'
+import CustomSelect from '../components/CustomSelect.jsx'
 import { getBookingById, checkDuplicateBooking, createBooking, updateBooking, fetchTourByLegacyName } from '../services/tourService.js'
 import {
   fetchTourById,
@@ -905,17 +906,12 @@ export default function BookTour() {
                   <label className="font-label block text-sm uppercase tracking-widest text-secondary font-semibold">
                     Residency Course
                   </label>
-                  <select
+                  <CustomSelect
                     value={residencyCourse}
                     onChange={(e) => setResidencyCourse(e.target.value)}
                     className="w-full rounded-xl border-none bg-surface-container-high px-6 py-4 font-medium text-primary focus:ring-1 focus:ring-primary"
-                  >
-                    {activeCourses.map((c) => (
-                      <option key={c.name} value={c.name}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    options={activeCourses.map((c) => c.name)}
+                  />
                   {courseWarning && (
                     <div className="mt-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 font-medium">
                       ⚠️ {courseWarning}
@@ -928,20 +924,12 @@ export default function BookTour() {
                     <label className="font-label block text-sm uppercase tracking-widest text-secondary font-semibold">
                       Residency Branch
                     </label>
-                    <select
+                    <CustomSelect
                       value={selectedBranch}
                       onChange={(e) => setSelectedBranch(e.target.value)}
                       className="w-full rounded-xl border-none bg-surface-container-high px-6 py-4 font-medium text-primary focus:ring-1 focus:ring-primary"
-                    >
-                      {currentCourseObj.branches.map((b) => {
-                        const name = getBranchName(b)
-                        return (
-                          <option key={name} value={name}>
-                            {name}
-                          </option>
-                        )
-                      })}
-                    </select>
+                      options={currentCourseObj.branches.map((b) => getBranchName(b))}
+                    />
                     {branchWarning && (
                       <div className="mt-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 font-medium">
                         ⚠️ {branchWarning}

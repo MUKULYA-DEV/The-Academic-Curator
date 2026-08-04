@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getAllAdminQueries, updateQueryStatus } from '../services/adminService.js'
+import CustomSelect from './CustomSelect.jsx'
 
 export default function QueriesManager() {
   const [queries, setQueries] = useState([])
@@ -174,17 +175,18 @@ export default function QueriesManager() {
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Status:</span>
-          <select 
+          <CustomSelect 
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-            className="bg-slate-50 border border-slate-200 text-[#002045] px-4 py-3 rounded-xl font-bold outline-none cursor-pointer"
-          >
-            <option value="all">All Queries</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
-          </select>
+            className="bg-slate-50 border border-slate-200 text-[#002045] px-4 py-3 rounded-xl font-bold outline-none cursor-pointer w-48"
+            options={[
+              { label: 'All Queries', value: 'all' },
+              { label: 'Open', value: 'open' },
+              { label: 'In Progress', value: 'in_progress' },
+              { label: 'Resolved', value: 'resolved' },
+              { label: 'Closed', value: 'closed' }
+            ]}
+          />
         </div>
       </div>
 

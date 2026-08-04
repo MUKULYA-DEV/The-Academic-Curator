@@ -6,6 +6,8 @@ import QueriesManager from '../components/QueriesManager.jsx'
 import MediaPicker from '../components/MediaPicker.jsx'
 import RecommendationsEditor from '../components/RecommendationsEditor.jsx'
 import { settingsService } from '../services/settingsService.js'
+import { useAuth } from '../hooks/useAuth.js'
+import CustomSelect from '../components/CustomSelect.jsx'
 import { getAdminDashboardData, updateBookingStatus } from '../services/adminService.js'
 
 export default function AdminDashboard() {
@@ -13,6 +15,7 @@ export default function AdminDashboard() {
   
   // Navigation / Tabs
   const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard', 'bookings', 'ambassadors', 'reports', 'settings'
+  const [notificationFreq, setNotificationFreq] = useState('Real-Time alerts')
   
   const [heroMedia, setHeroMedia] = useState(null)
   const [globalRecommendations, setGlobalRecommendations] = useState(null)
@@ -556,15 +559,17 @@ export default function AdminDashboard() {
                 </span>
                 <div className="flex gap-2">
                   {/* Simple helper filters */}
-                  <select 
+                  <CustomSelect 
+                    value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="text-xs border-slate-200 rounded-lg bg-white outline-none focus:ring-1 focus:ring-blue-900/10"
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="upcoming">Upcoming</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+                    className="text-xs border border-slate-200 rounded-lg bg-white outline-none focus:ring-1 focus:ring-blue-900/10 w-36 px-2 py-1"
+                    options={[
+                      { label: 'All Statuses', value: '' },
+                      { label: 'Upcoming', value: 'upcoming' },
+                      { label: 'Completed', value: 'completed' },
+                      { label: 'Cancelled', value: 'cancelled' }
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -802,11 +807,16 @@ export default function AdminDashboard() {
 
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-[#545f72] uppercase tracking-wider">Notification Frequency</label>
-                <select className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-900/10 outline-none">
-                  <option>Real-Time alerts</option>
-                  <option>Daily Digest</option>
-                  <option>Weekly summary</option>
-                </select>
+                <CustomSelect 
+                  value={notificationFreq}
+                  onChange={(e) => setNotificationFreq(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-900/10 outline-none"
+                  options={[
+                    'Real-Time alerts',
+                    'Daily Digest',
+                    'Weekly summary'
+                  ]}
+                />
               </div>
 
               <div className="space-y-2 border-t border-slate-100 pt-6">

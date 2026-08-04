@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '../supabaseClient.js'
+import CustomSelect from '../components/CustomSelect.jsx'
 
 const AMBASSADOR_IMAGES = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuCY145wlgWxVjsT-o0UF9RihVlBRiy0WQrshozuNXGRcY9ljbYXJFTFoDktxj--RAL4BD1ZkJlTXQg7Z8AxDYjf38Wq4SQM7crezoTGQp12zP8VR6hiMtnYaTqmmtgE0iAJXYMdhq7MVJvlmRvdnsGSFfW--QnC5h_e2tbEGaCocwvRXlqyTmo5ZNETqKL2bYUYo0DwVnKITwWm0WtKiBNXJjFLZSEuvf_ncHw2aculTjkMvHzzx5cwze9Qjme6XiCvjebmtb0KktEd',
@@ -696,20 +697,18 @@ export default function Login() {
                       Phone Number
                     </label>
                     <div className="flex gap-2">
-                      <div className="relative min-w-[100px]">
-                        <select
-                          className="font-body w-full cursor-pointer appearance-none rounded-xl border-none bg-surface-container-low py-3.5 pr-8 pl-3 text-sm transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10"
+                      <div className="relative w-32 shrink-0">
+                        <CustomSelect
                           value={signUpPhoneCountry}
                           onChange={(e) => setSignUpPhoneCountry(e.target.value)}
-                        >
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+91">🇮🇳 +91</option>
-                          <option value="+61">🇦🇺 +61</option>
-                        </select>
-                        <span className="material-symbols-outlined pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-sm text-outline">
-                          expand_more
-                        </span>
+                          className="font-body w-full cursor-pointer rounded-xl border-none bg-surface-container-low py-3.5 px-3 text-sm transition-all focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/10"
+                          options={[
+                            { label: '🇺🇸 +1', value: '+1' },
+                            { label: '🇬🇧 +44', value: '+44' },
+                            { label: '🇮🇳 +91', value: '+91' },
+                            { label: '🇦🇺 +61', value: '+61' }
+                          ]}
+                        />
                       </div>
                       <div className="group relative flex-1">
                         <span className="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-xl text-outline transition-colors group-focus-within:text-primary">
