@@ -104,7 +104,7 @@ export default function ContactSupport() {
               <h3 className="font-headline mb-6 text-xl font-bold text-primary">Direct Support</h3>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="bg-primary-fixed flex h-12 w-12 items-center justify-center rounded-full text-primary">
+                  <div className="bg-primary-fixed flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-primary">
                     <span className="material-symbols-outlined">call</span>
                   </div>
                   <div>
@@ -116,7 +116,7 @@ export default function ContactSupport() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="bg-primary-fixed flex h-12 w-12 items-center justify-center rounded-full text-primary">
+                  <div className="bg-primary-fixed flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-primary">
                     <span className="material-symbols-outlined">mail</span>
                   </div>
                   <div>
@@ -129,7 +129,7 @@ export default function ContactSupport() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="bg-primary-fixed flex h-12 w-12 items-center justify-center rounded-full text-primary">
+                  <div className="bg-primary-fixed flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-primary">
                     <span className="material-symbols-outlined">chat</span>
                   </div>
                   <div>
