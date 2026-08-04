@@ -933,8 +933,8 @@ export default function College() {
             <FAQSection faq={faq} theme={theme} />
           </div>
 
-          <aside className="space-y-8 lg:col-span-4">
-            <div className="sticky top-28 space-y-6 rounded-xl bg-surface-container-high p-8">
+          <aside className="space-y-8 lg:col-span-4 sticky top-28 self-start">
+            <div className="space-y-6 rounded-xl bg-surface-container-high p-8">
               <div className="flex items-end justify-between flex-wrap gap-2">
                 <div>
                   <span className="font-label mb-1 block text-sm uppercase tracking-wider text-secondary">
