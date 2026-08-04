@@ -1054,7 +1054,7 @@ export default function College() {
                   {recommendations.map(rec => (
                     <Link
                       key={rec.id}
-                      to={`/college/${rec.slug}`}
+                      to={rec.slug ? `/college/${rec.slug}` : `/college?tourId=${rec.id}`}
                       className="group flex cursor-pointer items-center gap-4"
                     >
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
