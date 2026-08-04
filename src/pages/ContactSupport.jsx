@@ -45,11 +45,11 @@ export default function ContactSupport() {
                 </div>
                 <div className="space-y-2">
                   <label className="font-label text-xs font-bold tracking-widest text-on-secondary-container uppercase">
-                    Academic Email
+                    Email
                   </label>
                   <input
                     className="focus:ring-primary/20 w-full rounded-xl border-none bg-surface-container-high px-5 py-4 transition-all duration-300 focus:bg-surface-container-lowest focus:ring-1 focus:outline-none"
-                    placeholder="julian@university.edu"
+                    placeholder="julian@example.com"
                     type="email"
                     name="email"
                   />
@@ -118,6 +118,18 @@ export default function ContactSupport() {
                     <p className="font-headline font-semibold text-primary">
                       concierge@academiccurator.com
                     </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="bg-primary-fixed flex h-12 w-12 items-center justify-center rounded-full text-primary">
+                    <span className="material-symbols-outlined">chat</span>
+                  </div>
+                  <div>
+                    <p className="font-label text-xs font-bold tracking-widest text-secondary uppercase">
+                      Chat With Us
+                    </p>
+                    <p className="font-headline font-semibold text-primary">WhatsApp</p>
+                    <p className="text-sm text-secondary">+91 9355226993</p>
                   </div>
                 </div>
               </div>
