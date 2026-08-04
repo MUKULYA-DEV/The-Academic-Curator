@@ -1077,7 +1077,7 @@ export default function College() {
                           </span>
                         )}
                         <h5 className="text-sm leading-tight font-bold text-primary group-hover:text-[#D4AF37] transition-colors line-clamp-2">
-                          {rec.university_name || rec.title}
+                          {rec.title}
                         </h5>
                       </div>
                     </Link>
