@@ -1,7 +1,30 @@
 import { Link } from 'react-router-dom'
+import React, { useState, useRef, useEffect } from 'react'
 import SEO from '../components/SEO.jsx'
 
 export default function ContactSupport() {
+  const [subject, setSubject] = useState('Tour Availability Inquiry')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
+
+  const options = [
+    'Tour Availability Inquiry',
+    'Ambassador Application',
+    'Technical Support',
+    'Institutional Partnership',
+    'Other'
+  ]
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   function handleSubmit(e) {
     e.preventDefault()
   }
@@ -55,21 +78,39 @@ export default function ContactSupport() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 relative" ref={dropdownRef}>
                 <label className="font-label text-xs font-bold tracking-widest text-on-secondary-container uppercase">
                   Subject
                 </label>
-                <select
-                  className="focus:ring-primary/20 w-full appearance-none rounded-xl border-none bg-surface-container-high px-5 py-4 transition-all duration-300 focus:bg-surface-container-lowest focus:ring-1 focus:outline-none"
-                  name="subject"
-                  defaultValue="Tour Availability Inquiry"
+                <div 
+                  className="focus:ring-primary/20 flex w-full cursor-pointer items-center justify-between rounded-xl border-none bg-surface-container-high px-5 py-4 transition-all duration-300 hover:bg-surface-container-highest"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <option>Tour Availability Inquiry</option>
-                  <option>Ambassador Application</option>
-                  <option>Technical Support</option>
-                  <option>Institutional Partnership</option>
-                  <option>Other</option>
-                </select>
+                  <span className="text-on-surface">{subject}</span>
+                  <span className="material-symbols-outlined text-secondary transition-transform duration-200" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                    expand_more
+                  </span>
+                </div>
+                <input type="hidden" name="subject" value={subject} />
+
+                {isDropdownOpen && (
+                  <div className="absolute left-0 top-full z-10 mt-2 w-full overflow-hidden rounded-xl border border-outline-variant/30 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] animate-[fade-in_0.15s_ease-out]">
+                    {options.map((opt) => (
+                      <div
+                        key={opt}
+                        className={`cursor-pointer px-5 py-3.5 transition-colors hover:bg-primary/5 ${
+                          subject === opt ? 'bg-primary/10 font-bold text-primary' : 'text-on-surface'
+                        }`}
+                        onClick={() => {
+                          setSubject(opt)
+                          setIsDropdownOpen(false)
+                        }}
+                      >
+                        {opt}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="font-label text-xs font-bold tracking-widest text-on-secondary-container uppercase">
