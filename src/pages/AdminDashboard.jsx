@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import TourEditor from '../components/TourEditor.jsx'
 import QueriesManager from '../components/QueriesManager.jsx'
 import MediaPicker from '../components/MediaPicker.jsx'
+import RecommendationsEditor from '../components/RecommendationsEditor.jsx'
 import { settingsService } from '../services/settingsService.js'
 import { getAdminDashboardData, updateBookingStatus } from '../services/adminService.js'
 
@@ -14,11 +15,15 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard', 'bookings', 'ambassadors', 'reports', 'settings'
   
   const [heroMedia, setHeroMedia] = useState(null)
+  const [globalRecommendations, setGlobalRecommendations] = useState(null)
 
   useEffect(() => {
     if (activeTab === 'settings') {
       settingsService.getSetting('hero_media').then(val => {
         if (val) setHeroMedia(val)
+      })
+      settingsService.getSetting('recommended_tours_config').then(val => {
+        if (val) setGlobalRecommendations(typeof val === 'string' ? JSON.parse(val) : val)
       })
     }
   }, [activeTab])
@@ -802,6 +807,24 @@ export default function AdminDashboard() {
                   <option>Daily Digest</option>
                   <option>Weekly summary</option>
                 </select>
+              </div>
+
+              <div className="space-y-2 border-t border-slate-100 pt-6">
+                <div>
+                  <label className="block text-xs font-bold text-[#545f72] uppercase tracking-wider">Global Recommendations Configuration</label>
+                  <p className="text-[10px] text-slate-500 mb-2">This configuration is used as a fallback if a specific college does not have its own recommendations set.</p>
+                </div>
+                <RecommendationsEditor 
+                  value={globalRecommendations}
+                  onChange={(val) => {
+                    setGlobalRecommendations(val)
+                    settingsService.setSetting('recommended_tours_config', val)
+                      .then(({ error }) => {
+                        if (error) alert('Failed to save recommendations config')
+                        else showNotification('Global recommendations updated successfully')
+                      })
+                  }}
+                />
               </div>
 
               <button 

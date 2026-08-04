@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom'
 import { submitQuery } from '../services/queryService.js'
 import { useRequireAuth } from '../hooks/useRequireAuth.js'
-import { fetchTourById, fetchTourBySlug, getPricing, getCourses } from '../services/tourService.js'
+import { fetchTourById, fetchTourBySlug, getPricing, getCourses, getRecommendations } from '../services/tourService.js'
 import BenefitsSection from '../components/college/BenefitsSection.jsx'
 import SEO from '../components/SEO.jsx'
 
@@ -631,6 +631,9 @@ export default function College() {
   const [tourData, setTourData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState(null)
+  
+  // Recommendations state
+  const [recommendations, setRecommendations] = useState([])
 
   // Floating Query modal states
   const [isQueryOpen, setIsQueryOpen] = useState(false)
@@ -795,6 +798,15 @@ export default function College() {
 
     loadTourData()
   }, [slug, tourId])
+
+  // Fetch recommendations whenever tourData changes
+  useEffect(() => {
+    if (tourData) {
+      getRecommendations(tourData)
+        .then(setRecommendations)
+        .catch(console.error)
+    }
+  }, [tourData])
 
   // SEO updates based on dynamic JSON fields
   useEffect(() => {
@@ -1033,33 +1045,46 @@ export default function College() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low p-6">
-              <h4 className="font-headline mb-4 font-bold text-primary">
-                Recommended for you
-              </h4>
-              <div className="space-y-4">
-                <Link
-                  to="/explore-tours"
-                  className="group flex cursor-pointer items-center gap-4"
-                >
-                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
-                    <img
-                      alt="Close up of old brick university building with ivy"
-                      className="h-full w-full object-cover transition-transform group-hover:scale-110"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJn2RYNFlh7o5sFYp8XxpS7UjwhbEDc6-u0XcVaaf_KNleOZ1FWsdOqSPkqD2uv2e-CSyqBliVQfjvSc-IoXOTPnNEFvPpmXkr-Wh_vfIMBXWOby4Bn63fMUmoKU_YQFBOaTtrRnLPyNfmQZj0q1tyOPhniEZCwD8LJES2WcFIYPW-QEh0hPWOifclTy50FU82EJrBBPYlKZDomEySkMlabOZ8fbh7pSLoACDmcfS5C15oLLFOmQVuMmeGNJPuTcnIGg_4F9UpQV4P"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-tertiary uppercase">
-                      PRESTIGE SERIES
-                    </span>
-                    <h5 className="text-sm leading-tight font-bold text-primary">
-                      Explore Other Tours
-                    </h5>
-                  </div>
-                </Link>
+            {recommendations.length > 0 && (
+              <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low p-6">
+                <h4 className="font-headline mb-4 font-bold text-primary">
+                  Explore Similar Colleges
+                </h4>
+                <div className="space-y-4">
+                  {recommendations.map(rec => (
+                    <Link
+                      key={rec.id}
+                      to={`/college/${rec.slug}`}
+                      className="group flex cursor-pointer items-center gap-4"
+                    >
+                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
+                        {rec.image_url ? (
+                          <img
+                            alt={rec.university_name || rec.title}
+                            className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                            src={rec.image_url}
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-slate-200">
+                            <span className="material-symbols-outlined text-slate-400">school</span>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        {rec.location?.city && (
+                          <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">
+                            {rec.location.city}
+                          </span>
+                        )}
+                        <h5 className="text-sm leading-tight font-bold text-primary group-hover:text-[#D4AF37] transition-colors line-clamp-2">
+                          {rec.university_name || rec.title}
+                        </h5>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </aside>
         </div>
       </main>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { saveTour } from '../services/tourService.js'
 import { generateDefaultTemplate, sanitizeTourJson, validateTourJson, generateSlug } from '../utils/tourJsonUtils.js'
 import MediaPicker from './MediaPicker.jsx'
+import RecommendationsEditor from './RecommendationsEditor.jsx'
 import BenefitsSection from './college/BenefitsSection.jsx'
 
 export default function TourEditor({ tour, onSave, onCancel }) {
@@ -398,6 +399,7 @@ export default function TourEditor({ tour, onSave, onCancel }) {
           { id: 'guide', label: 'Campus Guide' },
           { id: 'faq', label: 'FAQ & SEO' },
           { id: 'benefits', label: 'Admission Benefits' },
+          { id: 'recommendations', label: 'Recommendations' },
           { id: 'json', label: 'Advanced: Raw JSON' },
           { id: 'preview', label: 'Preview' }
         ].map(sub => (
@@ -1093,6 +1095,24 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Tab: Recommendations */}
+        {activeSubTab === 'recommendations' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-bold text-[#002045] uppercase tracking-wider">Per-Tour Recommendations</h3>
+                <p className="text-xs text-slate-500 mt-1">Configure which colleges should be recommended to users viewing this tour. This overrides the global fallback configuration.</p>
+              </div>
+            </div>
+            
+            <RecommendationsEditor 
+              excludeTourId={localTourId}
+              value={details.recommendations || {}}
+              onChange={(val) => setDetails(prev => ({ ...prev, recommendations: val }))}
+            />
           </div>
         )}
 

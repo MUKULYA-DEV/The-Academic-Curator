@@ -1,4 +1,12 @@
 import { supabase } from '../supabaseClient.js'
+import { settingsService } from './settingsService.js'
+
+let recommendationsCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+export function clearRecommendationsCache() {
+  recommendationsCache.clear();
+}
 
 /**
  * Shared service layer containing all reusable business logic for tours.
@@ -248,6 +256,10 @@ export async function saveTour(tour) {
     .single()
 
   if (error) throw error
+  
+  // Clear the recommendations cache when a tour is updated to ensure fresh data
+  clearRecommendationsCache()
+  
   return data
 }
 
@@ -354,4 +366,121 @@ export async function cancelBooking(bookingId, userId) {
     
   if (error) throw error
   return true
+}
+
+/**
+ * Gets recommended tours based on explicit manual configuration or semantic fallback.
+ */
+export async function getRecommendations(currentTour) {
+  if (!currentTour || !currentTour.id) return [];
+
+  const cacheKey = currentTour.id;
+  const cached = recommendationsCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return cached.data;
+  }
+
+  let config = currentTour.details?.recommendations;
+  
+  if (!config || config.mode === 'automatic' || !config.mode) {
+    const globalConfig = await settingsService.getSetting('recommended_tours_config');
+    if (globalConfig && globalConfig.mode) {
+      if (!config || !config.mode) {
+        config = globalConfig;
+      }
+    }
+  }
+  
+  if (!config) {
+    config = { mode: 'automatic', limit: 3 };
+  }
+  
+  if (config.mode === 'disabled') {
+    return [];
+  }
+
+  const limit = typeof config.limit === 'number' ? config.limit : 3;
+  let results = [];
+  let collectedIds = new Set([currentTour.id]); // Exclude current tour
+
+  // Select minimal fields for UI
+  const selectFields = 'id, slug, university_name, title, image_url, location';
+
+  if (config.mode === 'manual') {
+    const tourIds = Array.isArray(config.tour_ids) ? config.tour_ids.slice(0, limit) : [];
+    if (tourIds.length > 0) {
+      const { data } = await supabase
+        .from('tours')
+        .select(selectFields)
+        .in('id', tourIds)
+        .eq('status', 'published');
+        
+      if (data) {
+        // Enforce explicit array ordering
+        const map = new Map(data.map(t => [t.id, t]));
+        results = tourIds.map(id => map.get(id)).filter(Boolean);
+        results.forEach(r => collectedIds.add(r.id));
+      }
+    }
+  }
+
+  if ((config.mode === 'automatic' || !config.mode) || results.length < limit) {
+    const fallbacks = [
+      { column: 'city', value: currentTour.city },
+      { column: 'major', value: currentTour.major },
+      { column: 'course', value: currentTour.course }
+    ];
+
+    for (const fallback of fallbacks) {
+      if (results.length >= limit) break;
+      if (!fallback.value) continue;
+
+      const needed = limit - results.length;
+      let q = supabase
+        .from('tours')
+        .select(selectFields)
+        .eq('status', 'published')
+        .eq(fallback.column, fallback.value)
+        .limit(needed);
+        
+      if (collectedIds.size > 0) {
+        q = q.not('id', 'in', `(${Array.from(collectedIds).join(',')})`);
+      }
+      
+      const { data } = await q;
+
+      if (data && data.length > 0) {
+        results.push(...data);
+        data.forEach(r => collectedIds.add(r.id));
+      }
+    }
+
+    if (results.length < limit) {
+      const needed = limit - results.length;
+      let q = supabase
+        .from('tours')
+        .select(selectFields)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(needed);
+        
+      if (collectedIds.size > 0) {
+        q = q.not('id', 'in', `(${Array.from(collectedIds).join(',')})`);
+      }
+      
+      const { data } = await q;
+
+      if (data && data.length > 0) {
+        results.push(...data);
+        data.forEach(r => collectedIds.add(r.id));
+      }
+    }
+  }
+
+  recommendationsCache.set(cacheKey, {
+    timestamp: Date.now(),
+    data: results
+  });
+
+  return results;
 }
