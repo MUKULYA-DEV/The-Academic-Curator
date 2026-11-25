@@ -305,10 +305,13 @@ export async function checkDuplicateBooking(userId, tourId, tourDate, timeSlot, 
 }
 
 /**
- * Creates a new booking using the secure RPC.
+ * Creates a booking. The server takes the user from the session and the price
+ * from the tour, so only the student's choices are sent.
  */
-export async function createBooking(payload) {
-  const { error, data } = await supabase.rpc('create_booking', { payload })
+export async function createBooking({ tour_id, course, branch, tour_date, time_slot, group_size, phone_number }) {
+  const { error, data } = await supabase.rpc('create_booking', {
+    payload: { tour_id, course, branch, tour_date, time_slot, group_size, phone_number },
+  })
   if (error) {
     throw new Error(error.message || 'Failed to create booking.')
   }
@@ -316,18 +319,27 @@ export async function createBooking(payload) {
 }
 
 /**
- * Updates an existing booking.
+ * Reschedules or resizes one of the signed-in user's upcoming bookings.
  */
-export async function updateBooking(editId, userId, payload) {
-  const { error, data } = await supabase
-    .from('bookings')
-    .update(payload)
-    .eq('id', editId)
-    .eq('user_id', userId)
-    .select()
-    .single()
-    
-  if (error) throw error
+export async function updateBooking(bookingId, { course, branch, tour_date, time_slot, group_size, phone_number }) {
+  const { error, data } = await supabase.rpc('update_booking', {
+    payload: { id: bookingId, course, branch, tour_date, time_slot, group_size, phone_number },
+  })
+  if (error) {
+    throw new Error(error.message || 'Failed to update booking.')
+  }
+  return data
+}
+
+/**
+ * Cancels one of the signed-in user's bookings. The row is kept so the seat
+ * count and the booking history stay correct.
+ */
+export async function cancelBooking(bookingId) {
+  const { error, data } = await supabase.rpc('cancel_booking', { p_booking_id: bookingId })
+  if (error) {
+    throw new Error(error.message || 'Failed to cancel booking.')
+  }
   return data
 }
 
@@ -352,20 +364,6 @@ export async function getUserBookings(userId) {
     return fallback.data || []
   }
   return data || []
-}
-
-/**
- * Deletes/Cancels a booking.
- */
-export async function cancelBooking(bookingId, userId) {
-  const { error } = await supabase
-    .from('bookings')
-    .delete()
-    .eq('id', bookingId)
-    .eq('user_id', userId)
-    
-  if (error) throw error
-  return true
 }
 
 /**

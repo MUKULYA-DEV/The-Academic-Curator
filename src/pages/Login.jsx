@@ -3,15 +3,6 @@ import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-do
 import { supabase } from '../supabaseClient.js'
 import CustomSelect from '../components/CustomSelect.jsx'
 
-const AMBASSADOR_IMAGES = [
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCY145wlgWxVjsT-o0UF9RihVlBRiy0WQrshozuNXGRcY9ljbYXJFTFoDktxj--RAL4BD1ZkJlTXQg7Z8AxDYjf38Wq4SQM7crezoTGQp12zP8VR6hiMtnYaTqmmtgE0iAJXYMdhq7MVJvlmRvdnsGSFfW--QnC5h_e2tbEGaCocwvRXlqyTmo5ZNETqKL2bYUYo0DwVnKITwWm0WtKiBNXJjFLZSEuvf_ncHw2aculTjkMvHzzx5cwze9Qjme6XiCvjebmtb0KktEd',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuAIXUpQZKXPXLy8Fv-xNBiD-h25SICYuc_zL6I9oXcqp-Zaf4L_eolxHhjHz_lERX_PCc3kPj32niuwNuALcirSo15oqZQqD4GRJycrnhYXOOVShqpSQoAVaufseeCnuSjL-jIlSzqafRXQ427cCJvrTsaokoSrI9oisyX_ldSYdWXElj-iu0I9yY197BBvQxrI-Voz7wE9E27snALNsK-Ejr6elYSGxBdM75FJ7NEb0UGKnPirdB1IG0N03_ku8QkVjg4QabFkxpeY',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuAkKM4lsDtuwDxM7IniQO1hJTUqveOv-KHoxyc0isS6mdSdFWVjOmEaufNuIPBWilH41AzNJiOglxOqCmZNYjxnkIlSb-rWviLqXq1S33W-n_kjUQFLTXU8f4QipSl1UhDonAK4IdDsOBLiBd6v6sDk_IR0ar01nSzTLPaMG1afDAfBjWJ5sQI23Df-SQQmW_1wlCMbCt913v98CY9QnGYO72yczVubE8r7nxXNKL1TXrHmAC0c9Q00idwSM-wYxd7GejC8jIAk1HUO',
-]
-
-const CAMPUS_IMG =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDwwmMJys36C_KvpafbqZn49tULQTeTsJlUQJmHNxnSmTKW0iOykLnkypa_oXEWqrIpNZTQVlyDIwMcY_e7tXp01rQjpmzGSNUDIhlR8HhDPWt9rkmka1wj7MhJ8UEgunxHKIuc9NPSQieBqLiixVpeKKqY1ZoldfZTDwTAq6Ebhnc_h2K7rEWU0a272E7Qwm7YmvFe5FZLA0kBZSeLGKjmcMtUG3x7kwNUOSBPKBnDcO0T7Iz4yEYH9xGZRDR6RwJc4vkZ1q7Zv6YT'
-
 function BrandingPanel({ mode }) {
   const isSignUp = mode === 'signup'
   return (
@@ -27,59 +18,34 @@ function BrandingPanel({ mode }) {
         </svg>
       </div>
       <div className="relative z-10 max-w-lg text-white">
-        <div className="mb-8">
-          <span className="font-headline text-sm font-bold tracking-[0.2em] text-tertiary uppercase">
-            Curating Excellence
-          </span>
+        <span className="font-headline text-sm font-bold tracking-[0.2em] text-tertiary-fixed-dim uppercase">
+          Campus tours · Delhi NCR · Dehradun
+        </span>
+        <h1 className="mt-4 font-headline text-5xl leading-tight font-extrabold tracking-tighter">
           {isSignUp ? (
             <>
-              <h1 className="mt-4 font-headline text-5xl leading-tight font-extrabold tracking-tighter">
-                Begin Your <br />
-                Academic Legacy.
-              </h1>
-              <p className="mt-6 font-body text-lg leading-relaxed text-on-primary-container opacity-90">
-                Join an elite network of prospective students and university
-                ambassadors. Experience campus tours through a lens of prestige and
-                curated insights.
-              </p>
+              See the campus <br />
+              before you decide.
             </>
           ) : (
             <>
-              <h1 className="mt-4 font-headline text-5xl leading-tight font-extrabold tracking-tighter">
-                Your Curated <br />
-                Journey to <br />
-                Academic Excellence.
-              </h1>
-              <p className="mt-6 font-body text-lg leading-relaxed text-on-primary-container opacity-90">
-                Join the most prestigious network of campus ambassadors and discover
-                your future university experience.
-              </p>
+              Welcome back.
             </>
           )}
-        </div>
-        <div className="mt-12 flex items-center gap-4">
-          <div className="-space-x-4 flex">
-            {AMBASSADOR_IMAGES.map((src, i) => (
-              <img
-                key={i}
-                alt={`Ambassador ${i + 1}`}
-                className="h-12 w-12 rounded-full border-2 border-primary shadow-lg"
-                src={src}
-              />
-            ))}
-          </div>
-          <p className="text-sm font-medium text-white/80 italic">
-            &quot;The most immersive tour experience I&apos;ve had.&quot; — Sarah,
-            Ivy Applicant
-          </p>
-        </div>
-      </div>
-      <div className="absolute -right-20 -bottom-20 h-96 w-96 opacity-20">
-        <img
-          alt="Campus Architecture"
-          className="h-full w-full rotate-12 transform rounded-xl object-cover"
-          src={CAMPUS_IMG}
-        />
+        </h1>
+        <p className="mt-6 font-body text-lg leading-relaxed text-on-primary-container opacity-90">
+          {isSignUp
+            ? 'Create an account to book a tour with a current student and keep all your visits in one place.'
+            : 'Sign in to book a tour or check your upcoming visits.'}
+        </p>
+        <ul className="mt-10 space-y-4 text-sm font-medium text-white/85">
+          {['Guided by students who study there', 'Parents welcome on every tour', 'Reschedule or cancel from your account'].map((line) => (
+            <li key={line} className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-tertiary-fixed-dim">check_circle</span>
+              {line}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )

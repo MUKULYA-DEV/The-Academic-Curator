@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { getUserBookings, updateBooking } from '../services/tourService.js'
+import { getUserBookings, cancelBooking } from '../services/tourService.js'
 import { formatBookingName } from '../services/tourService.js'
+import { useAuth } from '../hooks/useAuth.js'
 
 const DEFAULT_IMAGES = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuADGPVyubLAEce1GpEB-MMRIvZInCObU1KnFgpPxnWvHboWHAoMej6-W28W3o34kbbFrYv_q2SpeVer3XuIcaVlgNrBl8dDpK4PgA93zK8FhuniY_luhNmrJ-9appk1PyVCXxNXVM0cD42ntefaXfkyeffe3I7Tiec8CL6a6rwavUEwDXAjszN5FAd8HDlNZkMU1bvidRioOjB2DZIgFQKugyi03FMJxVwXex219sF2CEaPhOPb55IN2xL_9AbjK3VnELuMOw_dLOuR',
@@ -358,6 +359,7 @@ function BookingsLoadingSkeleton() {
 }
 
 export default function AllBookings() {
+  const { session } = useAuth()
   const [bookings, setBookings] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('upcoming')
@@ -389,9 +391,7 @@ export default function AllBookings() {
       const user = session?.user;
       if (!user) {
         if (!cancelled) {
-          const data = []
-          setBookings(data)
-          console.log('All Bookings from DB:', data)
+          setBookings([])
           setIsLoading(false)
         }
         return
@@ -404,9 +404,7 @@ export default function AllBookings() {
         console.error(err);
       }
       if (cancelled) return;
-      const data = rows;
-      setBookings(data)
-      console.log('All Bookings from DB:', data)
+      setBookings(rows)
       setIsLoading(false)
     }
 
@@ -414,7 +412,7 @@ export default function AllBookings() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [session])
 
   const upcomingBookings = useMemo(
     () =>
@@ -434,28 +432,6 @@ export default function AllBookings() {
     [bookings],
   )
 
-  async function handleUpdateStatus(bookingId, newStatus) {
-    let previousStatus
-    setBookings((prev) => {
-      const target = prev.find((b) => b.id === bookingId)
-      previousStatus = target?.status
-      return prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
-    })
-
-    let error = null;
-    try {
-      await updateBooking(bookingId, session?.user?.id, { status: newStatus });
-    } catch(err) {
-      error = err;
-    }
-
-    if (error) {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === bookingId ? { ...b, status: previousStatus } : b)),
-      )
-    }
-  }
-
   async function handleCancelRequestFromMenu(bookingId) {
     if (!window.confirm('Are you sure you want to cancel this tour?')) return
 
@@ -468,7 +444,7 @@ export default function AllBookings() {
 
     let error = null;
     try {
-      await updateBooking(bookingId, session?.user?.id, { status: 'cancelled' });
+      await cancelBooking(bookingId);
     } catch(err) {
       error = err;
     }
@@ -724,15 +700,7 @@ export default function AllBookings() {
                             </div>
                           </div>
                           <div className="border-outline-variant/5 mt-auto flex flex-wrap gap-3 border-t pt-4">
-                            {showUpcomingActions ? (
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateStatus(booking.id, 'completed')}
-                                className="rounded-full bg-primary px-6 py-2 text-sm font-bold text-white shadow-sm transition-all hover:opacity-90"
-                              >
-                                Mark as Completed
-                              </button>
-                            ) : (
+                            {showUpcomingActions ? null : (
                               <span className="rounded-full bg-surface-container-high px-6 py-2 text-sm font-bold text-secondary">
                                 {statusBadgeLabel}
                               </span>
@@ -740,7 +708,7 @@ export default function AllBookings() {
                             {showUpcomingActions ? (
                               <button
                                 type="button"
-                                onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
+                                onClick={() => handleCancelRequestFromMenu(booking.id)}
                                 className="border-error/20 bg-error-container/10 text-error hover:bg-error-container/20 rounded-full border px-6 py-2 text-sm font-bold transition-all"
                               >
                                 Cancel Request

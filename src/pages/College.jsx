@@ -561,65 +561,46 @@ const defaultDetails = {
   version: 1,
   theme: {},
   seo: {
-    title: 'University Residency Tour | The Academic Curator',
-    description:
-      'Book an immersive residency tour guided by official student ambassadors.',
+    title: 'Campus Tour | The Academic Curator',
+    description: 'Visit the campus with a current student before you apply.',
   },
-  badges: ['Prestige Series'],
+  badges: [],
   story: {
-    title: 'A Scholarly Journey',
+    title: 'What this tour covers',
     paragraphs: [
-      'Welcome to our premium university residency tour. This curated experience offers a deep look into the academic traditions, research centers, and student legacy of the campus.',
-      'Explore historical libraries, modern student hubs, and communal spaces while learning firsthand about admissions, campus culture, and research opportunities from our expert guides.',
+      'A current student walks you through the campus: classrooms, labs, the library, hostels and the places students spend their day.',
+      'Bring your parents and your questions about courses, fees, placements and hostel life.',
     ],
-    quote:
-      'This campus is built on a legacy of excellence, and this tour bridges the past with the future.',
   },
   highlights: [
     {
       icon: 'menu_book',
-      title: 'Academic Access',
-      description:
-        'Insight into historical libraries, laboratories, and lecture halls.',
+      title: 'Academic blocks',
+      description: 'Classrooms, labs and the library for the course you are considering.',
     },
     {
       icon: 'directions_walk',
-      title: 'Campus Walk',
-      description:
-        'Guided walking tour highlighting key architectural landmarks.',
+      title: 'Campus walk',
+      description: 'Hostels, mess, sports and common areas.',
     },
     {
       icon: 'groups',
       title: 'Student Q&A',
-      description: 'Direct conversation with current student ambassadors.',
+      description: 'Ask a current student anything about life at the college.',
     },
   ],
   faq: [
     {
       question: 'Can I cancel my tour?',
-      answer:
-        'Yes, free cancellation is available up to 48 hours before the tour start time.',
-    },
-  ],
-  courses: [
-    {
-      name: 'B.Tech',
-      branches: [
-        { name: 'Computer Science & Engineering', seats: 60 },
-        { name: 'Information Technology', seats: 45 },
-        { name: 'Electronics & Communication Engineering', seats: 30 },
-        { name: 'Mechanical Engineering', seats: 30 },
-      ],
+      answer: 'Yes. You can cancel an upcoming tour from My Bookings.',
     },
     {
-      name: 'MBA',
-      branches: [
-        { name: 'Finance', seats: 20 },
-        { name: 'Marketing', seats: 25 },
-        { name: 'Human Resource Management', seats: 15 },
-      ],
+      question: 'Can my parents come with me?',
+      answer: 'Yes. Add them to your group size when you book.',
     },
   ],
+  // Courses are set per tour in the admin editor. No defaults: seat counts must be real.
+  courses: [],
 }
 
 // Main Page Controller

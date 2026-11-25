@@ -7,48 +7,18 @@ import { getTourBadgeDetails } from '../utils/badgeUtils.js'
 import { useRequireAuth } from '../hooks/useRequireAuth.js'
 import SEO from '../components/SEO.jsx'
 
-const UPCOMING_TOURS = [
+const HOW_IT_WORKS = [
   {
-    id: '1',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCuDm1Xs8-yfNQIWtphJyldlMKUbOtXZUQwyJZsnN2t0fUxQNwBkyTUCXQ5cyL2-2NqS32rRk0wx0i_FPJ7oaYzlqs8FEH-6s_8MFkAH_nIa4DS06HBv4h1tkH4C3fzPLiAhSUY6X_5owFH4C85n2we51d_-nXExnCyrrar9MsWUJ9Z6z6bIpcsM0jEJzmXjZiioVAxEL0WBD4YPdvN9RppZYgKcLKi0Pul4Svc8mrHszcGWxG2fPQQR5LyXac-O8ldRpMNEO7Vi44D',
-    imageAlt: 'Modern university library interior with large windows',
-    badgeClass:
-      'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-tertiary uppercase shadow-sm',
-    badgeDotClass: 'h-2 w-2 animate-pulse rounded-full bg-tertiary',
-    badgeText: '3 Slots Left',
-    location: 'Cambridge, MA',
-    title: 'Harvard University Residency Tour',
-    dateLine: 'October 24, 2024',
-    timeLine: '10:00 AM - 1:00 PM EST',
+    title: 'Pick a college and a date',
+    body: 'Choose the course you are considering and bring your parents along. Groups stay small.',
   },
   {
-    id: '2',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDNbeXyixoBQmu1pKU-o2HHHm3nD_YFFFY_veZSgJSqb13rsz0hUCJVrUoKd1JadXWJrUE_3otq4otXN_MMD9ZtPmtJftuCbXgH75NS2ck1a8RcZ1TmLARgfMVCOs0jrQoA509Khg_KNKTAHQSriS15mPVtQMm7Ypj2sVNkszZXo7gd8SGs-qNFX_8gry0bxeHRju3j25IJQpk6Uvwl-FbcsBXRu-0J7LQmy0NquU07xBbM-O4fjpaWiudHX-iSr82XQyEzKx5g10xH',
-    imageAlt: 'Traditional stone gothic architecture university courtyard',
-    badgeClass:
-      'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-white/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-orange-700 uppercase shadow-sm',
-    badgeDotClass: 'h-2 w-2 rounded-full bg-orange-400',
-    badgeText: '8 Slots Left',
-    location: 'Stanford, CA',
-    title: 'Stanford Engineering Innovation Path',
-    dateLine: 'October 26, 2024',
-    timeLine: '02:00 PM - 4:30 PM PST',
+    title: 'Walk the campus with a student',
+    body: 'Classrooms, labs, hostels, the mess and the library, with someone who uses them every day.',
   },
   {
-    id: '3',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCR8TeRY0yBQgGsVuRRnkU7Kr4C43QqQ7Zrrsu_SnUX_XIOhBGCK-BSXAtKvgJmQgZamoO_KdpepKtu138adHH4ZWzn-wCvIScxxgQ4zBIs8LkLGi_O1vMpGEBK4fjEn_fmziDwmCk_iyRO2rAa_WRuZGxq-kEhcA40-tF9YqOdn38ES-kokpB0PLhvbKxJQpsuKUu66E68zfFDIqjmO-czXSR4UCru3goEklpwEXNd7jSWfh5rImL7Xm5PwE64FnhnapY7DNySnBcu',
-    imageAlt: 'Oxford style historical college buildings with green lawn',
-    badgeClass:
-      'pill-badge absolute top-5 left-5 flex items-center gap-2 rounded-full border border-error-container/50 bg-error/90 px-5 py-2 font-label text-[11px] font-extrabold tracking-[0.1em] text-white uppercase shadow-sm',
-    badgeDotClass: 'h-2 w-2 animate-ping rounded-full bg-white',
-    badgeText: 'LAST SLOT',
-    location: 'New Haven, CT',
-    title: 'Yale University Historic Arts Walk',
-    dateLine: 'October 29, 2024',
-    timeLine: '09:00 AM - 12:00 PM EST',
+    title: 'Decide with the full picture',
+    body: 'Ask about fees, placements and hostel life. If you apply through us, any admission benefit listed on the tour page is yours.',
   },
 ]
 
@@ -113,7 +83,6 @@ function HomeFeaturedTourCard({ tour }) {
       onClick={handleCardClick}
       className="group ghost-shadow flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] bg-surface-container-lowest transition-all duration-500 hover:shadow-2xl"
     >
-      <SEO title="The Academic Curator | Book Your Campus Tour" description="Find your future university with curated campus experiences led by top-tier student ambassadors." />
       <div className="relative h-64 shrink-0 overflow-hidden">
         <img
           alt={tour.imageAlt}
@@ -210,14 +179,10 @@ export default function Home() {
         const publishedTours = await getPublishedTours()
         const featured = publishedTours.slice(0, 3)
 
-        if (featured.length > 0) {
-          setTours(featured.map(mapSupabaseTourToHomeTour))
-        } else {
-          setTours(UPCOMING_TOURS)
-        }
+        setTours(featured.map(mapSupabaseTourToHomeTour))
       } catch (err) {
         console.error('Error fetching tours:', err)
-        setTours(UPCOMING_TOURS)
+        setTours([])
       } finally {
         setLoading(false)
       }
@@ -244,17 +209,19 @@ export default function Home() {
 
   return (
     <>
+      <SEO title="Campus tours in Delhi NCR and Dehradun" description="Visit colleges in Delhi NCR and Dehradun with a current student. See classrooms, labs and hostels before you apply." />
       <main className="pt-24">
         <section className="relative overflow-hidden bg-surface-container-low px-8 py-20 lg:py-32">
           <div className="mx-auto grid max-w-screen-2xl items-center gap-12 lg:grid-cols-2">
             <div className="z-10">
               <h1 className="mb-6 text-3xl sm:text-5xl font-extrabold leading-[1.1] tracking-tight text-primary lg:text-7xl">
-                Find Your Future <br />
-                <span className="text-tertiary">University</span>
+                See the campus <br />
+                <span className="text-tertiary">before you decide</span>
               </h1>
               <p className="mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-secondary lg:text-xl">
-                Curated campus experiences led by top-tier student ambassadors.
-                Don&apos;t just visit—immerse yourself in the academic legacy.
+                Walk through colleges in Delhi NCR and Dehradun with a current
+                student. See the classrooms, labs and hostels, and ask anything
+                before you apply.
               </p>
               <div className="relative max-w-2xl">
                 <div className="ghost-shadow group flex items-center rounded-full p-1 sm:p-1.5 ring-primary/20 transition-all focus-within:ring-1 bg-white">
@@ -263,19 +230,19 @@ export default function Home() {
                   </span>
                   <input
                     className="font-body w-full border-none bg-transparent py-2.5 sm:py-4 text-sm sm:text-base text-on-surface placeholder:text-outline-variant focus:border-transparent focus:outline-none focus:ring-0"
-                    placeholder="Search by University, City, or Major..."
+                    placeholder="Search by college, city or course"
                     type="text"
                     value={heroSearch}
                     onChange={(e) => setHeroSearch(e.target.value)}
                     onKeyDown={handleHeroSearchKeyDown}
-                    aria-label="Search universities, cities, or majors"
+                    aria-label="Search colleges, cities or courses"
                   />
                   <button
                     className="rounded-full bg-primary px-5 py-2.5 sm:px-10 sm:py-4 text-sm sm:text-base font-semibold text-on-primary transition-colors hover:bg-primary-container whitespace-nowrap"
                     type="button"
                     onClick={runHeroSearch}
                   >
-                    Discover
+                    Find tours
                   </button>
                 </div>
               </div>
@@ -283,28 +250,12 @@ export default function Home() {
             <div className="relative hidden lg:block">
               <div className="ghost-shadow relative z-10 -rotate-2 transform overflow-hidden rounded-xl">
                 <img
-                  alt="Stately red brick university campus building with clock tower"
+                  alt="College campus"
                   className="h-[500px] w-full object-cover transition-opacity duration-700"
                   src={heroImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuDV5-UmBceAZWTUMwBXAlffid7KmcIlnwYaFoOsIIccWW6YwwKv5mYBdqTudsNpqIGcSdvfNWw1e5dAJAEYbbiKFzKjhDn7Ptk2UdxuAGFeruarW3-9uyX18qpEO-4ifP-3kP_LlxdHg5vdhO0mDd04Nrz4da43nmPnyWL77faR1RdZLp4Xz41kl6XiAHFLFPcsKFXa4Znxm3FQEbh7-vhlf-iNDpYvvqM9bZuzS0Opd1KQJ90fVxHt6DKtwN0Autjfp_HfDhvGYCRd"}
                 />
               </div>
               <div className="absolute -top-10 -right-10 h-64 w-64 rounded-full bg-tertiary-fixed opacity-20 blur-3xl" />
-              <div className="ghost-shadow animate-[bounce-slow_3s_ease-in-out_infinite] absolute -bottom-10 -left-10 z-20 flex items-center gap-4 rounded-xl bg-surface-container-lowest p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-fixed text-primary">
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: '"FILL" 1' }}
-                  >
-                    workspace_premium
-                  </span>
-                </div>
-                <div>
-                  <p className="font-label text-xs uppercase tracking-widest text-secondary">
-                    The Academic Curator
-                  </p>
-                  <p className="font-bold text-primary">Official Curator</p>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -342,7 +293,7 @@ export default function Home() {
                 </div>
                 <div className="inline-block rounded-2xl md:rounded-full border border-secondary-container bg-secondary-container/50 px-4 py-2 sm:px-6 text-on-secondary-container">
                   <p className="text-xs sm:text-sm font-medium md:text-base">
-                    Limited availability for private and curated group sessions
+                    Small groups, so every question gets answered
                   </p>
                 </div>
               </div>
@@ -379,6 +330,22 @@ export default function Home() {
                   </div>
                 </div>
               ))
+            ) : tours.length === 0 ? (
+              <div className="col-span-full rounded-[2rem] border border-outline-variant/40 bg-surface-container-lowest p-10 text-center">
+                <h3 className="font-headline text-xl font-bold text-primary">
+                  New tour dates are being added
+                </h3>
+                <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-secondary">
+                  Tell us which college you want to visit and we will message you
+                  when a date opens.
+                </p>
+                <Link
+                  to="/contact"
+                  className="mt-6 inline-block rounded-full bg-primary px-8 py-3 text-sm font-bold text-on-primary transition-opacity hover:opacity-90"
+                >
+                  Request a tour
+                </Link>
+              </div>
             ) : (
               tours.map((tour) => (
                 <HomeFeaturedTourCard key={tour.id} tour={tour} />
@@ -387,59 +354,46 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="bg-primary px-8 py-24 text-on-primary">
-          <div className="mx-auto flex max-w-screen-2xl flex-col items-center gap-16 lg:flex-row">
-            <div className="flex-1">
-              <h2 className="mb-6 text-4xl font-extrabold lg:text-5xl">
-                Learn from those who live it.
+        <section className="bg-primary px-4 py-16 text-on-primary sm:px-8 md:py-24">
+          <div className="mx-auto max-w-screen-2xl">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-extrabold sm:text-4xl lg:text-5xl">
+                How a tour works
               </h2>
-              <p className="mb-8 text-lg leading-relaxed text-on-primary-container">
-                Our ambassadors are more than just guides. They are researchers,
-                athletes, and leaders who provide an unfiltered look into campus
-                life and academic rigor.
+              <p className="mt-5 text-base leading-relaxed text-on-primary-container sm:text-lg">
+                A brochure shows a college at its best. A student who studies
+                there shows you an ordinary day.
               </p>
-              <div className="flex gap-4">
-                <Link
-                  to="/ambassadors"
-                  className="rounded-lg bg-tertiary px-8 py-4 font-semibold text-center text-on-tertiary transition-colors hover:bg-tertiary-container"
-                >
-                  Meet Ambassadors
-                </Link>
-                <Link
-                  to="/explore"
-                  className="rounded-lg border border-outline-variant bg-transparent px-8 py-4 font-semibold text-center text-on-primary transition-colors hover:bg-white/10"
-                >
-                  The Curriculum
-                </Link>
-              </div>
             </div>
-            <div className="grid flex-1 grid-cols-2 gap-4">
-              <div className="space-y-4 pt-12">
-                <Link to="/ambassadors" className="block rounded-xl border border-white/5 bg-surface-container-lowest/10 p-4 backdrop-blur-sm transition-transform hover:scale-105 hover:bg-surface-container-lowest/20">
-                  <img
-                    alt="Smiling female university student portrait"
-                    className="mb-4 aspect-square w-full rounded-lg object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjpI7H9mNTECI0Jk-MRxY3FVteAEdgOOX6V57GC7gn7QXhZ4labTY9kLJDBkSMU0l6J_G57qZucPVchNWKkU2winyMlg9Y6YehekLx9BDPWWavAGB1dsohfbcvT5X6dGKZ8lvHruWtPlDHVV5Zi7GyYLoeLTPxjI52qNn3DkXc2vxp6wY1OudaRTNGNx41q_ytXdqQsEMQSWAoN6mpaPTgWS3kxsQmti3VzeFxtjPp88O__j9REURlHBM3H2EWNWvzqYN4ZyNdN9jQ"
-                  />
-                  <p className="font-bold">Elena R.</p>
-                  <p className="text-xs uppercase tracking-widest text-on-primary-container">
-                    Physics @ MIT
+            <ol className="mt-12 grid gap-6 md:grid-cols-3">
+              {HOW_IT_WORKS.map((step, idx) => (
+                <li
+                  key={step.title}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-8"
+                >
+                  <span className="font-headline text-sm font-bold tracking-widest text-tertiary-fixed-dim">
+                    STEP {idx + 1}
+                  </span>
+                  <h3 className="font-headline mt-3 text-xl font-bold">{step.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-on-primary-container">
+                    {step.body}
                   </p>
-                </Link>
-              </div>
-              <div className="space-y-4">
-                <Link to="/ambassadors" className="block rounded-xl border border-white/5 bg-surface-container-lowest/10 p-4 backdrop-blur-sm transition-transform hover:scale-105 hover:bg-surface-container-lowest/20">
-                  <img
-                    alt="Smiling male university student portrait"
-                    className="mb-4 aspect-square w-full rounded-lg object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqeuAxA06BquneUoU930Ds1Ow8u7g1id-ZEeFubEv_VcjbP-qgCOIa950M-BMLWiK7M1OK3fBRw_simBr9uuLO30aqE_GW2-NrqcjZkFLAohvejrAby4ivJ5X9WoMxUrII4n4tws98pv3C7BqjsIrlF1MB68_i6umz278t4M-UFELqNCWtHoHXUPU3ZmL8I2m40V0lggrVO6DO_Z7vY8FCv6t6H-ORRhxACh9xbE2pscfRxG03alZcJ4UBRu9oA_0DEzPxyVZ14IVu"
-                  />
-                  <p className="font-bold">Marcus T.</p>
-                  <p className="text-xs uppercase tracking-widest text-on-primary-container">
-                    Law @ Columbia
-                  </p>
-                </Link>
-              </div>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-12 flex flex-col gap-4 sm:flex-row">
+              <Link
+                to="/explore"
+                className="rounded-full bg-white px-8 py-4 text-center font-bold text-primary transition-colors hover:bg-primary-fixed"
+              >
+                See all tours
+              </Link>
+              <Link
+                to="/contact"
+                className="rounded-full border border-white/30 px-8 py-4 text-center font-bold text-on-primary transition-colors hover:bg-white/10"
+              >
+                Talk to us first
+              </Link>
             </div>
           </div>
         </section>

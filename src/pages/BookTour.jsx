@@ -494,7 +494,8 @@ export default function BookTour() {
     }
     
     // Validate slots against dynamic backend field
-    if (tourData.available_slots !== undefined && groupSize > tourData.available_slots) {
+    // When editing, the booking's own seats are already counted, so the server decides.
+    if (!isEditMode && tourData.available_slots != null && groupSize > tourData.available_slots) {
       setBookingError(`Only ${tourData.available_slots} slots are currently available for this tour.`)
       return
     }
@@ -513,29 +514,21 @@ export default function BookTour() {
       const tour_date = toLocalDateKey(selectedDate)
       const tourName = formatBookingName(tourData.title || tourData.university_name, residencyCourse, selectedBranch)
 
-      // Store historical pricing snapshots
-      const unit_price = pricing.price
-      const discount_price = pricing.discountPrice
-      const total_price = estimatedTotal
-
+      // Prices are calculated on the server from the tour record.
       const payload = {
         tour_id: tourData.id,
         course: residencyCourse,
         branch: selectedBranch || null,
-        unit_price,
-        discount_price,
-        total_price,
         phone_number: phoneNumber.trim(),
         tour_date,
         time_slot: timeSlot,
         group_size: groupSize,
-        college_name: tourName, // Backward compatibility
       }
 
       if (isEditMode) {
         let error = null;
         try {
-          await updateBooking(editId, user.id, payload);
+          await updateBooking(editId, payload);
         } catch (err) {
           error = err;
         }
@@ -549,16 +542,9 @@ export default function BookTour() {
       }
 
       // Create Flow
-      const insertPayload = {
-        ...payload,
-        user_id: user.id,
-        user_email: user.email,
-        status: 'upcoming',
-      }
-
       let error = null;
       try {
-        await createBooking(insertPayload);
+        await createBooking(payload);
       } catch (err) {
         error = err;
       }
@@ -663,9 +649,9 @@ export default function BookTour() {
     )
   }
 
-  const universityTitle = tourData ? (tourData.title || tourData.university_name || 'Campus Tour') : 'Harvard University Residency Tour'
+  const universityTitle = tourData ? (tourData.title || tourData.university_name || 'Campus Tour') : 'Campus Tour'
   const formattedSidebarName = formatBookingName(universityTitle, residencyCourse, selectedBranch)
-  const locationLabel = tourData ? (tourData.location || tourData.city || 'Cambridge, MA') : 'Cambridge, MA'
+  const locationLabel = tourData ? (tourData.location || tourData.city || '') : ''
   const heroImage = tourData?.image_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCBvAM85cVlgMt_JGereQMJojTE4GAL1vx3aGKQQCT-5O5SLyw51JKkpvdIDFynjvRuKNGbz2MjA3BBFbuQBPgLQFXxDftOaULNrnc7V5mMVMYxat-b6dK7QQkdKSV1aWeeu0vzTL9DsW5-GLueoQQrJ9IMSGFf4RCIczFKIgUXjwjguaE1nIfbsG16jeOMosLjcRqvZM-gdu6v-RGpdjAX1rdGeoHsq4Xet-LXLnac_KEMLio8DQLd7912w-aajHGtD8GkKqe0FHfS'
 
   return (
@@ -708,7 +694,7 @@ export default function BookTour() {
               <p className="font-body text-secondary text-sm">
                 {isEditMode
                   ? 'Update your date, time, group size, or residency track. Save when you are ready.'
-                  : `Secure your spot for the ${universityTitle} Residency Tour. Select your preferred schedule and residency track below.`}
+                  : `Choose your course, date and group size for ${universityTitle}.`}
               </p>
             </section>
 

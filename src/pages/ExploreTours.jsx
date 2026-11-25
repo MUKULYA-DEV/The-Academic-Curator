@@ -136,17 +136,6 @@ function mapTourRow(row) {
   }
 }
 
-function filterStaticTours(searchTerm) {
-  const t = searchTerm.trim().toLowerCase()
-  if (!t) return [...TOURS]
-  return TOURS.filter(
-    (tour) =>
-      tour.school.toLowerCase().includes(t) ||
-      tour.title.toLowerCase().includes(t) ||
-      tour.location.toLowerCase().includes(t),
-  )
-}
-
 const PAGE_SIZE = 6
 
 export default function ExploreTours() {
@@ -189,7 +178,7 @@ export default function ExploreTours() {
         setAllToursForFilters(data.map(mapTourRow))
       } catch (err) {
         if (cancelled) return
-        setAllToursForFilters([...TOURS])
+        setAllToursForFilters([])
       }
     }
     loadAllToursForFilters()
@@ -339,20 +328,6 @@ export default function ExploreTours() {
     if (emptyDbSearch || loadMoreLoading || toursLoading) return
     const term = searchFromUrl.trim()
 
-    if (fetchMode === 'static') {
-      const full = filterStaticTours(term)
-      const nextPage = pageIndex + 1
-      const start = nextPage * PAGE_SIZE
-      if (start >= full.length) return
-
-      setLoadMoreLoading(true)
-      const chunk = full.slice(start, start + PAGE_SIZE)
-      setTourCards((prev) => [...prev, ...chunk])
-      setPageIndex(nextPage)
-      setLoadMoreLoading(false)
-      return
-    }
-
     setLoadMoreLoading(true)
     const nextPage = pageIndex + 1
     const rangeFrom = nextPage * PAGE_SIZE
@@ -376,11 +351,6 @@ export default function ExploreTours() {
     } finally {
       setLoadMoreLoading(false)
     }
-
-    const mapped = rows.map(mapTourRow)
-    setTourCards((prev) => [...prev, ...mapped])
-    setPageIndex(nextPage)
-    setLoadMoreLoading(false)
   }, [
     emptyDbSearch,
     loadMoreLoading,

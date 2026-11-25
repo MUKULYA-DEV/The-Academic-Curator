@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { updateUserProfile, updatePassword, upsertUserProfileDb } from '../services/authService.js'
 import { getUserBookings } from '../services/tourService.js'
+import { useAuth } from '../hooks/useAuth.js'
 
 function formatBookingDateLabel(tourDateStr) {
   if (!tourDateStr || typeof tourDateStr !== 'string') return '—'
@@ -62,6 +63,7 @@ function RecentBookingsSkeleton() {
 }
 
 export default function Profile() {
+  const { session } = useAuth()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -200,21 +202,17 @@ export default function Profile() {
   useEffect(() => {
     let cancelled = false
 
-    async function loadUser() {
-      const user = session?.user;
-      if (cancelled || !user) return
+    function loadUser() {
+      const user = session?.user
+      if (!user) return
 
+      const meta = user.user_metadata ?? {}
       setEmail(user.email ?? '')
-
-      // Fetch user profile from the database
-      let dbProfile = null
-      try {
-        // Implementation here if needed in future
-      } catch (err) {
-        console.error(err)
-      }
+      setFirstName(meta.first_name ?? '')
+      setLastName(meta.last_name ?? '')
+      setPhone(meta.phone ?? '')
     }
-    
+
     async function loadRecentBookings() {
       const user = session?.user;
       if (!user) {
@@ -240,11 +238,11 @@ export default function Profile() {
 
     loadUser()
     loadRecentBookings()
-    
+
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [session])
 
   return (
     <div className="bg-background font-body text-on-surface">

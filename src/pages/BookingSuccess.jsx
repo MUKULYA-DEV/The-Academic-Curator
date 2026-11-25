@@ -1,11 +1,11 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 
-const FALLBACK_DATE_LINE = 'Monday, Oct 14, 2024'
+const FALLBACK_DATE_LINE = 'Date to be confirmed'
 const FALLBACK_TIME_RANGE = '09:00 AM — 12:30 PM'
 const FALLBACK_SESSION_LABEL = 'Morning Session'
-const DEFAULT_TOUR_NAME = 'Harvard University Residency Tour'
-const DEFAULT_MEETING_LOCATION = 'Harvard Square Information Center, Cambridge, MA'
+const DEFAULT_TOUR_NAME = 'Campus Tour'
+const DEFAULT_MEETING_LOCATION = 'Campus main gate'
 
 /** Format a Date as Google Calendar `YYYYMMDDTHHMMSSZ` (UTC). */
 function formatGcalUtcTimestamp(d) {
@@ -16,47 +16,16 @@ function formatGcalUtcTimestamp(d) {
 }
 
 /**
- * Find the UTC instant when clocks in America/New_York show `ymd` at hour:minute (24h).
+ * The UTC instant when clocks in India show `ymd` at hour:minute (24h).
+ * IST is UTC+05:30 all year, so no daylight-saving lookup is needed.
  */
-function nyWallClockToUtcDate(ymd, hour24, minute) {
+function istWallClockToUtcDate(ymd, hour24, minute) {
   const [y, mon, day] = ymd.split('-').map(Number)
   if (!Number.isFinite(y) || !Number.isFinite(mon) || !Number.isFinite(day)) {
     return new Date()
   }
-
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-
-  const readParts = (dt) => {
-    const entries = Object.fromEntries(
-      formatter.formatToParts(dt).filter((x) => x.type !== 'literal').map((x) => [x.type, x.value]),
-    )
-    return {
-      y: Number(entries.year),
-      m: Number(entries.month),
-      d: Number(entries.day),
-      h: Number(entries.hour),
-      mi: Number(entries.minute),
-    }
-  }
-
-  const start = Date.UTC(y, mon - 1, day - 1, 8, 0, 0)
-  for (let i = 0; i < 60 * 48; i++) {
-    const dt = new Date(start + i * 60 * 1000)
-    const p = readParts(dt)
-    if (p.y === y && p.m === mon && p.d === day && p.h === hour24 && p.mi === minute) {
-      return dt
-    }
-  }
-
-  return new Date(Date.UTC(y, mon - 1, day, 14, 0, 0))
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000
+  return new Date(Date.UTC(y, mon - 1, day, hour24, minute) - IST_OFFSET_MS)
 }
 
 function buildGoogleCalendarUrl({ title, location, details, start, end }) {
@@ -152,13 +121,18 @@ function parseBookingState(state) {
 
 export default function BookingSuccess() {
   const { session } = useAuth()
-  const userEmail = session?.user?.email || 'your registered email'
+  const userEmail = session?.user?.email
   const location = useLocation()
   const parsed = parseBookingState(location.state)
   const { dateLine, timeRange, sessionLabel, ymd, timeSlot, tourName, meetingLocation } = parsed
 
+  // Opened directly or refreshed: there is no booking to show here.
+  if (!location.state || !ymd) {
+    return <Navigate to="/bookings?tab=upcoming" replace />
+  }
+
   function handleAddToCalendar() {
-    const dateKey = ymd ?? '2024-10-14'
+    const dateKey = ymd
     const startHm =
       timeSlot === 'afternoon'
         ? { h: 13, m: 30 }
@@ -168,8 +142,8 @@ export default function BookingSuccess() {
         ? { h: 17, m: 0 }
         : { h: 12, m: 30 }
 
-    const start = nyWallClockToUtcDate(dateKey, startHm.h, startHm.m)
-    const end = nyWallClockToUtcDate(dateKey, endHm.h, endHm.m)
+    const start = istWallClockToUtcDate(dateKey, startHm.h, startHm.m)
+    const end = istWallClockToUtcDate(dateKey, endHm.h, endHm.m)
 
     const details = `Time: ${timeRange} (${sessionLabel}). Meet at ${meetingLocation}.`
 
@@ -198,11 +172,17 @@ export default function BookingSuccess() {
               </span>
             </div>
             <h1 className="font-headline text-4xl font-extrabold tracking-tighter text-primary md:text-5xl">
-              Tour Confirmed!
+              Your tour is booked
             </h1>
             <p className="mx-auto max-w-md text-lg leading-relaxed text-secondary">
-              We&apos;ve sent a confirmation email to{' '}
-              <span className="font-semibold text-on-surface">{userEmail}</span>
+              It is saved to your account
+              {userEmail ? (
+                <>
+                  {' '}
+                  (<span className="font-semibold text-on-surface">{userEmail}</span>)
+                </>
+              ) : null}
+              . You can view or change it any time under My Bookings.
             </p>
           </section>
 
