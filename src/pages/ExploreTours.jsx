@@ -104,17 +104,13 @@ function mapTourRow(row) {
     if (typeof row.details === 'string') {
       try {
         detailsObj = JSON.parse(row.details)
-      } catch (e) {
+      } catch {
         detailsObj = null
       }
     } else if (typeof row.details === 'object') {
       detailsObj = row.details
     }
   }
-
-  const courses = detailsObj?.courses || []
-  const major = courses[0]?.branches?.[0]?.name || 'Program'
-  const course = courses[0]?.name || 'Degree'
 
   return {
     id: String(row.id),
@@ -178,7 +174,7 @@ export default function ExploreTours() {
         const data = await getPublishedTours()
         if (cancelled) return
         setAllToursForFilters(data.map(mapTourRow))
-      } catch (err) {
+      } catch {
         if (cancelled) return
         setAllToursForFilters([])
       }
@@ -262,7 +258,7 @@ export default function ExploreTours() {
           const dbData = await getPublishedTours()
           if (cancelled) return
           sourceList = dbData.map(mapTourRow)
-        } catch (err) {
+        } catch {
           if (cancelled) return
           sourceList = []
         }
@@ -270,7 +266,6 @@ export default function ExploreTours() {
 
       if (term) {
         const normalized = term.toLowerCase()
-        const words = normalized.split(/\s+/).filter((w) => w.length > 2)
 
         const matched = sourceList.filter((t) => {
           if (t.school && t.school.toLowerCase().includes(normalized)) return true

@@ -166,6 +166,8 @@ const RotatingText = forwardRef((props, ref) => {
 
   const order = useMemo(() => {
     const total = elements.reduce((sum, word) => sum + word.characters.length, 0);
+    // A fresh random order per text is the point of the 'random' stagger.
+    // eslint-disable-next-line react-hooks/purity
     const shuffled = Array.from({ length: total }, (_, i) => i).sort(() => Math.random() - 0.5);
     return { total, shuffled };
   }, [elements]);

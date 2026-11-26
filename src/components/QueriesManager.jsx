@@ -88,7 +88,7 @@ export default function QueriesManager() {
     if (!selectedQuery) return
     setSavingNotes(true)
     try {
-      const updatedQuery = await updateQueryStatus(selectedQuery.id, selectedQuery.status, adminNotes)
+      await updateQueryStatus(selectedQuery.id, selectedQuery.status, adminNotes)
       
       // Update local state
       setQueries(prev => prev.map(q => 

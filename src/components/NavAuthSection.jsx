@@ -30,7 +30,8 @@ function getInitials(user) {
 export function UserAvatarMenu({ className = '' }) {
   const { session, signOut } = useAuth()
   const [open, setOpen] = useState(false)
-  const [userIsAdmin, setUserIsAdmin] = useState(false)
+  // Remembered per user so one account's answer is never shown for another.
+  const [adminCheck, setAdminCheck] = useState({ userId: null, isAdmin: false })
   const ref = useRef(null)
 
   useEffect(() => {
@@ -45,17 +46,18 @@ export function UserAvatarMenu({ className = '' }) {
 
   useEffect(() => {
     let mounted = true
-    if (session) {
+    const userId = session?.user?.id
+    if (userId) {
       isAdmin().then(result => {
         if (mounted) {
-          setUserIsAdmin(result.isAuthorized || result === true)
+          setAdminCheck({ userId, isAdmin: Boolean(result.isAuthorized || result === true) })
         }
       })
-    } else {
-      setUserIsAdmin(false)
     }
     return () => { mounted = false }
   }, [session])
+
+  const userIsAdmin = Boolean(session?.user?.id) && adminCheck.userId === session.user.id && adminCheck.isAdmin
 
   const initial = getInitials(session?.user)
 

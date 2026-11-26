@@ -6,7 +6,6 @@ import QueriesManager from '../components/QueriesManager.jsx'
 import MediaPicker from '../components/MediaPicker.jsx'
 import RecommendationsEditor from '../components/RecommendationsEditor.jsx'
 import { settingsService } from '../services/settingsService.js'
-import { useAuth } from '../hooks/useAuth.js'
 import CustomSelect from '../components/CustomSelect.jsx'
 import { getAdminDashboardData, updateBookingStatus } from '../services/adminService.js'
 
@@ -964,7 +963,7 @@ export default function AdminDashboard() {
           <section className="pt-24 pb-12 px-8 max-w-7xl mx-auto">
             <TourEditor 
               tour={selectedTourForEdit}
-              onSave={(savedTour) => {
+              onSave={() => {
                 showNotification(`College ${selectedTourForEdit ? 'updated' : 'listed'} successfully!`)
                 fetchAdminData()
                 setActiveTab('tours')

@@ -374,12 +374,15 @@ export default function AllBookings() {
     document.title = 'My Bookings | The Academic Curator'
   }, [])
 
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab === 'upcoming' || tab === 'completed' || tab === 'cancelled') {
-      setActiveTab(tab)
+  // Follow ?tab= in the URL whenever it changes, without an effect.
+  const tabParam = searchParams.get('tab')
+  const [seenTabParam, setSeenTabParam] = useState(null)
+  if (tabParam !== seenTabParam) {
+    setSeenTabParam(tabParam)
+    if (tabParam === 'upcoming' || tabParam === 'completed' || tabParam === 'cancelled') {
+      setActiveTab(tabParam)
     }
-  }, [searchParams])
+  }
 
   useEffect(() => {
     if (!toastMessage) return undefined

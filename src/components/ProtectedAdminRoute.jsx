@@ -4,7 +4,6 @@ import { isAdmin } from '../services/authService'
 
 export default function ProtectedAdminRoute({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(null)
-  const [debugInfo, setDebugInfo] = useState('')
 
   useEffect(() => {
     let mounted = true
@@ -12,7 +11,6 @@ export default function ProtectedAdminRoute({ children }) {
       const result = await isAdmin()
       if (mounted) {
         setIsAuthorized(result.isAuthorized)
-        setDebugInfo(result.reason)
       }
     }
     checkAdmin()

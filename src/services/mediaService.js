@@ -54,7 +54,7 @@ export async function convertToWebP(file) {
         resolve(webpFile)
       }, 'image/webp', 0.8) // 80% quality
     }
-    img.onerror = (err) => {
+    img.onerror = () => {
       URL.revokeObjectURL(objectUrl)
       reject(new Error('Failed to load image for conversion'))
     }

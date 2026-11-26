@@ -43,7 +43,7 @@ export const settingsService = {
    */
   async getSetting(key, defaultValue = null) {
     const allSettings = await this.getAllSettings()
-    return allSettings.hasOwnProperty(key) ? allSettings[key] : defaultValue
+    return Object.hasOwn(allSettings, key) ? allSettings[key] : defaultValue
   },
 
   /**

@@ -20,35 +20,25 @@ function useIntersectionObserver(options = {}) {
   return [ref, isIntersecting]
 }
 
+function timeLeftUntil(expiresAt) {
+  if (!expiresAt) return null
+  const difference = new Date(expiresAt).getTime() - Date.now()
+  if (difference <= 0) return null
+
+  return {
+    days: Math.floor(difference / (1000 * 60 * 60 * 24)).toString().padStart(2, '0'),
+    hours: Math.floor((difference / (1000 * 60 * 60)) % 24).toString().padStart(2, '0'),
+    minutes: Math.floor((difference / 1000 / 60) % 60).toString().padStart(2, '0'),
+    seconds: Math.floor((difference / 1000) % 60).toString().padStart(2, '0'),
+  }
+}
+
 function CardTimer({ expiresAt }) {
-  const [timeLeft, setTimeLeft] = useState(null)
-  
+  const [timeLeft, setTimeLeft] = useState(() => timeLeftUntil(expiresAt))
+
   useEffect(() => {
-    if (!expiresAt) return
-
-    const calculateTimeLeft = () => {
-      const now = new Date()
-      const expiration = new Date(expiresAt)
-      const difference = expiration.getTime() - now.getTime()
-
-      if (difference <= 0) {
-        return null
-      }
-
-      return {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)).toString().padStart(2, '0'),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24).toString().padStart(2, '0'),
-        minutes: Math.floor((difference / 1000 / 60) % 60).toString().padStart(2, '0'),
-        seconds: Math.floor((difference / 1000) % 60).toString().padStart(2, '0'),
-      }
-    }
-
-    setTimeLeft(calculateTimeLeft())
-
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft())
-    }, 1000)
-
+    if (!expiresAt) return undefined
+    const timer = setInterval(() => setTimeLeft(timeLeftUntil(expiresAt)), 1000)
     return () => clearInterval(timer)
   }, [expiresAt])
 
@@ -82,6 +72,7 @@ function CardTimer({ expiresAt }) {
 
 export default function BenefitsSection({ details, discountPrice, currencySymbol }) {
   const benefits = details?.benefits
+  const [sectionRef, isVisible] = useIntersectionObserver()
 
   if (!benefits || !benefits.enabled) {
     return null
@@ -90,8 +81,6 @@ export default function BenefitsSection({ details, discountPrice, currencySymbol
   const theme = details.theme || {}
   const primaryTextColor = theme.primaryColor ? { color: theme.primaryColor } : {}
   const accentColor = theme.accentColor || '#f59e0b'
-
-  const [sectionRef, isVisible] = useIntersectionObserver()
 
   return (
     <section className="bg-surface py-8" id="exclusive-benefits">

@@ -71,9 +71,9 @@ export default function Login() {
 
   const [signUpAuthStep, setSignUpAuthStep] = useState('email')
   const [signUpOtp, setSignUpOtp] = useState('')
-  const [signUpOtpToast, setSignUpOtpToast] = useState(null)
-  const [timeLeft, setTimeLeft] = useState(60)
-  const [otpError, setOtpError] = useState('')
+  const [, setSignUpOtpToast] = useState(null)
+  const [, setTimeLeft] = useState(60)
+  const [, setOtpError] = useState('')
 
   const [signUpEmail, setSignUpEmail] = useState('')
   const [signUpPassword, setSignUpPassword] = useState('')
@@ -278,7 +278,7 @@ export default function Login() {
       setAuthLoading(true)
       try {
         // Query database to see if email is already registered
-        const { data: existingEmail, error: emailErr } = await supabase
+        const { data: existingEmail } = await supabase
           .from('profiles')
           .select('id')
           .eq('email', signUpEmail.trim())
@@ -293,7 +293,7 @@ export default function Login() {
 
         // Query database to see if phone is already registered
         const phoneVal = signUpPhoneCountry + signUpPhone
-        const { data: existingPhone, error: phoneErr } = await supabase
+        const { data: existingPhone } = await supabase
           .from('profiles')
           .select('id')
           .eq('phone', phoneVal)

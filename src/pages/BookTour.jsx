@@ -1,9 +1,8 @@
 import SEO from '../components/SEO.jsx'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { UserAvatarMenu } from '../components/NavAuthSection.jsx'
 import { useAuth } from '../hooks/useAuth.js'
-import { getPublicUrl } from '../services/mediaService.js'
 import { getTourBadgeDetails } from '../utils/badgeUtils.js'
 import CustomSelect from '../components/CustomSelect.jsx'
 import { getBookingById, checkDuplicateBooking, createBooking, updateBooking, fetchTourByLegacyName } from '../services/tourService.js'
@@ -71,7 +70,7 @@ function formatSidebarDate(d) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function showLimitedSlotDot(date, inCurrentMonth) {
+function showLimitedSlotDot() {
   // Originally hardcoded to the 4th of every month. Removed to support dynamic logic in the future.
   return false
 }
@@ -126,7 +125,6 @@ function parseStoredCollegeName(stored) {
 
 export default function BookTour() {
   const navigate = useNavigate()
-  const location = useLocation()
   const [searchParams] = useSearchParams()
   const { session } = useAuth()
 
@@ -438,6 +436,8 @@ export default function BookTour() {
       const tour_date = toLocalDateKey(selectedDate)
 
       const isDuplicate = await checkDuplicateBooking(user.id, tourData.id, tour_date, timeSlot, editId);
+      // Ignore the answer if the date or slot changed while it was loading.
+      if (cancelled) return
       setIsDuplicateDetected(isDuplicate);
     }
 

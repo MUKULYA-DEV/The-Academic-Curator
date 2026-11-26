@@ -45,7 +45,7 @@ export default function QueryModal({ isOpen, onClose, tour }) {
     else if (!emailRegex.test(formData.email)) newErrors.email = 'Please enter a valid email address'
 
     // Phone validation (regex: basic international format support)
-    const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/
+    const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
     else if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) newErrors.phone = 'Please enter a valid phone number'
 

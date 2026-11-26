@@ -71,7 +71,7 @@ export async function getAdminDashboardData() {
   
   if (bookingsErr) throw bookingsErr
 
-  const { data: profilesData, error: profilesErr } = await supabase
+  const { data: profilesData } = await supabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })

@@ -153,10 +153,11 @@ function StorySection({ story, theme }) {
 
 // 3.5. CoursesSection Component
 function CoursesSection({ courses, theme }) {
+  const [openCourseIndex, setOpenCourseIndex] = useState(null)
+
   if (!courses || courses.length === 0) return null
 
   const primaryTextColor = theme?.primaryColor ? { color: theme.primaryColor } : {}
-  const [openCourseIndex, setOpenCourseIndex] = useState(null)
 
   function toggleCourse(index) {
     setOpenCourseIndex(openCourseIndex === index ? null : index)
@@ -309,8 +310,6 @@ function GuideSection({ guide, theme }) {
 
 // 5. GallerySection Component
 function GallerySection({ gallery, theme }) {
-  if (!gallery || gallery.length === 0) return null
-
   const scrollRef = useRef(null)
   const [activeIndex, setActiveIndex] = useState(null)
   const primaryText = theme?.primaryColor ? { color: theme.primaryColor } : {}
@@ -343,6 +342,8 @@ function GallerySection({ gallery, theme }) {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [activeIndex, gallery])
+
+  if (!gallery || gallery.length === 0) return null
 
   const activeImage = activeIndex !== null ? gallery[activeIndex] : null
 

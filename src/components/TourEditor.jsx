@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { saveTour } from '../services/tourService.js'
-import { generateDefaultTemplate, sanitizeTourJson, validateTourJson, generateSlug } from '../utils/tourJsonUtils.js'
+import { sanitizeTourJson, validateTourJson, generateSlug } from '../utils/tourJsonUtils.js'
 import MediaPicker from './MediaPicker.jsx'
 import RecommendationsEditor from './RecommendationsEditor.jsx'
 import BenefitsSection from './college/BenefitsSection.jsx'

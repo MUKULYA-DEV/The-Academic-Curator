@@ -182,11 +182,13 @@ const BlurText = ({
 }) => {
   const ref = useRef(null);
   const [phase, setPhase] = useState(() => startPhase(trigger));
-  const firstPhase = useRef(phase).current;
+  const [firstPhase] = useState(phase);
   const [focusWord, setFocusWord] = useState(-1);
   const settledRef = useRef(phase === 'rest');
   const completeRef = useRef(onAnimationComplete);
-  completeRef.current = onAnimationComplete;
+  useEffect(() => {
+    completeRef.current = onAnimationComplete;
+  });
 
   const fx = useMemo(() => buildEffect(effect, direction, blur, distance), [effect, direction, blur, distance]);
 
@@ -239,6 +241,8 @@ const BlurText = ({
   useEffect(() => {
     if (phase !== 'from') return undefined;
     if (trigger === 'load') {
+      // The text must paint once in its 'from' state before animating in.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase('in');
       return undefined;
     }
