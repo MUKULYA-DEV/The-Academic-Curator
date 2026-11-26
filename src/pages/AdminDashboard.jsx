@@ -894,7 +894,7 @@ export default function AdminDashboard() {
                           <tr key={t.id} className="hover:bg-slate-50/20 transition-colors">
                             <td className="px-6 py-4 flex items-center gap-3">
                               {t.image_url ? (
-                                <img src={t.image_url} alt={t.title} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                                <img loading="lazy" decoding="async" src={t.image_url} alt={t.title} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#002045]">
                                   <span className="material-symbols-outlined text-lg">school</span>

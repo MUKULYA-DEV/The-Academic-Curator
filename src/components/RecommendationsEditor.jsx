@@ -131,7 +131,7 @@ export default function RecommendationsEditor({ value, onChange, excludeTourId }
                     className="flex w-full items-center gap-3 border-b border-slate-50 p-2 text-left hover:bg-slate-50"
                   >
                     <div className="h-8 w-8 shrink-0 rounded bg-slate-100 overflow-hidden">
-                      {t.image_url && <img src={t.image_url} alt="" className="h-full w-full object-cover" />}
+                      {t.image_url && <img loading="lazy" decoding="async" src={t.image_url} alt="" className="h-full w-full object-cover" />}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-800">{t.title}</p>
@@ -160,7 +160,7 @@ export default function RecommendationsEditor({ value, onChange, excludeTourId }
                     <span className="material-symbols-outlined text-sm">drag_indicator</span>
                   </div>
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-slate-100 overflow-hidden font-bold text-slate-400 text-xs">
-                    {t.image_url ? <img src={t.image_url} alt="" className="h-full w-full object-cover" /> : index + 1}
+                    {t.image_url ? <img loading="lazy" decoding="async" src={t.image_url} alt="" className="h-full w-full object-cover" /> : index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="truncate text-sm font-bold text-slate-800">{t.title}</p>

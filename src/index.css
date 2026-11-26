@@ -89,9 +89,52 @@
     background: linear-gradient(135deg, #002045 0%, #1a365d 100%);
   }
 
+  .hero-grid {
+    background-image: radial-gradient(rgba(0, 32, 69, 0.14) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 80% at 30% 40%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 80% at 30% 40%, #000 20%, transparent 75%);
+  }
+
+  /* Find College hero: drifting dot grid and a rotating glow behind the search box. */
+  .find-grid-mask {
+    -webkit-mask-image: radial-gradient(ellipse 85% 90% at 50% 35%, #000 15%, transparent 78%);
+    mask-image: radial-gradient(ellipse 85% 90% at 50% 35%, #000 15%, transparent 78%);
+  }
+
+  .find-grid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+    background-size: 28px 28px;
+    animation: find-grid-pan 9s linear infinite;
+  }
+
+  .find-glow {
+    background: conic-gradient(from 0deg, #e9c349, #5b8def 25%, transparent 45%, transparent 55%, #e9c349 80%, #ffffff 92%, #e9c349);
+    animation: find-glow-spin 7s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .find-grid,
+    .find-glow {
+      animation: none;
+    }
+  }
+
   .glass-panel {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
+  }
+}
+
+@keyframes find-grid-pan {
+  to {
+    transform: translate3d(28px, 28px, 0);
+  }
+}
+
+@keyframes find-glow-spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 

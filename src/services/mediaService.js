@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient'
 // Constants
 const BUCKET_NAME = 'tour-media'
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_IMAGE_EDGE = 1600 // px, applied when converting uploads to WebP
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'application/pdf']
 
@@ -36,12 +37,14 @@ export async function convertToWebP(file) {
     
     img.onload = () => {
       URL.revokeObjectURL(objectUrl)
+      // Cap the long edge: nothing on the site is shown wider than this.
+      const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(img.width, img.height))
       const canvas = document.createElement('canvas')
-      canvas.width = img.width
-      canvas.height = img.height
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
       
       const ctx = canvas.getContext('2d')
-      ctx.drawImage(img, 0, 0)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
       
       canvas.toBlob((blob) => {
         if (!blob) return reject(new Error('Canvas to Blob failed'))
@@ -49,7 +52,7 @@ export async function convertToWebP(file) {
         const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp"
         const webpFile = new File([blob], newName, { type: "image/webp" })
         resolve(webpFile)
-      }, 'image/webp', 0.85) // 85% quality
+      }, 'image/webp', 0.8) // 80% quality
     }
     img.onerror = (err) => {
       URL.revokeObjectURL(objectUrl)

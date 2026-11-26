@@ -259,6 +259,31 @@ export default function BookingSuccess() {
             </div>
           </section>
 
+          <section className="rounded-2xl bg-primary p-6 text-on-primary sm:p-8">
+            <p className="text-xs font-bold tracking-[0.2em] text-tertiary-fixed-dim uppercase">
+              Take this with you
+            </p>
+            <h2 className="font-headline mt-2 text-xl font-extrabold sm:text-2xl">
+              Your Campus Scorecard is ready
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-on-primary-container">
+              A checklist of what to see and ask on the day. Rate the hostel, mess, labs and
+              placements as you walk, then send the result to your parents.
+            </p>
+            <Link
+              to={
+                location.state?.collegeName
+                  ? `/scorecard?college=${encodeURIComponent(location.state.collegeName)}${
+                      location.state.tourId ? `&tourId=${encodeURIComponent(location.state.tourId)}` : ''
+                    }`
+                  : '/scorecard'
+              }
+              className="mt-5 inline-block rounded-full bg-white px-7 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary-fixed"
+            >
+              Open my scorecard
+            </Link>
+          </section>
+
           <section className="flex flex-col items-center justify-center gap-4 pt-6 md:flex-row">
             <Link
               to="/bookings"

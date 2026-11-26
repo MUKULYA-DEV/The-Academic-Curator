@@ -6,6 +6,26 @@ import { getPublicUrl } from '../services/mediaService.js'
 import { getTourBadgeDetails } from '../utils/badgeUtils.js'
 import { useRequireAuth } from '../hooks/useRequireAuth.js'
 import SEO from '../components/SEO.jsx'
+import BlurText from '../components/BlurText.jsx'
+import RotatingText from '../components/RotatingText.jsx'
+import SpotlightCard from '../components/SpotlightCard.jsx'
+import Reveal from '../components/Reveal.jsx'
+
+const HERO_CITIES = ['Delhi NCR', 'Dehradun']
+
+const SCORECARD_PREVIEW = [
+  ['Hostel', 4],
+  ['Mess and food', 3],
+  ['Classrooms and labs', 5],
+  ['Placements', 4],
+  ['Fees and extra costs', 3],
+]
+
+const STEP_CARD_STYLE = {
+  '--spotlight-card-surface': 'rgba(255, 255, 255, 0.05)',
+  '--spotlight-card-border': 'rgba(255, 255, 255, 0.12)',
+  '--spotlight-card-shadow': 'none',
+}
 
 const HOW_IT_WORKS = [
   {
@@ -43,7 +63,7 @@ function mapSupabaseTourToHomeTour(row) {
   let detailsObj = null
   if (row.details) {
     if (typeof row.details === 'string') {
-      try { detailsObj = JSON.parse(row.details) } catch (e) { detailsObj = null }
+      try { detailsObj = JSON.parse(row.details) } catch { detailsObj = null }
     } else {
       detailsObj = row.details
     }
@@ -81,10 +101,12 @@ function HomeFeaturedTourCard({ tour }) {
   return (
     <div
       onClick={handleCardClick}
-      className="group ghost-shadow flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] bg-surface-container-lowest transition-all duration-500 hover:shadow-2xl"
+      className="group ghost-shadow flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] bg-surface-container-lowest transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl"
     >
       <div className="relative h-64 shrink-0 overflow-hidden">
         <img
+          loading="lazy"
+          decoding="async"
           alt={tour.imageAlt}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
           src={tour.image}
@@ -176,8 +198,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchFeaturedTours() {
       try {
-        const publishedTours = await getPublishedTours()
-        const featured = publishedTours.slice(0, 3)
+        const featured = await getPublishedTours({ limit: 3 })
 
         setTours(featured.map(mapSupabaseTourToHomeTour))
       } catch (err) {
@@ -211,25 +232,46 @@ export default function Home() {
     <>
       <SEO title="Campus tours in Delhi NCR and Dehradun" description="Visit colleges in Delhi NCR and Dehradun with a current student. See classrooms, labs and hostels before you apply." />
       <main className="pt-24">
-        <section className="relative overflow-hidden bg-surface-container-low px-8 py-20 lg:py-32">
-          <div className="mx-auto grid max-w-screen-2xl items-center gap-12 lg:grid-cols-2">
+        <section className="relative overflow-hidden bg-surface-container-low px-4 py-16 sm:px-8 sm:py-20 lg:py-28">
+          <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-40 -left-32 h-[28rem] w-[28rem] rounded-full bg-primary-fixed opacity-50 blur-3xl"
+          />
+          <div className="relative mx-auto grid max-w-screen-2xl items-center gap-12 lg:grid-cols-2">
             <div className="z-10">
-              <h1 className="mb-6 text-3xl sm:text-5xl font-extrabold leading-[1.1] tracking-tight text-primary lg:text-7xl">
-                See the campus <br />
-                <span className="text-tertiary">before you decide</span>
+              <Reveal
+                y={12}
+                className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-outline-variant/50 bg-white/70 py-1.5 pr-4 pl-3 text-xs font-semibold text-secondary backdrop-blur sm:text-sm"
+              >
+                <span className="mr-1 h-2 w-2 rounded-full bg-tertiary-container" />
+                Campus tours in
+                <RotatingText
+                  texts={HERO_CITIES}
+                  effect="blur"
+                  rotationInterval={2800}
+                  staggerDuration={0.02}
+                  mainClassName="font-bold text-primary"
+                />
+              </Reveal>
+              <h1 className="mb-6 text-4xl leading-[1.1] font-extrabold tracking-tight text-primary sm:text-5xl lg:text-7xl">
+                <BlurText as="span" text="See the campus" delay={90} />
+                <BlurText as="span" text="before you decide" delay={90} className="text-tertiary" />
               </h1>
-              <p className="mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-secondary lg:text-xl">
-                Walk through colleges in Delhi NCR and Dehradun with a current
-                student. See the classrooms, labs and hostels, and ask anything
-                before you apply.
-              </p>
-              <div className="relative max-w-2xl">
-                <div className="ghost-shadow group flex items-center rounded-full p-1 sm:p-1.5 ring-primary/20 transition-all focus-within:ring-1 bg-white">
-                  <span className="material-symbols-outlined pl-3 sm:pl-6 text-secondary">
+              <Reveal delay={0.25} y={16}>
+                <p className="mb-10 max-w-xl text-base leading-relaxed text-secondary sm:text-lg lg:text-xl">
+                  Walk through colleges in Delhi NCR and Dehradun with a current
+                  student. See the classrooms, labs and hostels, and ask anything
+                  before you apply.
+                </p>
+              </Reveal>
+              <Reveal delay={0.35} y={16} className="relative max-w-2xl">
+                <div className="ghost-shadow group flex items-center rounded-full bg-white p-1 ring-primary/20 transition-all focus-within:ring-2 sm:p-1.5">
+                  <span className="material-symbols-outlined pl-3 text-secondary sm:pl-6">
                     search
                   </span>
                   <input
-                    className="font-body w-full border-none bg-transparent py-2.5 sm:py-4 text-sm sm:text-base text-on-surface placeholder:text-outline-variant focus:border-transparent focus:outline-none focus:ring-0"
+                    className="font-body w-full border-none bg-transparent px-2 py-2.5 text-sm text-on-surface placeholder:text-outline focus:border-transparent focus:ring-0 focus:outline-none sm:py-4 sm:text-base"
                     placeholder="Search by college, city or course"
                     type="text"
                     value={heroSearch}
@@ -238,44 +280,86 @@ export default function Home() {
                     aria-label="Search colleges, cities or courses"
                   />
                   <button
-                    className="rounded-full bg-primary px-5 py-2.5 sm:px-10 sm:py-4 text-sm sm:text-base font-semibold text-on-primary transition-colors hover:bg-primary-container whitespace-nowrap"
+                    className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-on-primary transition-all hover:bg-primary-container active:scale-[0.97] sm:px-10 sm:py-4 sm:text-base"
                     type="button"
                     onClick={runHeroSearch}
                   >
                     Find tours
                   </button>
                 </div>
-              </div>
+                <Link
+                  to="/find"
+                  className="group mt-5 flex w-fit items-center gap-2 pl-2 text-sm font-semibold text-primary"
+                >
+                  <span className="material-symbols-outlined text-lg text-tertiary">currency_rupee</span>
+                  <span className="underline decoration-tertiary-container decoration-2 underline-offset-4">
+                    Have a budget? Type your course, city and budget
+                  </span>
+                  <span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">
+                    arrow_forward
+                  </span>
+                </Link>
+                <Link
+                  to="/scorecard"
+                  className="group mt-3 flex w-fit items-center gap-2 pl-2 text-sm font-semibold text-primary"
+                >
+                  <span className="material-symbols-outlined text-lg text-tertiary">checklist</span>
+                  <span className="underline decoration-tertiary-container decoration-2 underline-offset-4">
+                    Visiting a college soon? Take the free Campus Scorecard
+                  </span>
+                  <span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">
+                    arrow_forward
+                  </span>
+                </Link>
+              </Reveal>
             </div>
-            <div className="relative hidden lg:block">
-              <div className="ghost-shadow relative z-10 -rotate-2 transform overflow-hidden rounded-xl">
+            <Reveal delay={0.15} y={40} duration={0.9} className="relative hidden lg:block">
+              <div className="ghost-shadow relative z-10 -rotate-2 transform overflow-hidden rounded-[2rem] transition-transform duration-700 hover:rotate-0">
                 <img
+                  // Lazy so phones, where this column is hidden, never download it.
+                  loading="lazy"
+                  decoding="async"
                   alt="College campus"
                   className="h-[500px] w-full object-cover transition-opacity duration-700"
                   src={heroImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuDV5-UmBceAZWTUMwBXAlffid7KmcIlnwYaFoOsIIccWW6YwwKv5mYBdqTudsNpqIGcSdvfNWw1e5dAJAEYbbiKFzKjhDn7Ptk2UdxuAGFeruarW3-9uyX18qpEO-4ifP-3kP_LlxdHg5vdhO0mDd04Nrz4da43nmPnyWL77faR1RdZLp4Xz41kl6XiAHFLFPcsKFXa4Znxm3FQEbh7-vhlf-iNDpYvvqM9bZuzS0Opd1KQJ90fVxHt6DKtwN0Autjfp_HfDhvGYCRd"}
                 />
               </div>
-              <div className="absolute -top-10 -right-10 h-64 w-64 rounded-full bg-tertiary-fixed opacity-20 blur-3xl" />
-            </div>
+              <div className="glass-panel ghost-shadow absolute -bottom-6 -left-6 z-20 flex animate-[bounce-slow_5s_ease-in-out_infinite] items-center gap-3 rounded-2xl border border-white/60 py-3 pr-5 pl-3 motion-reduce:animate-none">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-on-primary">
+                  <span className="material-symbols-outlined text-xl">directions_walk</span>
+                </span>
+                <span>
+                  <span className="font-headline block text-sm font-bold text-primary">
+                    Guided by a current student
+                  </span>
+                  <span className="block text-xs text-secondary">Small groups, parents welcome</span>
+                </span>
+              </div>
+              <div className="absolute -top-10 -right-10 h-64 w-64 rounded-full bg-tertiary-fixed opacity-30 blur-3xl" />
+            </Reveal>
           </div>
         </section>
 
         {trustSection && trustSection.items && (
           <section className="bg-surface-container-lowest py-16">
             <div className="mx-auto max-w-screen-2xl px-4 sm:px-8">
-              <div className="mb-12 text-center">
-                <h2 className="font-headline text-3xl font-extrabold text-primary">
+              <Reveal className="mb-12 text-center">
+                <h2 className="font-headline text-3xl font-extrabold tracking-tight text-primary sm:text-4xl">
                   {trustSection.title || 'Why Book Through Us'}
                 </h2>
-              </div>
+              </Reveal>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:gap-8">
                 {trustSection.items.map((item, idx) => (
-                  <div key={idx} className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-outline-variant/30 shadow-sm transition-all hover:shadow-md">
-                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
+                  <Reveal
+                    key={idx}
+                    delay={idx * 0.08}
+                    className="group flex flex-col items-center rounded-2xl border border-outline-variant/30 bg-white p-6 text-center shadow-sm transition-[box-shadow,border-color] duration-300 hover:border-tertiary-container/60 hover:shadow-lg"
+                  >
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-on-primary">
                       <span className="material-symbols-outlined text-2xl">{item.icon || 'star'}</span>
                     </div>
                     <h3 className="font-headline font-bold text-primary">{item.title}</h3>
-                  </div>
+                  </Reveal>
                 ))}
               </div>
             </div>
@@ -284,20 +368,14 @@ export default function Home() {
 
         <section className="mx-auto max-w-screen-2xl px-4 sm:px-8 py-16 md:py-24">
           <div className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between items-start gap-6">
-            <div>
-              <div className="flex flex-col items-start gap-3 sm:gap-4">
-                <div className="inline-block rounded-2xl md:rounded-full bg-primary px-6 py-3 md:px-8 text-on-primary shadow-md">
-                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight md:text-3xl">
-                    Upcoming Campus Tours
-                  </h2>
-                </div>
-                <div className="inline-block rounded-2xl md:rounded-full border border-secondary-container bg-secondary-container/50 px-4 py-2 sm:px-6 text-on-secondary-container">
-                  <p className="text-xs sm:text-sm font-medium md:text-base">
-                    Small groups, so every question gets answered
-                  </p>
-                </div>
-              </div>
-            </div>
+            <Reveal>
+              <p className="font-label text-xs font-bold tracking-[0.2em] text-tertiary uppercase">
+                Small groups, so every question gets answered
+              </p>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-primary sm:text-4xl lg:text-5xl">
+                Upcoming Campus Tours
+              </h2>
+            </Reveal>
             <Link
               to="/explore-tours"
               className="group flex items-center gap-2 rounded-full border border-outline-variant bg-white px-6 py-3 font-bold text-primary shadow-sm transition-all duration-300 hover:bg-primary hover:text-white hover:shadow-md whitespace-nowrap self-stretch md:self-auto justify-center"
@@ -347,16 +425,92 @@ export default function Home() {
                 </Link>
               </div>
             ) : (
-              tours.map((tour) => (
-                <HomeFeaturedTourCard key={tour.id} tour={tour} />
+              tours.map((tour, idx) => (
+                <Reveal key={tour.id} delay={idx * 0.1} className="h-full">
+                  <HomeFeaturedTourCard tour={tour} />
+                </Reveal>
               ))
             )}
           </div>
         </section>
 
-        <section className="bg-primary px-4 py-16 text-on-primary sm:px-8 md:py-24">
-          <div className="mx-auto max-w-screen-2xl">
-            <div className="max-w-2xl">
+        <section className="bg-surface-container-lowest px-4 py-16 sm:px-8 md:py-24">
+          <div className="mx-auto grid max-w-screen-2xl items-center gap-12 lg:grid-cols-2">
+            <Reveal>
+              <p className="font-label text-xs font-bold tracking-[0.2em] text-tertiary uppercase">
+                New: the Campus Scorecard
+              </p>
+              <h2 className="mt-3 text-3xl leading-tight font-extrabold tracking-tight text-primary sm:text-4xl lg:text-5xl">
+                The brochure is written by the college. The scorecard is written by you.
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-secondary sm:text-lg">
+                The Campus Scorecard tells you what to check and what to ask on a visit:
+                the hostel room someone actually lives in, the median package, the full fee
+                break-up. You rate what you see, compare colleges side by side and send it
+                to your parents on WhatsApp.
+              </p>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+                <Link
+                  to="/scorecard"
+                  className="rounded-full bg-primary px-8 py-4 text-center font-bold text-on-primary transition-colors hover:bg-primary-container"
+                >
+                  Try the scorecard
+                </Link>
+                <p className="text-sm text-secondary">Free. No sign-up. Works for any college.</p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.15} className="relative mx-auto w-full max-w-md">
+              <div className="ghost-shadow rounded-[2rem] border border-outline-variant/30 bg-white p-6 sm:p-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold tracking-widest text-secondary uppercase">
+                      Example scorecard
+                    </p>
+                    <p className="font-headline mt-1 text-lg font-extrabold text-primary">
+                      Your college visit
+                    </p>
+                  </div>
+                  <div
+                    className="flex h-16 w-16 items-center justify-center rounded-full"
+                    style={{ background: 'conic-gradient(#cba72f 281deg, #e5e9eb 0deg)' }}
+                  >
+                    <span className="font-headline flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full bg-white text-lg font-extrabold text-primary">
+                      78
+                    </span>
+                  </div>
+                </div>
+                <ul className="mt-6 space-y-4">
+                  {SCORECARD_PREVIEW.map(([label, rating]) => (
+                    <li key={label}>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-on-surface">{label}</span>
+                        <span className="font-bold text-primary">{rating}/5</span>
+                      </div>
+                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-container-high">
+                        <div
+                          className="h-full rounded-full bg-tertiary-container"
+                          style={{ width: `${rating * 20}%` }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6 flex items-center gap-2 rounded-xl bg-surface-container-low px-4 py-3 text-xs text-secondary">
+                  <span className="material-symbols-outlined text-base text-primary">task_alt</span>
+                  Saw a hostel room someone lives in, not the sample room
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden bg-primary px-4 py-16 text-on-primary sm:px-8 md:py-24">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-48 right-0 h-[32rem] w-[32rem] rounded-full bg-surface-tint opacity-40 blur-3xl"
+          />
+          <div className="relative mx-auto max-w-screen-2xl">
+            <Reveal className="max-w-2xl">
               <h2 className="text-3xl font-extrabold sm:text-4xl lg:text-5xl">
                 How a tour works
               </h2>
@@ -364,21 +518,26 @@ export default function Home() {
                 A brochure shows a college at its best. A student who studies
                 there shows you an ordinary day.
               </p>
-            </div>
+            </Reveal>
             <ol className="mt-12 grid gap-6 md:grid-cols-3">
               {HOW_IT_WORKS.map((step, idx) => (
-                <li
-                  key={step.title}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-8"
-                >
-                  <span className="font-headline text-sm font-bold tracking-widest text-tertiary-fixed-dim">
-                    STEP {idx + 1}
-                  </span>
-                  <h3 className="font-headline mt-3 text-xl font-bold">{step.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-on-primary-container">
-                    {step.body}
-                  </p>
-                </li>
+                <Reveal as="li" key={step.title} delay={idx * 0.12}>
+                  <SpotlightCard
+                    className="h-full"
+                    style={STEP_CARD_STYLE}
+                    spotlightColor="#e9c349"
+                    intensity={0.2}
+                    spotlightSize={280}
+                  >
+                    <span className="font-headline text-5xl font-extrabold text-tertiary-fixed-dim/90">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="font-headline mt-5 text-xl font-bold">{step.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-on-primary-container">
+                      {step.body}
+                    </p>
+                  </SpotlightCard>
+                </Reveal>
               ))}
             </ol>
             <div className="mt-12 flex flex-col gap-4 sm:flex-row">

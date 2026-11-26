@@ -206,6 +206,9 @@ function CoursesSection({ courses, theme }) {
                       <thead>
                         <tr className="border-b border-outline-variant text-xs uppercase tracking-wider text-secondary">
                           <th className="pb-3 font-bold">Branch / Specialization</th>
+                          {course.branches?.some((b) => Number(b.annualFee) > 0) && (
+                            <th className="pb-3 text-right font-bold">Tuition / year</th>
+                          )}
                           <th className="pb-3 text-right font-bold">Available Seats</th>
                         </tr>
                       </thead>
@@ -214,6 +217,13 @@ function CoursesSection({ courses, theme }) {
                           course.branches.map((branch) => (
                             <tr key={branch.name} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                               <td className="py-3 font-semibold text-primary">{branch.name}</td>
+                              {course.branches.some((b) => Number(b.annualFee) > 0) && (
+                                <td className="py-3 text-right font-bold text-primary">
+                                  {Number(branch.annualFee) > 0
+                                    ? `₹${Number(branch.annualFee).toLocaleString('en-IN')}`
+                                    : 'Ask on tour'}
+                                </td>
+                              )}
                               <td className="py-3 text-right font-bold text-secondary">
                                 <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 text-xs font-bold text-on-secondary-container">
                                   {branch.seats} Seats
@@ -223,7 +233,7 @@ function CoursesSection({ courses, theme }) {
                           ))
                         ) : (
                           <tr>
-                            <td colSpan="2" className="py-4 text-center text-secondary">
+                            <td colSpan="3" className="py-4 text-center text-secondary">
                               No specializations listed.
                             </td>
                           </tr>
@@ -1025,6 +1035,16 @@ export default function College() {
               <p className="text-center text-xs font-medium text-secondary">
                 Free cancellation up to 48 hours before.
               </p>
+              <Link
+                to={`/scorecard?college=${encodeURIComponent(tourData.university_name || tourData.title || '')}&tourId=${encodeURIComponent(tourData.id)}`}
+                className="flex items-center gap-3 rounded-2xl bg-surface-container-low px-4 py-3 text-left transition-colors hover:bg-surface-container"
+              >
+                <span className="material-symbols-outlined text-primary">checklist</span>
+                <span className="text-xs leading-relaxed text-secondary">
+                  <span className="block text-sm font-bold text-primary">Campus Scorecard</span>
+                  What to check and ask on this visit
+                </span>
+              </Link>
             </div>
 
             {recommendations.length > 0 && (
@@ -1042,6 +1062,8 @@ export default function College() {
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
                         {rec.image_url ? (
                           <img
+                            loading="lazy"
+                            decoding="async"
                             alt={rec.university_name || rec.title}
                             className="h-full w-full object-cover transition-transform group-hover:scale-110"
                             src={rec.image_url}

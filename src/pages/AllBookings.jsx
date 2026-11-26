@@ -170,6 +170,8 @@ function CompletedBookingCard({ booking, imageSrc, showFeedbackInMenu, hideFoote
     <div className="border-outline-variant/10 group flex flex-col overflow-hidden rounded-2xl border bg-white opacity-90 shadow-[0px_8px_24px_rgba(26,54,93,0.04)] transition-opacity hover:opacity-100 md:flex-row">
       <div className="relative h-64 w-full shrink-0 md:h-auto md:w-[320px]">
         <img
+          loading="lazy"
+          decoding="async"
           alt={displayName}
           className="h-full w-full object-cover grayscale-[40%]"
           src={imageToUse}
@@ -258,6 +260,8 @@ function CancelledBookingCard({ booking, imageSrc, hideFooterActions }) {
     <div className="border-outline-variant/10 group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-[0px_8px_24px_rgba(26,54,93,0.04)] transition-all hover:shadow-lg md:flex-row">
       <div className="relative h-64 w-full shrink-0 md:h-auto md:w-[320px]">
         <img
+          loading="lazy"
+          decoding="async"
           alt={displayName}
           className="h-full w-full object-cover grayscale-[80%] brightness-[0.9]"
           src={imageToUse}
@@ -621,6 +625,8 @@ export default function AllBookings() {
                       >
                         <div className="relative h-64 w-full shrink-0 md:h-auto md:w-[320px]">
                           <img
+                            loading="lazy"
+                            decoding="async"
                             alt={displayName}
                             className="h-full w-full object-cover"
                             src={imageToUse}

@@ -19,6 +19,9 @@ const ContactSupport = React.lazy(() => import('./pages/ContactSupport.jsx'))
 const AllBookings = React.lazy(() => import('./pages/AllBookings.jsx'))
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard.jsx'))
 
+const Scorecard = React.lazy(() => import('./pages/Scorecard.jsx'))
+const FindCollege = React.lazy(() => import('./pages/FindCollege.jsx'))
+
 const NotFound = React.lazy(() => import('./pages/NotFound.jsx'))
 const ComingSoon = React.lazy(() => import('./pages/ComingSoon.jsx'))
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy.jsx'))
@@ -93,6 +96,14 @@ export default function App() {
         <Route path="/terms" element={<SuspenseWrapper><TermsOfService /></SuspenseWrapper>} />
         <Route path="/accessibility" element={<SuspenseWrapper><Accessibility /></SuspenseWrapper>} />
         
+        <Route
+          path="/scorecard"
+          element={<SuspenseWrapper><Scorecard /></SuspenseWrapper>}
+        />
+        <Route
+          path="/find"
+          element={<SuspenseWrapper><FindCollege /></SuspenseWrapper>}
+        />
         <Route
           path="/explore"
           element={<SuspenseWrapper><ExploreTours /></SuspenseWrapper>}

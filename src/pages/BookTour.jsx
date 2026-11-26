@@ -563,6 +563,8 @@ export default function BookTour() {
           selectedDate: tour_date,
           timeSlot,
           tourName,
+          collegeName: tourData.university_name || tourData.title || '',
+          tourId: tourData.id,
           meetingLocation: tourData.location || tourData.city || 'Campus Information Center',
         },
       })

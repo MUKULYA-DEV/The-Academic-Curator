@@ -31,6 +31,8 @@ function TourCardLink({ tour }) {
     >
             <div className="relative h-64 overflow-hidden">
         <img
+          loading="lazy"
+          decoding="async"
           alt={tour.alt}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           src={tour.image}

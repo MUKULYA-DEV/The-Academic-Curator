@@ -61,6 +61,21 @@ export default function TourEditor({ tour, onSave, onCancel }) {
     })
   }
 
+  const updateCourseDuration = (cIdx, val) => {
+    setDetails(prev => {
+      const courses = [...prev.courses]
+      courses[cIdx] = { ...courses[cIdx], durationYears: val === '' ? null : Number(val) || null }
+      return { ...prev, courses }
+    })
+  }
+
+  const updateHostelFee = (val) => {
+    setDetails(prev => ({
+      ...prev,
+      fees: { ...(prev.fees || {}), hostelPerYear: val === '' ? null : Number(val) || null }
+    }))
+  }
+
   const addBranch = (cIdx) => {
     setDetails(prev => {
       const courses = [...prev.courses]
@@ -90,7 +105,11 @@ export default function TourEditor({ tour, onSave, onCancel }) {
       courses[cIdx].branches = [...courses[cIdx].branches]
       courses[cIdx].branches[bIdx] = {
         ...courses[cIdx].branches[bIdx],
-        [field]: field === 'seats' ? (Number(val) || 0) : val
+        [field]: field === 'seats'
+          ? (Number(val) || 0)
+          : field === 'annualFee'
+            ? (val === '' ? null : Number(val) || null)
+            : val
       }
       return { ...prev, courses }
     })
@@ -578,6 +597,21 @@ export default function TourEditor({ tour, onSave, onCancel }) {
               </button>
             </div>
 
+            <div className="p-6 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Hostel + mess fee per year (₹)</label>
+              <input
+                type="number"
+                min="0"
+                value={details.fees?.hostelPerYear ?? ''}
+                onChange={e => updateHostelFee(e.target.value)}
+                placeholder="e.g. 90000"
+                className="w-full max-w-xs px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-900/10"
+              />
+              <p className="text-xs text-slate-500">
+                Fees entered here power the Find My College budget search and show on the college page. Leave blank if the college has not confirmed them.
+              </p>
+            </div>
+
             <div className="space-y-4">
               {(details.courses || []).map((course, cIdx) => (
                 <div key={cIdx} className="p-6 bg-slate-50/50 border border-slate-100 rounded-2xl relative space-y-4">
@@ -590,15 +624,29 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                     <span className="material-symbols-outlined text-lg">delete</span>
                   </button>
 
-                  <div className="max-w-md space-y-1">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Course Name</label>
-                    <input 
-                      type="text" 
-                      value={course.name}
-                      onChange={e => updateCourseName(cIdx, e.target.value)}
-                      placeholder="e.g. B.Tech, MBA" 
-                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-900/10"
-                    />
+                  <div className="flex flex-wrap gap-4 pr-10">
+                    <div className="flex-1 min-w-[12rem] max-w-md space-y-1">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Course Name</label>
+                      <input 
+                        type="text" 
+                        value={course.name}
+                        onChange={e => updateCourseName(cIdx, e.target.value)}
+                        placeholder="e.g. B.Tech, MBA" 
+                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-900/10"
+                      />
+                    </div>
+                    <div className="w-32 space-y-1">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Years</label>
+                      <input 
+                        type="number" 
+                        min="1"
+                        max="7"
+                        value={course.durationYears ?? ''}
+                        onChange={e => updateCourseDuration(cIdx, e.target.value)}
+                        placeholder="e.g. 4" 
+                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-900/10"
+                      />
+                    </div>
                   </div>
 
                   {/* Branches nested list */}
@@ -631,6 +679,15 @@ export default function TourEditor({ tour, onSave, onCancel }) {
                             onChange={e => updateBranchField(cIdx, bIdx, 'seats', e.target.value)}
                             placeholder="Seats" 
                             className="w-24 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-900/10"
+                          />
+                          <input 
+                            type="number" 
+                            min="0"
+                            value={branch.annualFee ?? ''}
+                            onChange={e => updateBranchField(cIdx, bIdx, 'annualFee', e.target.value)}
+                            placeholder="Tuition ₹/year" 
+                            aria-label="Tuition fee per year in rupees"
+                            className="w-36 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-900/10"
                           />
                           <button 
                             type="button" 
